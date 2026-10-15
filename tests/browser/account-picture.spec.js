@@ -31,14 +31,15 @@ test('shows a cropped profile picture in home and editor, sharing the cache acro
   expect(await page.evaluate(() => window.pictureCalls)).toBe(0);
 });
 
-test('keeps the initial while loading, recovers from an undecodable image, and ignores a late response after sign-out', async ({ page }) => {
+test('keeps the neutral icon while loading, recovers from an undecodable image, and ignores a late response after sign-out', async ({ page }) => {
   await page.route('**/dev/puter-mock.js', async route => {
     const response = await route.fetch();
     await route.fulfill({ response, body: `${await response.text()}\nwindow.pictureCalls = 0; puter.auth.getProfilePicture = () => { window.pictureCalls++; return new Promise(resolve => { window.resolvePicture = resolve; }); };` });
   });
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('textbox', { name: 'Document text' })).toBeVisible();
-  await expect(account(page)).toHaveText('d');
+  await expect(account(page).locator('svg')).toBeVisible();
+  await expect(account(page).locator('img')).toHaveCount(0);
   expect(await page.evaluate(() => window.pictureCalls)).toBe(1);
   await page.evaluate(() => {
     const create = document.createElement;
@@ -53,7 +54,7 @@ test('keeps the initial while loading, recovers from an undecodable image, and i
     window.resolvePicture('data:image/png;base64,aGVsbG8=');
   });
   await expect.poll(() => page.evaluate(() => window.pictureDecodeFailed)).toBe(true);
-  await expect(account(page)).toHaveText('d');
+  await expect(account(page).locator('svg')).toBeVisible();
   await expect(account(page).locator('img')).toHaveCount(0);
   await page.evaluate(async () => {
     const { session } = await import('/src/lib/session.js');
@@ -67,7 +68,7 @@ test('keeps the initial while loading, recovers from an undecodable image, and i
     window.resolvePicture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZAAAAABJRU5ErkJggg==');
   });
   const guest = page.getByRole('button', { name: 'Account menu. Not signed in', exact: true });
-  await expect(guest.locator('.user-avatar-anon')).toBeVisible();
+  await expect(guest.locator('.user-avatar')).toBeVisible();
   await expect(guest.locator('img')).toHaveCount(0);
 });
 
@@ -80,7 +81,7 @@ test('does not request a picture or prompt for authentication when signed out', 
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/mock.html?picture&signedout#/new');
   await expect(page.getByRole('textbox', { name: 'Document text' })).toBeVisible();
-  await expect(page.locator('.user-avatar-anon')).toBeVisible();
+  await expect(page.locator('.user-avatar')).toBeVisible();
   await expect(page.locator('.user-btn img')).toHaveCount(0);
   expect(await page.evaluate(() => [window.pictureCalls, window.signInCalls])).toEqual([0, 0]);
   expect(errors).toEqual([]);

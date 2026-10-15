@@ -55,8 +55,9 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
 }
 
 const accountFaces = new WeakMap();
+const ACCOUNT_ICON = icon('user', 17, 2);
 
-/** Keep the initial visible until an optional profile picture has actually loaded. */
+/** The account button always shows a neutral person icon (never a letter). */
 export function renderAccountButton(button) {
   const signedOut = session.signedOut;
   button.title = signedOut ? 'Not signed in' : session.username;
@@ -65,22 +66,20 @@ export function renderAccountButton(button) {
   const key = `${session.state}:${id}:${session.username}`;
   let face = accountFaces.get(button);
   if (face?.key !== key || button.firstElementChild !== face.avatar) {
-    face = { key, avatar: signedOut
-      ? el('span.user-avatar.user-avatar-anon', { html: icon('user', 17, 2), 'aria-hidden': 'true' })
-      : el('span.user-avatar', { 'aria-hidden': 'true' }, session.username.charAt(0)) };
+    face = { key, avatar: el('span.user-avatar', { html: ACCOUNT_ICON, 'aria-hidden': 'true' }) };
     accountFaces.set(button, face);
     button.replaceChildren(face.avatar);
   }
+  const showIcon = () => { face.avatar.innerHTML = ACCOUNT_ICON; };
   if (!id) return;
   const current = () => accountFaces.get(button) === face && button.firstElementChild === face.avatar && session.accountId === id && button.isConnected;
   session.getProfilePicture().then((picture) => {
     if (!current() || face.picture === picture) return;
     face.picture = picture;
-    const initial = session.username.charAt(0);
-    if (!picture) { face.avatar.replaceChildren(initial); return; }
+    if (!picture) { showIcon(); return; }
     const image = el('img', { alt: '', width: 32, height: 32, decoding: 'async', draggable: false,
       onload: () => { if (current() && face.picture === picture) face.avatar.replaceChildren(image); },
-      onerror: () => { if (current() && face.picture === picture) face.avatar.replaceChildren(initial); },
+      onerror: () => { if (current() && face.picture === picture) showIcon(); },
     });
     image.src = picture;
   });

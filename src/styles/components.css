@@ -256,12 +256,6 @@ select.input, select.select {
   object-fit: cover;
 }
 
-/* Nobody signed in: a plain figure in place of an initial. */
-.user-avatar-anon {
-  background: var(--surface-2);
-  color: var(--ink-3);
-}
-
 /* ---------- Modal / bottom sheet ---------- */
 
 .modal-root {

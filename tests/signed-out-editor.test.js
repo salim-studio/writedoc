@@ -62,7 +62,7 @@ it('opens into a new document without a session, and saves once the status pill 
   expect(pill.classList.contains('signed-out')).toBe(false);
   expect(pill.textContent).toContain('Saved');
   expect(account.title).toBe('nariman');
-  expect(account.textContent).toBe('n');
+  expect(account.querySelector('.user-avatar svg')).not.toBeNull();
 
   // From here on autosave runs as usual.
   doc.changed();

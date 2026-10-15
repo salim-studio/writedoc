@@ -54,5 +54,5 @@ it('offers the sign-in in place of the list, then lists the documents once signe
   await vi.waitFor(() => expect(list.querySelector('.file-row .file-name')?.textContent).toBe('Report'));
   expect(list.textContent).not.toContain('Sign in to see your documents');
   expect(account.title).toBe('nariman');
-  expect(account.textContent).toBe('n');
+  expect(account.querySelector('.user-avatar svg')).not.toBeNull();
 });
