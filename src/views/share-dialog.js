@@ -10,7 +10,7 @@
 import { el } from '../ui/dom.js';
 import { openModal, confirmDialog } from '../ui/modal.js';
 import { EMAIL } from '../lib/mail-send.js';
-import { roleLabel, INVITE_ROLES, initials } from '../collab/protocol.js';
+import { roleLabel, INVITE_ROLES } from '../collab/protocol.js';
 
 const ROLE_HINTS = { editor: 'Can change the text and formatting', commenter: 'Can read and add comments', viewer: 'Can read only' };
 
@@ -107,7 +107,6 @@ export function openShareDialog(api) {
     try { data = await session.members(); } catch (e) { access.replaceChildren(el('p.sh-muted', {}, e.message)); return; }
     const here = new Set(session.people().map(p => p.name));
     const rows = data.members.map(m => el('div.sh-person', { role: 'listitem' },
-      el('span.sh-avatar', { 'aria-hidden': 'true' }, initials(m.username)),
       el('span.sh-name', {}, m.username, here.has(m.username) ? el('span.sh-here', {}, ' · here now') : null),
       m.role === 'owner' || !session.canManage || session.local ? el('span.sh-role-text', {}, roleLabel(m.role))
         : roleSelect(m.role, `Access for ${m.username}`, async role => {
@@ -116,7 +115,7 @@ export function openShareDialog(api) {
           renderAccess();
         }, { remove: true })));
     for (const n of data.named || []) if (!data.members.some(m => m.username.toLowerCase() === n.username.toLowerCase())) rows.push(el('div.sh-person.is-pending', { role: 'listitem' },
-      el('span.sh-avatar', { 'aria-hidden': 'true' }, initials(n.username)), el('span.sh-name', {}, n.username, el('span.sh-here', {}, ' · invited')), el('span.sh-role-text', {}, roleLabel(n.role))));
+      el('span.sh-name', {}, n.username, el('span.sh-here', {}, ' · invited')), el('span.sh-role-text', {}, roleLabel(n.role))));
     access.replaceChildren(...rows);
   }
   const accessSection = el('section.sh-section', {}, el('h3.sh-heading', {}, 'People with access'), access);
