@@ -10,7 +10,7 @@ export const UNITS = [
   { id: 'cm', label: 'Centimeters', short: 'cm' },
 ];
 
-const KEY = 'documents:unit';
+const KEY = 'writedoc:unit';
 const listeners = new Set();
 
 /** Inches in the countries that still measure in them; centimeters elsewhere. */

@@ -62,11 +62,11 @@ export function buildPdf(pages, { title = 'Document', author = '' } = {}) {
   const pdfString = s => `(${String(s).replace(/[\\()]/g, m => '\\' + m).replace(/[^\x20-\x7e]/g, '?')})`;
 
   const catalog = reserve(), pagesId = reserve(), font = reserve(), cidFont = reserve(), descriptor = reserve(), toUnicode = reserve(), info = reserve();
-  define(info, `<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Producer (Documents) /Creator (Documents) >>`);
+  define(info, `<< /Title ${pdfString(title)} /Author ${pdfString(author)} /Producer (writedoc) /Creator (writedoc) >>`);
   define(toUnicode, { stream: encoder.encode(TO_UNICODE) });
-  define(descriptor, '<< /Type /FontDescriptor /FontName /DocumentsTextLayer /Flags 4 /FontBBox [0 -200 1000 800] /ItalicAngle 0 /Ascent 800 /Descent -200 /CapHeight 700 /StemV 80 >>');
-  define(cidFont, `<< /Type /Font /Subtype /CIDFontType2 /BaseFont /DocumentsTextLayer /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${descriptor} 0 R /DW 500 /CIDToGIDMap /Identity >>`);
-  define(font, `<< /Type /Font /Subtype /Type0 /BaseFont /DocumentsTextLayer /Encoding /Identity-H /DescendantFonts [${cidFont} 0 R] /ToUnicode ${toUnicode} 0 R >>`);
+  define(descriptor, '<< /Type /FontDescriptor /FontName /WritedocTextLayer /Flags 4 /FontBBox [0 -200 1000 800] /ItalicAngle 0 /Ascent 800 /Descent -200 /CapHeight 700 /StemV 80 >>');
+  define(cidFont, `<< /Type /Font /Subtype /CIDFontType2 /BaseFont /WritedocTextLayer /CIDSystemInfo << /Registry (Adobe) /Ordering (Identity) /Supplement 0 >> /FontDescriptor ${descriptor} 0 R /DW 500 /CIDToGIDMap /Identity >>`);
+  define(font, `<< /Type /Font /Subtype /Type0 /BaseFont /WritedocTextLayer /Encoding /Identity-H /DescendantFonts [${cidFont} 0 R] /ToUnicode ${toUnicode} 0 R >>`);
   const kids = [];
   for (const page of pages) {
     const pageId = reserve(), image = reserve(), content = reserve();

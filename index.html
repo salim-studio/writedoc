@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Documents</title>
-  <meta name="description" content="A fast, private word processor. Real .docx files, saved to your own Puter cloud." />
-  <meta name="theme-color" content="#375f91" />
+  <title>writedoc</title>
+  <meta name="description" content="writedoc — a fast, private word processor. Real .docx files, saved to your own Puter cloud." />
+  <meta name="author" content="salim-slimani" />
+  <meta name="theme-color" content="#4f46e5" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Documents" />
+  <meta name="apple-mobile-web-app-title" content="writedoc" />
   <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./logo.svg" type="image/svg+xml" />
   <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
   <link rel="icon" href="./favicon-32x32.png" type="image/png" sizes="32x32" />
   <link rel="icon" href="./favicon-16x16.png" type="image/png" sizes="16x16" />
@@ -19,9 +21,9 @@
     // Apply the saved theme before first paint to avoid a flash.
     (() => {
       try {
-        const t = localStorage.getItem('documents:theme');
+        const t = localStorage.getItem('writedoc:theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-        if (localStorage.getItem('documents:dark-page') === '1') document.documentElement.dataset.page = 'dark';
+        if (localStorage.getItem('writedoc:dark-page') === '1') document.documentElement.dataset.page = 'dark';
       } catch {}
     })();
   </script>
@@ -51,7 +53,7 @@
   <div id="app" class="app">
     <div class="boot-splash" id="boot-splash" aria-hidden="true">
       <div class="boot-mark">
-        <img src="./icons/icon-192.png" width="64" height="64" alt="" />
+        <img src="./logo.svg" width="64" height="64" alt="writedoc" />
       </div>
     </div>
   </div>

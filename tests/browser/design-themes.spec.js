@@ -196,6 +196,6 @@ test('theme files import, custom paragraph spacing applies, and Set as Default s
   await page.getByRole('button', { name: 'New', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Document text' })).toHaveValue('');
   await expectFont(page, /Karla/);
-  await page.evaluate(() => localStorage.removeItem('documents.design.defaults'));
+  await page.evaluate(() => localStorage.removeItem('writedoc.design.defaults'));
   expect(errors).toEqual([]);
 });

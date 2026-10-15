@@ -39,7 +39,7 @@ it('opens at once with the built-in templates, then fills in the user\'s own', a
   // Item text carries the template's hint after its name.
   expect(menuItems().some((t) => t.startsWith('Letter'))).toBe(true);
   expect(listings).toHaveLength(1);
-  listings[0].resolve([{ name: 'Mine.docx', path: 'Documents/Templates/Mine.docx', size: 1, modified: 1 }]);
+  listings[0].resolve([{ name: 'Mine.docx', path: 'writedoc/Templates/Mine.docx', size: 1, modified: 1 }]);
   await vi.advanceTimersByTimeAsync(0);
   expect(menuItems().some((t) => t.startsWith('Mine'))).toBe(true);
   expect(menuItems()).not.toContain('Loading your templates…');
@@ -75,7 +75,7 @@ it('keeps the keyboard on the template the user had moved to when the listing la
   for (let i = 0; i < 2; i++) document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
   const moved = label();
   expect(moved).not.toBe('Letter');
-  listings[0].resolve([{ name: 'Mine.docx', path: 'Documents/Templates/Mine.docx', size: 1, modified: 1 }]);
+  listings[0].resolve([{ name: 'Mine.docx', path: 'writedoc/Templates/Mine.docx', size: 1, modified: 1 }]);
   await vi.advanceTimersByTimeAsync(0);
   expect(menuItems().some((t) => t.startsWith('Mine'))).toBe(true);
   expect(label()).toBe(moved);

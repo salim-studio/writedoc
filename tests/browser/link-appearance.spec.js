@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const input = page => page.getByRole('textbox', { name: 'Document text' });
-const runs = page => page.evaluate(() => window.__docs.current.view.engine.model.paragraphs[0].runs.map(r => [r.text, !!r.link, r.color, r.underlineStyle]));
+const runs = page => page.evaluate(() => window.__writedoc.current.view.engine.model.paragraphs[0].runs.map(r => [r.text, !!r.link, r.color, r.underlineStyle]));
 async function link(page, address) {
   await input(page).press('ControlOrMeta+k');
   await page.getByLabel('Link address', { exact: true }).fill(address);

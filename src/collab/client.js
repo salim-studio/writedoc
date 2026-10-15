@@ -16,7 +16,7 @@ import * as Y from 'yjs';
 import { REMOTE } from './binding.js';
 import { colorFor, randomId, PRESENCE_TTL } from './protocol.js';
 
-const OUTBOX_DB = 'documents-collab';
+const OUTBOX_DB = 'writedoc-collab';
 
 /** Queued updates per room, in IndexedDB with a memory fallback (private windows, tests). */
 export class Outbox {

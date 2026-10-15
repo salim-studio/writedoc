@@ -9,7 +9,7 @@
 import { el, clear, relativeTime, isComposing } from './dom.js';
 import { icon } from './icons.js';
 
-const LS_KEY = 'documents:comments';
+const LS_KEY = 'writedoc:comments';
 
 /** Group flat comment records into threads: each root with its replies, in order. */
 export function threadComments(items = []) {

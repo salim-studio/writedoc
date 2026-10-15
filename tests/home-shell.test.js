@@ -12,8 +12,8 @@ beforeEach(async () => {
   vi.useFakeTimers();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   vi.spyOn(P, 'listFiles').mockResolvedValue([
-    { name: 'Report.docx', path: 'Documents/Report.docx', size: 10, modified: 2 },
-    { name: 'Notes.docx', path: 'Documents/Notes.docx', size: 10, modified: 1 },
+    { name: 'Report.docx', path: 'writedoc/Report.docx', size: 10, modified: 2 },
+    { name: 'Notes.docx', path: 'writedoc/Notes.docx', size: 10, modified: 1 },
   ]);
   vi.spyOn(P, 'listFolder').mockResolvedValue([]);
   view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
@@ -100,5 +100,5 @@ it('does not open the Templates menu over a menu the user opened while the templ
 });
 
 it('names the page with a heading', () => {
-  expect(view.el.querySelector('h1.brand')?.textContent).toBe('Documents');
+  expect(view.el.querySelector('h1.brand')?.textContent).toBe('writedoc');
 });

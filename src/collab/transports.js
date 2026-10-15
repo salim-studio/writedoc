@@ -107,7 +107,7 @@ export class BroadcastRoom {
     this.session = handlers.session;
     this.doc = new Y.Doc();
     if (this.initial) Y.applyUpdate(this.doc, this.initial);
-    this.channel = new BroadcastChannel(`documents-collab:${this.room}`);
+    this.channel = new BroadcastChannel(`writedoc-collab:${this.room}`);
     this.channel.onmessage = e => this.message(e.data);
     if (!this.initial) {
       // Ask the tabs already in the room for the state and the document it started from.

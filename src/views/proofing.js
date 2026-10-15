@@ -4,7 +4,7 @@ import { engineApi } from '../lib/engine-api.js';
 import { wordsToCheck, proofingText, loadSpeller } from '../lib/spelling.js';
 import { proofingFingerprint, wordsInSavedRanges } from '../lib/proofing-cache.js';
 
-const ENABLED_KEY = 'documents:spellcheck';
+const ENABLED_KEY = 'writedoc:spellcheck';
 const LIMIT = 3000; // Past this many, a word processor stops marking and says so.
 export const spellingEnabled = () => { try { return localStorage.getItem(ENABLED_KEY) !== 'off'; } catch { return true; } };
 

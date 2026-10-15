@@ -44,7 +44,7 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
     { label: 'Capitalize the first letter of sentences', checked: capitalizeSentencesEnabled(), onSelect: () => setCapitalizeSentencesEnabled(!capitalizeSentencesEnabled()) },
     { label: 'Link web addresses as you type', checked: autolinkEnabled(), hint: 'URLs and emails become links on space or return', onSelect: () => setAutolinkEnabled(!autolinkEnabled()) },
     { label: 'Keyboard shortcuts', icon: 'keyboard', onSelect: openShortcuts },
-    { label: 'About Documents', icon: 'info', onSelect: openAbout },
+    { label: 'About writedoc', icon: 'info', onSelect: openAbout },
   ];
   if (!P.isApp()) {
     items.push({ separator: true });
@@ -123,10 +123,11 @@ export async function confirmSignOut() {
 
 export function openAbout() {
   openModal({
-    title: 'Documents',
+    title: 'writedoc',
     content: el('div', {},
-      el('p.modal-text', {}, 'A private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
+      el('p.modal-text', {}, 'writedoc is a private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
       el('p.modal-text', {}, 'This version supports text and paragraph formatting, selection, undo, and DOCX downloads. Advanced document features are not supported yet.'),
+      el('p.small.muted', {}, '© 2026 salim-slimani.'),
       el('p.small.muted', {}, 'Built with vanilla JavaScript, Vite, Lucide icons, fflate, Noto Sans, and ',
         el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'), '.'),
       el('p.small.muted', {}, el('a', { href: `${import.meta.env.BASE_URL}licenses/THIRD_PARTY.txt`, target: '_blank', rel: 'noopener' }, 'Third-party licenses')),

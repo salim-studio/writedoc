@@ -62,15 +62,15 @@ test('the quick access toolbar is one tab stop whose commands the arrow keys mov
   await openEditor(page);
   const quick = page.getByRole('toolbar', { name: 'Quick access' });
   const stops = () => quick.evaluate(el => [...el.querySelectorAll('button')].filter(b => b.tabIndex === 0).map(b => b.getAttribute('aria-label')));
-  expect(await stops()).toEqual(['All Documents']);
-  await quick.getByRole('button', { name: 'All Documents' }).focus();
+  expect(await stops()).toEqual(['Home']);
+  await quick.getByRole('button', { name: 'Home' }).focus();
   await page.keyboard.press('ArrowRight');
   await expect(quick.getByRole('button', { name: 'Save', exact: true })).toBeFocused();
   // Undo and Redo are disabled in a new document, so Right passes over them.
   await page.keyboard.press('ArrowRight');
   await expect(quick.getByRole('button', { name: 'Print', exact: true })).toBeFocused();
   await page.keyboard.press('ArrowRight');
-  await expect(quick.getByRole('button', { name: 'All Documents' })).toBeFocused();
+  await expect(quick.getByRole('button', { name: 'Home' })).toBeFocused();
   await page.keyboard.press('End');
   await expect(quick.getByRole('button', { name: 'Print', exact: true })).toBeFocused();
   expect(await stops()).toEqual(['Print']);

@@ -10,7 +10,7 @@ import { icon } from '../ui/icons.js';
 
 const check = () => icon('check', 16, 2.2);
 
-const STORAGE_KEY = 'documents.draw.pens.v1';
+const STORAGE_KEY = 'writedoc.draw.pens.v1';
 const MAX_PENS = 12;
 
 export const TOOL_LABELS = { pen: 'Pen', pencil: 'Pencil', highlighter: 'Highlighter' };

@@ -19,11 +19,11 @@ import { openShareDialog, roleSentence } from './share-dialog.js';
 /** This tab's name in local sharing (tabs of one browser): ?name= in the address, or a guest name kept for the tab. */
 export function localGuest() {
   let saved = null;
-  try { saved = JSON.parse(sessionStorage.getItem('documents:collab-guest') || 'null'); } catch { /* storage blocked */ }
+  try { saved = JSON.parse(sessionStorage.getItem('writedoc:collab-guest') || 'null'); } catch { /* storage blocked */ }
   const asked = new URLSearchParams(location.search).get('name');
   if (!saved || (asked && saved.name !== asked)) {
     saved = { id: `guest-${Math.random().toString(36).slice(2, 10)}`, name: (asked || `Guest ${Math.floor(10 + Math.random() * 90)}`).slice(0, 40) };
-    try { sessionStorage.setItem('documents:collab-guest', JSON.stringify(saved)); } catch { /* storage blocked */ }
+    try { sessionStorage.setItem('writedoc:collab-guest', JSON.stringify(saved)); } catch { /* storage blocked */ }
   }
   return saved;
 }
@@ -158,7 +158,7 @@ export function createCollaboration({ editor, pkg, doc, local, error, onChange =
     const url = await live.inviteLink(role);
     const name = documentName() || 'a document';
     const who = user().name;
-    const text = `${note ? `${note}\n\n` : ''}${who} invited you to ${role === 'editor' ? 'edit' : role === 'commenter' ? 'comment on' : 'view'} “${name}” in Documents.\n\nOpen it: ${url}\n\nYou will be asked to sign in to Puter. The invitation expires in seven days.`;
+    const text = `${note ? `${note}\n\n` : ''}${who} invited you to ${role === 'editor' ? 'edit' : role === 'commenter' ? 'comment on' : 'view'} “${name}” in writedoc.\n\nOpen it: ${url}\n\nYou will be asked to sign in to Puter. The invitation expires in seven days.`;
     return sendMail({ to: address, subject: `${who} shared “${name}” with you`, text, username: who });
   }
   async function sendCopy(address, format, note) {

@@ -5,7 +5,7 @@ import * as P from '../src/lib/puter.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 let view;
-const files = (count) => Array.from({ length: count }, (_, i) => ({ name: `${i % 2 ? 'Report' : 'Notes'} ${i}.docx`, path: `Documents/${i % 2 ? 'Report' : 'Notes'} ${i}.docx`, size: 10, modified: i }));
+const files = (count) => Array.from({ length: count }, (_, i) => ({ name: `${i % 2 ? 'Report' : 'Notes'} ${i}.docx`, path: `writedoc/${i % 2 ? 'Report' : 'Notes'} ${i}.docx`, size: 10, modified: i }));
 const names = () => [...view.el.querySelectorAll('.file-name')].map((n) => n.textContent);
 const type = (value) => { const search = view.el.querySelector('.home-search'); search.value = value; search.dispatchEvent(new Event('input')); };
 

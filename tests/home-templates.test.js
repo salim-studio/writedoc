@@ -7,7 +7,7 @@ import { closeMenu } from '../src/ui/menu.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 let view;
-const path = (name) => `Documents/Templates/${name}.docx`;
+const path = (name) => `writedoc/Templates/${name}.docx`;
 const deleteButton = (name) => document.querySelector(`[aria-label="Delete template ${name}"]`);
 const pending = () => {
   let resolve, reject;

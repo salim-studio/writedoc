@@ -9,7 +9,7 @@
 import { el, clear } from './dom.js';
 import { icon } from './icons.js';
 
-const LS_KEY = 'documents:outline';
+const LS_KEY = 'writedoc:outline';
 
 /** Outline entries from the engine's block list: headings and title styles. */
 export function headingsFromBlocks(blocks = []) {

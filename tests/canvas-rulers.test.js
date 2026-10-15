@@ -15,7 +15,7 @@ afterEach(() => { for (const r of resources.splice(0)) r.destroy(); document.bod
 function setup(model, pageIndex) {
   const geometry = () => pageIndex === undefined ? pageGeometry(model.pageSettings) : readingPageGeometry(pageGeometry(model.pageSettings), pageIndex);
   vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
-  localStorage.setItem('documents:unit', 'in');
+  localStorage.setItem('writedoc:unit', 'in');
   const surface = document.createElement('div'), host = document.createElement('div'), canvas = document.createElement('canvas');
   surface.append(host); host.append(canvas); document.body.append(surface);
   canvas.getBoundingClientRect = () => ({ left: 40, top: 54, bottom: 1110, width: 816, height: 1056 });

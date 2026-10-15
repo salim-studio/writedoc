@@ -3,7 +3,7 @@ import { onTab, menuBarMenu } from './helpers/editor-tools.js';
 
 const input = page => page.getByRole('textbox', { name: 'Document text' });
 const model = page => page.evaluate(() => {
-  const m = window.__docs.current.view.engine.model;
+  const m = window.__writedoc.current.view.engine.model;
   return { tables: m.tables.map(t => ({ grid: t.grid, width: t.width, layout: t.layout, rows: t.rows.map(r => ({ height: r.minHeight, rule: r.heightRule, cells: r.cells.map(c => ({ text: m.paragraphs.filter(p => p.cellId === c.id).map(p => p.runs.map(x => x.text).join('')).join('/'), span: c.span ?? 1, vMerge: c.vMerge || null, shading: c.shading, vertical: c.vertical, direction: c.textDirection || 'lrTb', align: m.paragraphs.find(p => p.cellId === c.id)?.format?.alignment || 'left' })) })) })), block: m.activeCellBlock && { top: m.activeCellBlock.top, bottom: m.activeCellBlock.bottom, left: m.activeCellBlock.left, right: m.activeCellBlock.right } };
 });
 const texts = async page => (await model(page)).tables[0].rows.map(r => r.cells.map(c => c.text));
@@ -16,7 +16,7 @@ async function newTable(page, columns, rows, values) {
   for (const [i, value] of values.entries()) { if (i) await input(page).press('Tab'); if (value) await page.keyboard.type(value); }
 }
 const goToCell = (page, r, c) => page.evaluate(([r, c]) => {
-  const e = window.__docs.current.view.engine, table = e.model.tables[0];
+  const e = window.__writedoc.current.view.engine, table = e.model.tables[0];
   let column = 0; const cell = table.rows[r].cells.find(x => { const start = column; column += x.span ?? 1; return start <= c && c < column; });
   e.model.selectCell(cell.id); e.syncInput(); e.paint(); e.onSelection(); e.focus();
 }, [r, c]);
@@ -170,11 +170,11 @@ test('Table Properties sets row, column, cell and alt text options in one step',
   await dialog.getByLabel('Table description').fill('Four letters in a grid');
   await dialog.getByRole('button', { name: 'Apply' }).click();
   await expect(dialog).toBeHidden();
-  const state = await page.evaluate(() => { const t = window.__docs.current.view.engine.model.tables[0]; return { caption: t.caption, description: t.description, height: t.rows[0].minHeight, rule: t.rows[0].heightRule, header: !!t.rows[0].header, vertical: t.rows[0].cells[0].vertical }; });
+  const state = await page.evaluate(() => { const t = window.__writedoc.current.view.engine.model.tables[0]; return { caption: t.caption, description: t.description, height: t.rows[0].minHeight, rule: t.rows[0].heightRule, header: !!t.rows[0].header, vertical: t.rows[0].cells[0].vertical }; });
   expect(state).toEqual({ caption: 'Letters', description: 'Four letters in a grid', height: 600, rule: 'exact', header: true, vertical: 'center' });
   // One undo step takes all of it back.
   await page.getByRole('button', { name: 'Undo', exact: true }).click();
-  expect(await page.evaluate(() => window.__docs.current.view.engine.model.tables[0].caption || '')).toBe('');
+  expect(await page.evaluate(() => window.__writedoc.current.view.engine.model.tables[0].caption || '')).toBe('');
 });
 
 test('the Table menu and context menu offer the table commands', async ({ page }) => {
@@ -182,7 +182,7 @@ test('the Table menu and context menu offer the table commands', async ({ page }
   await goToCell(page, 0, 0);
   const labels = await page.evaluate(() => {
     const flatten = items => items.flatMap(i => !i || i.separator ? [] : [i.label, ...(i.items ? flatten(i.items) : [])]);
-    const c = window.__docs.current.view.commands;
+    const c = window.__writedoc.current.view.commands;
     return { menu: flatten(c.extendMenu('table', {})), context: flatten(c.contextMenuItems('table', {})) };
   });
   for (const name of ['Draw Table', 'Insert', 'Columns to the Left', 'Rows Below', 'Cells…', 'Delete', 'Select', 'Merge Cells', 'Split Cells…', 'Split Table', 'AutoFit and Distribute', 'Distribute Rows Evenly', 'Repeat Header Rows', 'Convert Text to Table…', 'Convert Table to Text…', 'Sort…', 'Formula…', 'View Gridlines', 'Table Properties…']) expect(labels.menu, name).toContain(name);

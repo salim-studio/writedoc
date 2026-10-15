@@ -1,6 +1,6 @@
 # Live co-editing, sharing, version history and the Assistant
 
-Documents lets several people edit one document at the same time. The DOCX file stays the saved
+writedoc lets several people edit one document at the same time. The DOCX file stays the saved
 artifact: a shared document is a room that holds the document as it was shared and every change
 since, and one browser tab (the owner's) writes the file. The design follows the Whiteboard and
 Photo Studio apps in this repository (`src/whiteboard/docs/collaboration.md`,

@@ -13,7 +13,7 @@ export function parseXml(bytes) {
     const encoding = bytes[0] === 255 && bytes[1] === 254 ? 'utf-16le' : bytes[0] === 254 && bytes[1] === 255 ? 'utf-16be' : 'utf-8';
     text = new TextDecoder(encoding, { fatal: true }).decode(bytes);
   } else text = bytes;
-  if (/<!DOCTYPE|<!ENTITY/i.test(text)) throw new Error('Documents with XML entity declarations are not supported.');
+  if (/<!DOCTYPE|<!ENTITY/i.test(text)) throw new Error('Files with XML entity declarations are not supported.');
   const doc = new DOMParser().parseFromString(text, 'application/xml');
   if (doc.getElementsByTagName('parsererror').length) throw new Error('The DOCX contains invalid XML.');
   return doc;

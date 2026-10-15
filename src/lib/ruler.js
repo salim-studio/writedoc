@@ -3,7 +3,7 @@
  *
  * Dragging a margin on the engine's ruler commits through
  * `pageLayout.setMargins`, which writes through a document API the engine
- * keeps beside the layout. Documents here open on a worker, where that
+ * keeps beside the layout. Files here open on a worker, where that
  * reference is never set, so every drag comes back
  * `host-not-ready`/`doc-api-missing`, the handle springs back, and the text
  * never moves. The same edit goes through `doc.sections`, which is what the

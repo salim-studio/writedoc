@@ -6,7 +6,7 @@
 
 import { localStore as store } from './storage.js';
 
-const KEY = 'documents:zoom';
+const KEY = 'writedoc:zoom';
 
 /** Remember { fit: 'width' | 'page' } or { value: 125 }. */
 export function rememberZoom({ fit = null, value = null } = {}, { storage = store() } = {}) {

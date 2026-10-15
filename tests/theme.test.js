@@ -32,18 +32,18 @@ describe('theme', () => {
   it('stamps explicit modes and remembers them for the pre-paint script', () => {
     applyTheme('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(localStorage.getItem('documents:theme')).toBe('dark');
+    expect(localStorage.getItem('writedoc:theme')).toBe('dark');
     expect(currentTheme()).toBe('dark');
     expect(isDark()).toBe(true);
-    expect(document.querySelector('meta[name="theme-color"]').getAttribute('content')).toBe('#375f91');
+    expect(document.querySelector('meta[name="theme-color"]').getAttribute('content')).toBe('#4f46e5');
 
     applyTheme('light');
     expect(currentTheme()).toBe('light');
-    expect(document.querySelector('meta[name="theme-color"]').getAttribute('content')).toBe('#375f91');
+    expect(document.querySelector('meta[name="theme-color"]').getAttribute('content')).toBe('#4f46e5');
 
     applyTheme('system');
     expect(document.documentElement.dataset.theme).toBeUndefined();
-    expect(localStorage.getItem('documents:theme')).toBeNull();
+    expect(localStorage.getItem('writedoc:theme')).toBeNull();
   });
 
   it('follows the OS in system mode', () => {
@@ -58,10 +58,10 @@ describe('theme', () => {
     expect(darkPage()).toBe(false);
     setDarkPage(true);
     expect(document.documentElement.dataset.page).toBe('dark');
-    expect(localStorage.getItem('documents:dark-page')).toBe('1');
+    expect(localStorage.getItem('writedoc:dark-page')).toBe('1');
     setDarkPage(false);
     expect(darkPage()).toBe(false);
-    expect(localStorage.getItem('documents:dark-page')).toBeNull();
+    expect(localStorage.getItem('writedoc:dark-page')).toBeNull();
   });
 
   it('notifies listeners with the effective darkness', () => {

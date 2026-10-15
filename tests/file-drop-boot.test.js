@@ -19,7 +19,7 @@ it('keeps a file dropped on the loading screen and opens it once the app is up',
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
   await vi.waitFor(() => expect(signIn).toBeTypeOf('function'));
-  expect(window.__docs.current).toBeNull();
+  expect(window.__writedoc.current).toBeNull();
 
   const drop = new MouseEvent('drop', { bubbles: true, cancelable: true });
   Object.defineProperty(drop, 'dataTransfer', { value: { types: ['Files'], files: [new File(['word bytes'], 'Report.docx')] } });
@@ -28,8 +28,8 @@ it('keeps a file dropped on the loading screen and opens it once the app is up',
   expect(drop.defaultPrevented).toBe(true);
 
   signIn(true);
-  await vi.waitFor(() => expect(window.__docs.current?.view.doc.name).toBe('Report'));
-  window.__docs.current.view.destroy();
+  await vi.waitFor(() => expect(window.__writedoc.current?.view.doc.name).toBe('Report'));
+  window.__writedoc.current.view.destroy();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });

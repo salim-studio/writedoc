@@ -358,8 +358,8 @@ export function createMailings({ editor, pkg, error, onChange = () => {}, markDi
   };
   const ruleItems = () => RULES.map(([id, label]) => ({ label, disabled: !ready(), onSelect: () => modules().then(() => openRule(id, mm)).catch(fail) }));
   const finishItems = () => [
-    { label: 'Edit Individual Documents…', disabled: !ready() || !records().length, onSelect: () => finish('document') },
-    { label: 'Print Documents…', disabled: !ready() || !records().length, onSelect: () => finish('print') },
+    { label: 'Edit individual files…', disabled: !ready() || !records().length, onSelect: () => finish('document') },
+    { label: 'Print files…', disabled: !ready() || !records().length, onSelect: () => finish('print') },
     { label: 'Send Email Messages…', disabled: !ready() || !records().length, onSelect: () => finish('email') },
   ];
 

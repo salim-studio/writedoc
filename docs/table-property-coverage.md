@@ -1,6 +1,6 @@
 # Table, row and cell property coverage
 
-Reviewed 2026-10-09 against Documents baseline `003d2fc2`. This is a bounded
+Reviewed 2026-10-09 against the upstream baseline `003d2fc2`. This is a bounded
 contribution to roadmap A01, based on the supplied ECMA-376 Part 1 §17.4 schemas
 and the current table import, model, serialization and layout paths. Strict has
 18 table, 15 row, 17 cell and 10 table-exception property kinds; Transitional adds

@@ -100,7 +100,7 @@ export const EMOJI_CATEGORIES = [
   ]],
 ];
 
-const RECENT_KEY = 'documents:recent-emoji';
+const RECENT_KEY = 'writedoc:recent-emoji';
 const RECENT_MAX = 24;
 
 /** The name of an emoji entry, for a label: the words before the first comma, or all of them. */

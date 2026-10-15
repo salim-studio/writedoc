@@ -31,7 +31,7 @@ import { chartCommands } from './insert-chart.js';
 
 const OBJECT = '\uFFFC';
 const TWIP_EMU = 635;
-const AUTOTEXT_KEY = 'documents.insert.autoText';
+const AUTOTEXT_KEY = 'writedoc.insert.autoText';
 
 /** PNG bytes and pixel size for an image blob (raster or SVG), scaled so its longer side is at most `max` pixels. */
 export async function rasterize(blob, max = 1600) {

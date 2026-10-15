@@ -8,8 +8,8 @@ import { accountKey } from './account-key.js';
 import { localStore } from './storage.js';
 import { kvGet, kvSet } from './puter.js';
 
-const KEY = 'documents.bibliography.master';
-const STYLE_KEY = 'documents.bibliography.style';
+const KEY = 'writedoc.bibliography.master';
+const STYLE_KEY = 'writedoc.bibliography.style';
 const portable = source => ({ tag: source.tag, type: source.type, names: source.names || {}, fields: source.fields || {}, ...(source.guid ? { guid: source.guid } : {}) });
 
 export function loadMasterSources() {

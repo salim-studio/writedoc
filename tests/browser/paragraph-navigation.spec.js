@@ -56,7 +56,7 @@ test('PageDown and PageUp move the caret a screen at a time and keep it in view'
   await input(page).press('PageUp'); const up = await line();
   expect(up).toBeLessThan(further); expect(Math.abs(up - down)).toBeLessThanOrEqual(3);
   // The caret stays on screen, so typing lands where the user is looking.
-  const caret = await page.evaluate(() => { const e = window.__docs.current.view.engine; return e.canvases[e.selectionLayout.lines.find(l => l.start === e.model.selection.focus)?.page ?? 0].getBoundingClientRect().top; });
+  const caret = await page.evaluate(() => { const e = window.__writedoc.current.view.engine; return e.canvases[e.selectionLayout.lines.find(l => l.start === e.model.selection.focus)?.page ?? 0].getBoundingClientRect().top; });
   expect(caret).toBeLessThan(720);
   for (let i = 0; i < 15; i++) await input(page).press('PageDown');
   expect(await input(page).evaluate(el => el.selectionStart)).toBe(all.length);

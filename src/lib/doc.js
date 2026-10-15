@@ -37,7 +37,7 @@ export const publishing = { enabled: true };
  * Whether leaving the page now could lose work: edits not yet written, or a
  * write still in flight. Used for the browser's "leave site?" prompt.
  */
-const AUTOSAVE_KEY = 'documents:autosave';
+const AUTOSAVE_KEY = 'writedoc:autosave';
 /** Whether edits save themselves (they do, until AutoSave is turned off on this device). */
 export function autosaveEnabled() {
   try { return globalThis.localStorage?.getItem(AUTOSAVE_KEY) !== '0'; } catch { return true; }
@@ -84,7 +84,7 @@ export class Doc extends EventTarget {
     if (dirty || template || pendingImport) { this.version = 1; this.status = 'unsaved'; }
   }
 
-  /** "Report" for Documents/Report.docx; the file name for others. */
+  /** "Report" for writedoc/Report.docx; the file name for others. */
   static nameFor(path) {
     return P.stripExtension(P.displayName(path));
   }

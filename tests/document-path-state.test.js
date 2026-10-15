@@ -7,8 +7,8 @@ import { toggleStar, isStarred, forgetStar } from '../src/lib/starred.js';
 import { rememberGoal, recallGoal, moveGoal } from '../src/lib/goal.js';
 import { rememberPosition, recallPosition, forgetPosition } from '../src/lib/position.js';
 
-const root = '/demo/AppData/documents-app/Documents';
-const relative = 'Documents/Report.docx', absolute = `${root}/Report.docx`;
+const root = '/demo/AppData/writedoc-app/writedoc';
+const relative = 'writedoc/Report.docx', absolute = `${root}/Report.docx`;
 let view;
 beforeEach(() => {
   vi.useFakeTimers(); localStorage.clear();
@@ -43,7 +43,7 @@ it.each([relative, absolute].flatMap((stored) => [relative, absolute].map((liste
   expectState(relative); expectState(absolute);
   // Renaming through one spelling and deleting through the other affect one record.
   moveGoal(absolute, `${root}/Renamed.docx`);
-  expect(recallGoal('Documents/Renamed.docx')).toBe(1200);
+  expect(recallGoal('writedoc/Renamed.docx')).toBe(1200);
   expect(recallGoal(relative)).toBeNull();
   forgetStar(relative); forgetPosition(absolute);
   expect(isStarred(absolute)).toBe(false);
@@ -65,7 +65,7 @@ it('restores local state when an absolute deep link opens before the home screen
 });
 
 it('keeps documents in other folders distinct from the verified app folder', async () => {
-  const outside = '/demo/Documents/Report.docx';
+  const outside = '/demo/writedoc/Report.docx';
   remember(relative); rememberGoal(outside, 700);
   await Doc.fromPath(absolute);
   expect(recallGoal(absolute)).toBe(1200);

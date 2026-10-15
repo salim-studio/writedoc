@@ -38,7 +38,7 @@ test('the app opens unsupported files without attaching an exporter', async ({ p
   await page.goto('/mock.html');
   await expect(page.getByRole('textbox', { name: 'Document text' })).toBeVisible();
   await openReadOnlyPreview(page, 'public/fixtures/best-effort.docx');
-  expect(await page.evaluate(() => !!window.__docs.current.view.doc.exporter)).toBe(false);
+  expect(await page.evaluate(() => !!window.__writedoc.current.view.doc.exporter)).toBe(false);
 });
 
 test('the read-only notice is a message bar that can be dismissed', async ({ page }) => {

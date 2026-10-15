@@ -16,7 +16,7 @@ import '../styles/design-tab.css';
 const design = () => import('../engine/package-design.js');
 
 /* Saved themes, palettes, font pairs, style sets and new-document defaults live in this browser. */
-const KEYS = { themes: 'documents.design.themes', colors: 'documents.design.colors', fonts: 'documents.design.fonts', styleSets: 'documents.design.styleSets', defaults: 'documents.design.defaults' };
+const KEYS = { themes: 'writedoc.design.themes', colors: 'writedoc.design.colors', fonts: 'writedoc.design.fonts', styleSets: 'writedoc.design.styleSets', defaults: 'writedoc.design.defaults' };
 export function loadSaved(key, fallback = []) {
   try { const value = JSON.parse(localStorage.getItem(KEYS[key]) || 'null'); return value ?? fallback; } catch { return fallback; }
 }

@@ -63,7 +63,7 @@ describe('saving without a Puter session', () => {
     expect(session.username).toBe('nariman');
     await expect(doc.save()).resolves.toBe(true);
     expect(write).toHaveBeenCalledTimes(1);
-    expect(doc.path).toBe('Documents/Untitled document.docx');
+    expect(doc.path).toBe('writedoc/Untitled document.docx');
     expect(doc.dirty).toBe(false);
   });
 

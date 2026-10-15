@@ -34,7 +34,7 @@ export function formDialog({ title, content, submit = 'Insert', onSubmit, wide =
 }
 
 /* ---- Date and Time ---- */
-const PICTURE_KEY = 'documents.insert.datePicture';
+const PICTURE_KEY = 'writedoc.insert.datePicture';
 const stored = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
 const store = (key, value) => { try { localStorage.setItem(key, value); } catch { /* A private window keeps no defaults. */ } };
 /** Date and Time: the formats as today's date, a choice to keep it updated as a field, and a default. */
@@ -153,7 +153,7 @@ export const SYMBOL_SUBSETS = [['Basic Latin', 0x21, 0x7E], ['Latin-1 Supplement
 export const SPECIAL_CHARACTERS = [['Em Dash', '\u2014'], ['En Dash', '\u2013'], ['Nonbreaking Hyphen', '\u2011'], ['Optional Hyphen', '\u00AD'], ['Em Space', '\u2003'], ['En Space', '\u2002'], ['Quarter Em Space', '\u2005'], ['Nonbreaking Space', '\u00A0'], ['Copyright', '\u00A9'], ['Registered', '\u00AE'], ['Trademark', '\u2122'], ['Section', '\u00A7'], ['Paragraph', '\u00B6'], ['Ellipsis', '\u2026'], ['Single Opening Quote', '\u2018'], ['Single Closing Quote', '\u2019'], ['Double Opening Quote', '\u201C'], ['Double Closing Quote', '\u201D'], ['Zero-Width Space', '\u200B'], ['Word Joiner', '\u2060'], ['Degree', '\u00B0'], ['Plus-Minus', '\u00B1'], ['Bullet', '\u2022'], ['Dagger', '\u2020'], ['Double Dagger', '\u2021']];
 export const SYMBOL_FONTS = ['(normal text)', 'Noto Sans', 'Noto Serif', 'Arial', 'Times New Roman', 'Courier New', 'Georgia', 'Segoe UI Symbol'];
 const assigned = ch => /\P{C}/u.test(ch) && !/\p{Cn}/u.test(ch);
-const RECENT_KEY = 'documents.insert.recentSymbols';
+const RECENT_KEY = 'writedoc.insert.recentSymbols';
 export const DEFAULT_RECENT = ['€', '£', '¥', '©', '®', '™', '±', '≠', '≤', '≥', '÷', '×', '∞', 'µ', 'α', 'β', 'π', 'Ω', '∑', '☺'];
 export function recentSymbols() { try { const list = JSON.parse(localStorage.getItem(RECENT_KEY) || 'null'); return Array.isArray(list) && list.length ? list.slice(0, 20) : DEFAULT_RECENT; } catch { return DEFAULT_RECENT; } }
 export function rememberSymbol(ch, font = null) {
@@ -256,7 +256,7 @@ export { linearToOmml, ommlToLinear };
 export function openIconsDialog({ onInsert, onClose }) {
   const search = el('input.input', { type: 'search', 'aria-label': 'Search icons', placeholder: 'Search icons' });
   const category = select('Category', [['', 'All categories'], ...ICON_CATEGORIES.map(c => [c.id, c.label])]);
-  const color = el('input.insert-icon-color', { type: 'color', value: stored('documents.insert.iconColor', '#1F3864'), 'aria-label': 'Icon color' });
+  const color = el('input.insert-icon-color', { type: 'color', value: stored('writedoc.insert.iconColor', '#1F3864'), 'aria-label': 'Icon color' });
   const grid = el('div.insert-icon-grid', { role: 'group', 'aria-label': 'Icons' });
   const count = el('span.field-hint', { 'aria-live': 'polite' });
   const chosen = new Set();
@@ -272,7 +272,7 @@ export function openIconsDialog({ onInsert, onClose }) {
   const sync = () => { count.textContent = `${searchIcons(search.value, category.value || null).length} icons · ${chosen.size} selected`; dialog && (dialog.primary.textContent = chosen.size > 1 ? `Insert (${chosen.size})` : 'Insert'); };
   search.addEventListener('input', draw); category.addEventListener('change', draw); color.addEventListener('input', draw);
   const dialog = formDialog({ title: 'Icons', wide: true, className: 'insert-icons', onClose, content: [el('div.insert-icon-filters', {}, search, category, el('label.insert-icon-color-label', {}, color, 'Color')), grid, count],
-    onSubmit: () => { if (!chosen.size) throw new Error('Choose one or more icons.'); store('documents.insert.iconColor', color.value); return onInsert([...chosen].map(id => ICONS.find(i => i.id === id)), color.value.toUpperCase()); } });
+    onSubmit: () => { if (!chosen.size) throw new Error('Choose one or more icons.'); store('writedoc.insert.iconColor', color.value); return onInsert([...chosen].map(id => ICONS.find(i => i.id === id)), color.value.toUpperCase()); } });
   draw(); search.focus();
   return dialog.modal;
 }

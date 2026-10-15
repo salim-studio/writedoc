@@ -8,7 +8,7 @@ import { localStore } from '../lib/storage.js';
  * index (a ribbon button or a menu item), so any command can get a key.
  */
 
-export const KEYMAP_STORE = 'documents:keybindings';
+export const KEYMAP_STORE = 'writedoc:keybindings';
 const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'CapsLock', 'Fn', 'OS', 'Hyper', 'Super']);
 const NAMED = { Comma: ',', Period: '.', Slash: '/', Backslash: '\\', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Minus: '-', Equal: '=', Space: 'Space' };
 

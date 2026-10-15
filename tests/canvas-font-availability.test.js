@@ -1,6 +1,6 @@
 import { afterEach, it, expect, vi } from 'vitest';
 afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
-async function environment({ selectable = [], loadable = [], assets = [], failedAssets = [], baseURI = 'https://documents.test/playground.html' } = {}) {
+async function environment({ selectable = [], loadable = [], assets = [], failedAssets = [], baseURI = 'https://writedoc.test/playground.html' } = {}) {
   vi.resetModules();
   const fonts = new Set(), loaded = [], added = [];
   fonts.add = face => { added.push(face.family); return Set.prototype.add.call(fonts, face); };
@@ -40,7 +40,7 @@ it('leaves missing fonts unavailable and does not register a substitute under th
 it('loads the reviewed same-origin face once when its native family is unavailable', async () => {
   const env = await environment({ assets: ['Bebas Neue'] });
   await Promise.all([env.checkFontAvailability('Bebas Neue'), env.checkFontAvailability('bebas neue')]);
-  expect(env.sources).toEqual(['local("Bebas Neue")', 'url("https://documents.test/fonts/BebasNeue-Regular.ttf")']);
+  expect(env.sources).toEqual(['local("Bebas Neue")', 'url("https://writedoc.test/fonts/BebasNeue-Regular.ttf")']);
   expect(env.fontAvailable('BEBAS NEUE')).toBe(true);
   expect(env.displayedFont({ fontFamily: 'Bebas Neue' })).toBe('Bebas Neue');
 });
@@ -57,9 +57,9 @@ it('falls back normally when the reviewed asset fails to load', async () => {
 });
 it('resolves reviewed font assets under a relative production base', async () => {
   vi.stubEnv('BASE_URL', './');
-  const env = await environment({ assets: ['Bebas Neue'], baseURI: 'https://documents.test/apps/documents/playground.html' });
+  const env = await environment({ assets: ['Bebas Neue'], baseURI: 'https://writedoc.test/apps/documents/playground.html' });
   await env.checkFontAvailability('Bebas Neue');
-  expect(env.sources.at(-1)).toBe('url("https://documents.test/apps/documents/fonts/BebasNeue-Regular.ttf")');
+  expect(env.sources.at(-1)).toBe('url("https://writedoc.test/apps/documents/fonts/BebasNeue-Regular.ttf")');
 });
 
 it('registers reviewed variable weight and italic faces as one family', async () => {
@@ -82,7 +82,7 @@ it('loads the reviewed Karla upright faces together without replacing installed 
   await Promise.all([env.checkFontAvailability('Karla'), env.checkFontAvailability('KARLA')]);
   expect([...env.fonts].map(face => face.descriptors)).toEqual([{}, { weight: '700' }]);
   expect(env.sources.filter(source => source.startsWith('url('))).toEqual([
-    'url("https://documents.test/fonts/Karla-Regular.ttf")', 'url("https://documents.test/fonts/Karla-Bold.ttf")',
+    'url("https://writedoc.test/fonts/Karla-Regular.ttf")', 'url("https://writedoc.test/fonts/Karla-Bold.ttf")',
   ]);
   const installed = await environment({ selectable: ['Karla'], assets: ['Karla'] });
   await installed.checkFontAvailability('Karla');
@@ -116,7 +116,7 @@ it.each([['Open Sans Light','OpenSans-Light',undefined],['Open Sans SemiBold','O
  expect(env.fontAvailable(name)).toBe(true);
  const descriptors=weight?{weight}:{};
  expect([...env.fonts].map(f=>f.descriptors)).toEqual([descriptors,{...descriptors,style:'italic'}]);
- expect(env.sources.filter(s=>s.startsWith('url('))).toEqual([`url("https://documents.test/fonts/${file}.ttf")`,`url("https://documents.test/fonts/${file}Italic.ttf")`]);
+ expect(env.sources.filter(s=>s.startsWith('url('))).toEqual([`url("https://writedoc.test/fonts/${file}.ttf")`,`url("https://writedoc.test/fonts/${file}Italic.ttf")`]);
 });
 it.each([['Open Sans Light','OpenSans-LightItalic.ttf'],['Open Sans SemiBold','OpenSans-SemiBoldItalic.ttf']])('does not register a partial %s alias when italic fails',async(name,file)=>{
  const env=await environment({selectable:[name],assets:[name],failedAssets:[file]});
@@ -127,7 +127,7 @@ it('loads the reviewed Selawik Semibold face instead of a selectable sibling',as
  await Promise.all([env.checkFontAvailability('Selawik Semibold'),env.checkFontAvailability('SELAWIK SEMIBOLD')]);
  expect(env.fontAvailable('Selawik Semibold')).toBe(true);
  expect([...env.fonts].map(f=>f.descriptors)).toEqual([{weight:'600'}]);
- expect(env.sources.filter(s=>s.startsWith('url('))).toEqual(['url("https://documents.test/fonts/Selawik-Semibold.ttf")']);
+ expect(env.sources.filter(s=>s.startsWith('url('))).toEqual(['url("https://writedoc.test/fonts/Selawik-Semibold.ttf")']);
 });
 it('reports Selawik Semibold unavailable when its reviewed asset fails',async()=>{
  const env=await environment({selectable:['Selawik Semibold'],assets:['Selawik Semibold'],failedAssets:['Selawik-Semibold.ttf']});

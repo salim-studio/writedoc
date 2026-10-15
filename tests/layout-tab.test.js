@@ -87,9 +87,9 @@ describe('page defaults', () => {
     expect(defaultPageSettings()).toBeUndefined();
     saveDefaultPageSettings({ ...DEFAULT_PAGE_SETTINGS, width: 11906, height: 16838, left: 1134, compatibilityMode: 15 });
     expect(defaultPageSettings()).toMatchObject({ width: 11906, height: 16838, left: 1134, compatibilityMode: 12 });
-    localStorage.setItem('documents:page-defaults', '{"left": -5}');
+    localStorage.setItem('writedoc:page-defaults', '{"left": -5}');
     expect(defaultPageSettings()).toBeUndefined();
-    localStorage.setItem('documents:last-custom-margins', 'not json');
+    localStorage.setItem('writedoc:last-custom-margins', 'not json');
     expect(lastCustomMargins()).toBeNull();
   });
 });

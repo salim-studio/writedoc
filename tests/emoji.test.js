@@ -77,7 +77,7 @@ describe('recent emoji', () => {
   it('caps the list and survives bad storage', () => {
     for (let i = 0; i < 40; i++) rememberEmoji(String.fromCodePoint(0x1f600 + i));
     expect(recentEmoji().length).toBe(24);
-    globalThis.localStorage.setItem('documents:recent-emoji', 'not json');
+    globalThis.localStorage.setItem('writedoc:recent-emoji', 'not json');
     expect(recentEmoji()).toEqual([]);
   });
 

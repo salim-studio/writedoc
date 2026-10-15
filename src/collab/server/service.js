@@ -41,7 +41,7 @@ export class RoomService {
     this.puter = puter; this.kv = puter.kv; this.fs = puter.fs; this.now = now; this.rooms = rooms;
   }
   owner() { return (this.accountOwner ||= this.puter.auth.getUser()); }
-  path(room, name) { return `documents-collab/${room}/${name}`; }
+  path(room, name) { return `writedoc-collab/${room}/${name}`; }
   async readText(path) { return (await this.fs.read(path)).text(); }
   async writeText(path, text) { await this.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true }); }
   async list(prefix) {

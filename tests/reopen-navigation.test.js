@@ -13,31 +13,31 @@ it('does not let a delayed version reload overwrite a newer editor, even if relo
     fs: { read: async () => new Blob(['document']) },
   });
   document.body.innerHTML = '<div id="app"></div>';
-  history.replaceState(null, '', '#/edit/Documents%2FA.docx');
+  history.replaceState(null, '', '#/edit/writedoc%2FA.docx');
   await import('../src/main.js');
   const { editorView } = await import('../src/views/editor.js');
-  await vi.waitFor(() => expect(window.__docs.current?.view.doc.path).toBe('Documents/A.docx'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.view.doc.path).toBe('writedoc/A.docx'));
   const reopen = editorView.mock.lastCall[0].reopen;
   const read = vi.spyOn(Doc, 'fromPath');
   try {
     for (const fail of [false, true]) {
       let finish;
       read.mockImplementationOnce(() => new Promise((resolve, reject) => { finish = fail ? reject : resolve; }));
-      const pending = reopen('Documents/A.docx');
+      const pending = reopen('writedoc/A.docx');
       await vi.waitFor(() => expect(finish).toBeTypeOf('function'));
-      const path = fail ? 'Documents/C.docx' : 'Documents/B.docx';
+      const path = fail ? 'writedoc/C.docx' : 'writedoc/B.docx';
       location.hash = `#/edit/${encodeURIComponent(path)}`;
-      await vi.waitFor(() => expect(window.__docs.current?.view.doc.path).toBe(path));
-      const newest = window.__docs.current.view;
+      await vi.waitFor(() => expect(window.__writedoc.current?.view.doc.path).toBe(path));
+      const newest = window.__writedoc.current.view;
       newest.doc.changed();
-      finish(fail ? new Error('Reload failed') : new Doc({ path: 'Documents/A.docx' }));
+      finish(fail ? new Error('Reload failed') : new Doc({ path: 'writedoc/A.docx' }));
       await pending;
-      expect(window.__docs.current.view).toBe(newest);
+      expect(window.__writedoc.current.view).toBe(newest);
       expect(newest.doc.dirty).toBe(true);
       expect(newest.destroy).not.toHaveBeenCalled();
       expect(location.hash).toBe(`#/edit/${encodeURIComponent(path)}`);
     }
   } finally {
-    window.__docs.current?.view.destroy(); read.mockRestore(); vi.unstubAllGlobals();
+    window.__writedoc.current?.view.destroy(); read.mockRestore(); vi.unstubAllGlobals();
   }
 });

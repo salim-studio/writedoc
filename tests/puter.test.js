@@ -21,7 +21,7 @@ describe('names', () => {
     expect(() => encodeURIComponent(P.sanitizeName('😀'.repeat(120)))).not.toThrow();
     expect(P.ensureDocx('Report')).toBe('Report.docx');
     expect(P.ensureDocx('Report.DOCX')).toBe('Report.DOCX');
-    expect(P.displayName('Documents/a/b.docx')).toBe('b.docx');
+    expect(P.displayName('writedoc/a/b.docx')).toBe('b.docx');
     expect(P.stripExtension('Report.final.docx')).toBe('Report.final');
     expect(P.stripExtension('no extension')).toBe('no extension');
   });
@@ -40,16 +40,16 @@ describe('files', () => {
   beforeEach(() => {
     writes = [];
     entries = [
-      { name: 'b.docx', path: 'Documents/b.docx', size: 10, modified: 100, is_dir: false },
-      { name: 'notes.txt', path: 'Documents/notes.txt', size: 1, modified: 500, is_dir: false },
-      { name: 'sub', path: 'Documents/sub', is_dir: true },
-      { name: 'a.docx', path: 'Documents/a.docx', size: 20, modified: 300, is_dir: false },
-      { name: 'old.dotx', path: 'Documents/old.dotx', size: 5, modified: 200, is_dir: false },
+      { name: 'b.docx', path: 'writedoc/b.docx', size: 10, modified: 100, is_dir: false },
+      { name: 'notes.txt', path: 'writedoc/notes.txt', size: 1, modified: 500, is_dir: false },
+      { name: 'sub', path: 'writedoc/sub', is_dir: true },
+      { name: 'a.docx', path: 'writedoc/a.docx', size: 20, modified: 300, is_dir: false },
+      { name: 'old.dotx', path: 'writedoc/old.dotx', size: 5, modified: 200, is_dir: false },
     ];
     globalThis.puter = {
       env: 'app',
       fs: {
-        async readdir(p) { if (p !== 'Documents') throw Object.assign(new Error('x does not exist'), { code: 'subject_does_not_exist' }); return entries; },
+        async readdir(p) { if (p !== 'writedoc') throw Object.assign(new Error('x does not exist'), { code: 'subject_does_not_exist' }); return entries; },
         async stat(p) { const e = entries.find((x) => x.path === p); if (!e) throw new Error('does not exist'); return e; },
         async mkdir() { return {}; },
         async write(path, data, opts) { writes.push({ path, size: data.size, opts }); return { path, name: path.split('/').pop() }; },
@@ -62,7 +62,7 @@ describe('files', () => {
   it('lists only document files, newest first', async () => {
     const files = await P.listFiles();
     expect(files.map((f) => f.name)).toEqual(['a.docx', 'old.dotx', 'b.docx']);
-    expect(files[0].path).toBe('Documents/a.docx');
+    expect(files[0].path).toBe('writedoc/a.docx');
   });
 
   it('treats a missing folder as empty', async () => {
@@ -79,7 +79,7 @@ describe('files', () => {
   it('finds a free name among many copies without a cloud request per collision', async () => {
     entries = Array.from({ length: 1000 }, (_, i) => {
       const name = `Report${i ? ` ${i + 1}` : ''}.docx`;
-      return { name, path: `Documents/${name}` };
+      return { name, path: `writedoc/${name}` };
     });
     const stat = vi.spyOn(puter.fs, 'stat');
     const list = vi.spyOn(puter.fs, 'readdir');
@@ -88,8 +88,8 @@ describe('files', () => {
   });
 
   it('keeps gaps available and accounts for directories with document-like names', async () => {
-    entries.push({ name: 'b 2.docx', path: 'Documents/b 2.docx', is_dir: true });
-    entries.push({ name: 'b 4.docx', path: 'Documents/b 4.docx' });
+    entries.push({ name: 'b 2.docx', path: 'writedoc/b 2.docx', is_dir: true });
+    entries.push({ name: 'b 4.docx', path: 'writedoc/b 4.docx' });
     expect(await P.uniqueName('b.docx')).toBe('b 3.docx');
   });
 
@@ -99,25 +99,25 @@ describe('files', () => {
   });
 
   it('writes into the app folder with overwrite on, and dedupes when asked', async () => {
-    await P.writeFile('Documents/x.docx', new Blob(['a']));
-    await P.writeFile('Documents/x.docx', new Blob(['ab']), { dedupe: true });
-    await P.writeFile('Documents/x.docx', new Blob(['ab']), { overwrite: false });
+    await P.writeFile('writedoc/x.docx', new Blob(['a']));
+    await P.writeFile('writedoc/x.docx', new Blob(['ab']), { dedupe: true });
+    await P.writeFile('writedoc/x.docx', new Blob(['ab']), { overwrite: false });
     expect(writes[0].opts).toEqual({ overwrite: true, dedupeName: false, createMissingParents: true });
     expect(writes[1].opts).toEqual({ overwrite: false, dedupeName: true, createMissingParents: true });
     expect(writes[2].opts).toEqual({ overwrite: false, dedupeName: false, createMissingParents: true });
   });
 
   it('keeps an app-relative directory when a new file returns an absolute path', async () => {
-    globalThis.puter.fs.write = async () => ({ name: 'x (1).docx', path: '/user/app/Documents/x (1).docx' });
-    expect(await P.createFile('Documents/x.docx', new Blob(['new']))).toBe('Documents/x (1).docx');
+    globalThis.puter.fs.write = async () => ({ name: 'x (1).docx', path: '/user/app/writedoc/x (1).docx' });
+    expect(await P.createFile('writedoc/x.docx', new Blob(['new']))).toBe('writedoc/x (1).docx');
   });
 
   it('retains a deduplicated file’s timestamp without another cloud request', async () => {
-    const write = vi.fn(async () => ({ name: 'x (1).docx', path: '/user/app/Documents/x (1).docx', modified: 123 }));
+    const write = vi.fn(async () => ({ name: 'x (1).docx', path: '/user/app/writedoc/x (1).docx', modified: 123 }));
     globalThis.puter.fs.write = write;
     const stat = vi.spyOn(globalThis.puter.fs, 'stat');
-    expect(await P.createFileWithMetadata('Documents/x.docx', new Blob(['new'])))
-      .toEqual({ path: 'Documents/x (1).docx', modified: 123 });
+    expect(await P.createFileWithMetadata('writedoc/x.docx', new Blob(['new'])))
+      .toEqual({ path: 'writedoc/x (1).docx', modified: 123 });
     expect(write).toHaveBeenCalledOnce();
     expect(stat).not.toHaveBeenCalled();
   });

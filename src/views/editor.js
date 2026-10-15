@@ -805,7 +805,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const cloud = !local;
   const canPublish = () => cloud && publishing.enabled && P.canHost() && !!doc.path;
   let statusBar = null, backstage = null, keymap = null;
-  const STATUS_HIDDEN = 'documents:statusbar-hidden';
+  const STATUS_HIDDEN = 'writedoc:statusbar-hidden';
   Object.assign(editorCommands, {
     // Review, for the title bar, menus and search.
     newComment: () => reviewCommands.newComment(), canComment: () => reviewCommands.canComment(),
@@ -896,7 +896,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       ] },
       { id: 'saving', label: 'Save', controls: [
         cloud ? { type: 'toggle', label: 'AutoSave', hint: 'Save every change to Puter as you work. When off, use Save (' + MOD_KEY + '+S).', get: () => doc.autosave !== false, set: on => { doc.setAutosave?.(on); updateStatus(); chrome.refresh(); } }
-          : { type: 'button', label: 'Documents on this device', hint: 'Changes stay in this tab until you download the document.', action: 'Download', run: download },
+          : { type: 'button', label: 'Files on this device', hint: 'Changes stay in this tab until you download the file.', action: 'Download', run: download },
       ] },
       { id: 'view', label: 'View', controls: [
         { type: 'toggle', label: 'Ruler', get: () => rulers?.visible ?? true, set: on => { if ((rulers?.visible ?? true) !== on) rulers?.toggle(); } },
@@ -1046,7 +1046,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       try { await ready; if (!engine || failed) return 'The document is not open.'; engine.finishComposition(); if (session.signedOut && !await session.signIn()) return 'Sign in to save a copy.'; }
       catch (e) { return e?.message || String(e); }
       const failure = await doc.saveAs(name, { stillWanted: () => !destroyed });
-      if (!failure) { title.value = doc.name; refreshTitle(); document.title = `${doc.name} — Documents`; }
+      if (!failure) { title.value = doc.name; refreshTitle(); document.title = `${doc.name} — writedoc`; }
       return failure;
     } : null,
     refreshTitle: () => { title.value = doc.name; refreshTitle(); },
@@ -1403,7 +1403,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       if (destroyed) return;
       title.value = doc.name;
       refreshTitle();
-      document.title = `${doc.name} — Documents`;
+      document.title = `${doc.name} — writedoc`;
     } catch (e) { title.value = doc.name; refreshTitle(); error(e); }
   };
   title.addEventListener('change', onTitle);
@@ -1584,7 +1584,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     const typing = active && !root.contains(active) && (active.isContentEditable || /^(TEXTAREA|SELECT)$/.test(active.tagName) || active.tagName === 'INPUT' && !/^(button|checkbox|radio|file|submit|reset|image|color|range)$/.test(active.type));
     if (!typing) engine.focus();
     collab.attach();
-    document.title = `${doc.name} — Documents`;
+    document.title = `${doc.name} — writedoc`;
   })().catch(e => {
     releasePictures();
     if (destroyed) return;

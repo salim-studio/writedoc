@@ -1,6 +1,6 @@
 # Run property coverage
 
-Reviewed 2026-10-09 against Documents baseline `1d4669f5`. Both supplied Strict
+Reviewed 2026-10-09 against the upstream baseline `1d4669f5`. Both supplied Strict
 and Transitional `CT_RPr` declarations expose 40 direct property kinds through
 their groups. This is a bounded part of roadmap A01, not a complete attribute,
 context, extension or native-reference compatibility audit. Relevant clauses are ECMA-376 Part 1

@@ -43,7 +43,7 @@ export function formDialog({ title, body, submit, onClose, wide = false, ok = 'O
 
 /* ---- Insert Table ---- */
 
-const REMEMBER_KEY = 'documents.insertTable';
+const REMEMBER_KEY = 'writedoc.insertTable';
 export function rememberedTableSize() {
   try { const saved = JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null'); if (saved && saved.rows >= 1 && saved.columns >= 1) return saved; } catch { /* storage may be unavailable */ }
   return null;

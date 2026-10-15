@@ -16,14 +16,14 @@ it('does not offer to sign in and save a document that never opened', async () =
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const input = window.__docs.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const input = window.__writedoc.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
   Object.defineProperty(input, 'files', { value: [new File(['document'], 'Import.docx')] });
   input.dispatchEvent(new Event('change'));
-  await vi.waitFor(() => expect(window.__docs.current?.view.doc?.name).toBe('Import'));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.view.doc?.name).toBe('Import'));
+  const view = window.__writedoc.current.view;
   await vi.waitFor(() => expect(view.el.querySelector('.editor-error')).not.toBeNull());
-  view.el.querySelector('[aria-label="All Documents"]').click();
+  view.el.querySelector('[aria-label="Home"]').click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).not.toBeNull());
   const dialog = document.querySelector('[role="dialog"]');
   // Signing in could not save this document: only leaving or staying is offered, and no "still opening" toast.
@@ -31,10 +31,10 @@ it('does not offer to sign in and save a document that never opened', async () =
   expect([...dialog.querySelectorAll('button')].map((button) => button.textContent)).not.toContain('Sign in and save');
   expect([...document.querySelectorAll('.toast')].map((toast) => toast.textContent).join(' ')).not.toContain('still opening');
   document.querySelector('.modal-panel .btn-danger').click();
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('home'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
   // The modal exit animation still uses this document; finish it before jsdom teardown.
   await vi.waitFor(() => expect(document.querySelector('.modal-root')).toBeNull());
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   errors.mockRestore();
   vi.unstubAllGlobals();
 });

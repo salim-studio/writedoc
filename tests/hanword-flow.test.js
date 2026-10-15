@@ -59,7 +59,7 @@ describe('home Hanword import flow', () => {
     pick([slowFile, new File([hwp({ compressed: false, sections: [paragraph('두 번째')] })], '같은.HWP'), new File(['word bytes'], 'native.docx')]);
     await finished;
     expect(writes).toHaveLength(3);
-    expect(writes.map((w) => w.path)).toEqual(['Documents/같은.docx', 'Documents/같은 2.docx', 'Documents/native.docx']);
+    expect(writes.map((w) => w.path)).toEqual(['writedoc/같은.docx', 'writedoc/같은 2.docx', 'writedoc/native.docx']);
     expect(writes[0].blob.type).toContain('wordprocessingml.document');
     expect(writes[1].blob.type).toContain('wordprocessingml.document');
     expect(writes[0].blob.size).toBeGreaterThan(500);
@@ -69,19 +69,19 @@ describe('home Hanword import flow', () => {
     pick([new File(['bad'], 'broken.hwp'), new File([hwp()], 'good.hwp')]);
     await finished;
     expect(document.body.textContent).toContain('broken.hwp: This file is not a valid Hanword');
-    expect(writes.map((w) => w.path)).toEqual(['Documents/good.docx']); errors.mockRestore();
+    expect(writes.map((w) => w.path)).toEqual(['writedoc/good.docx']); errors.mockRestore();
   });
   it('preserves a file created after the batch checks for available names', async () => {
     setup();
     const existing = new Blob(['Work saved in another tab']);
     // Another tab writes the file after uniqueName has checked the destination and before this write lands.
     const write = puter.fs.write;
-    puter.fs.write = async (...args) => { if (!fs.has('Documents/collision.docx')) fs.set('Documents/collision.docx', existing); return write(...args); };
+    puter.fs.write = async (...args) => { if (!fs.has('writedoc/collision.docx')) fs.set('writedoc/collision.docx', existing); return write(...args); };
     pick([new File([hwp()], 'collision.hwp'), new File(['word bytes'], 'other.docx')]);
     await finished;
     expect(writes).toHaveLength(2);
-    expect(fs.get('Documents/collision.docx')).toBe(existing);
-    expect(writes.map((w) => w.path)).toEqual(['Documents/collision (1).docx', 'Documents/other.docx']);
+    expect(fs.get('writedoc/collision.docx')).toBe(existing);
+    expect(writes.map((w) => w.path)).toEqual(['writedoc/collision (1).docx', 'writedoc/other.docx']);
     expect(writes[0].blob.type).toContain('wordprocessingml.document');
   });
 });

@@ -8,7 +8,7 @@ import { commentThreads, avatarColor } from './review.js';
 import { initialsFor } from '../engine/comments.js';
 import { mentionsIn, renderMentions } from './mentions.js';
 
-const SHOW_RESOLVED = preference('documents:comments-pane-resolved', true);
+const SHOW_RESOLVED = preference('writedoc:comments-pane-resolved', true);
 
 export function createCommentsPane({ editor, review, people }) {
   let author = '', query = '';

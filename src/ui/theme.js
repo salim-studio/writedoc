@@ -5,10 +5,10 @@
  * OS switches while in system mode) through onThemeChange.
  */
 
-const LS_KEY = 'documents:theme';
-const PAGE_KEY = 'documents:dark-page';
+const LS_KEY = 'writedoc:theme';
+const PAGE_KEY = 'writedoc:dark-page';
 // Keep browser chrome aligned with the manifest in every appearance mode.
-const BRAND_COLOR = '#375f91';
+const BRAND_COLOR = '#4f46e5';
 const listeners = new Set();
 
 export function applyTheme(mode) {

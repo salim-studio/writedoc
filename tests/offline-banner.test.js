@@ -18,8 +18,8 @@ it('saves only pending edits when the connection comes back', async () => {
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const doc = window.__docs.current.view.doc;
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const doc = window.__writedoc.current.view.doc;
   doc.attach(async () => new Blob(['export']));
   expect(doc.dirty).toBe(false);
 
@@ -47,7 +47,7 @@ it('saves only pending edits when the connection comes back', async () => {
   window.dispatchEvent(new Event('online'));
   // The document is written once (a version snapshot may follow it).
   const documentWrites = () => write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'));
-  await vi.waitFor(() => expect(documentWrites()).toEqual(['Documents/Untitled document.docx']));
-  window.__docs.current.view.destroy();
+  await vi.waitFor(() => expect(documentWrites()).toEqual(['writedoc/Untitled document.docx']));
+  window.__writedoc.current.view.destroy();
   vi.unstubAllGlobals();
 });

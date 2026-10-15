@@ -137,10 +137,10 @@ function mount(kind, view) {
 
 /** A cloud document was asked for without a session: offer the sign-in, or a new document. */
 function mountSignInGate(requestedHash, what) {
-  document.title = 'Documents';
+  document.title = 'writedoc';
   mount('gate', { el: signInView({
     title: `Sign in to open this ${what}`,
-    message: `Documents live in your own Puter cloud. Sign in to open this ${what}, or start a new document without an account.`,
+    message: `writedoc keeps your files in your own Puter cloud. Sign in to open this ${what}, or start a new file without an account.`,
     onSignIn: async () => { if (await session.signIn() && location.hash === requestedHash) route(); },
     onSkip: () => go('#/'),
   }) });
@@ -274,8 +274,8 @@ async function route({ newDocument = false } = {}) {
     if (location.hash !== requestedHash) return;
     if (r === 'home') {
       mount('home', homeView(nav));
-      document.title = 'Documents';
-      P.setWindowTitle('Documents');
+      document.title = 'writedoc';
+      P.setWindowTitle('writedoc');
       return;
     }
     if (r === 'new') {
@@ -333,7 +333,7 @@ async function openInvitation(link, requestedHash) {
     doc.setSaving(false);
     doc.collab = { client: joined.client, link };
     openEditor(doc);
-    document.title = `${doc.name} — Documents`;
+    document.title = `${doc.name} — writedoc`;
   } catch (e) {
     if (location.hash !== requestedHash) return;
     console.error(e);
@@ -471,6 +471,6 @@ function setupOfflineBanner() {
   update();
 }
 
-if (import.meta.env?.DEV) window.__docs = { session, get current() { return current; } };
+if (import.meta.env?.DEV) window.__writedoc = { session, get current() { return current; } };
 
 start();

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
 const input = page => page.getByRole('textbox', { name: 'Document text' });
-const pictures = page => page.evaluate(() => window.__docs.current.view.engine.model.paragraphs.flatMap(p => p.runs).filter(r => r.image).length);
+const pictures = page => page.evaluate(() => window.__writedoc.current.view.engine.model.paragraphs.flatMap(p => p.runs).filter(r => r.image).length);
 const png = [...readFileSync('public/icons/icon-64.png')];
 
 test('a pasted screenshot or copied picture is inserted at the caret', async ({ browser }) => {

@@ -26,20 +26,20 @@ it('offers keep editing, leave, or sign in and save when leaving unsaved work wi
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const view = window.__writedoc.current.view;
   const doc = view.doc;
   doc.attach(async () => new Blob(['unsaved work']));
   doc.changed();
 
   // Keep editing: the document, its edits, and its URL stay.
-  view.el.querySelector('[aria-label="All Documents"]').click();
+  view.el.querySelector('[aria-label="Home"]').click();
   await vi.waitFor(() => expect(dialogTitle()).toBe('Save before leaving?'));
   expect(buttons().map((b) => b.textContent)).toEqual(['Keep editing', 'Leave without saving', 'Sign in and save']);
   expect(document.querySelector('.toast')).toBeNull();
   buttons()[0].click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
-  expect(window.__docs.current?.view).toBe(view);
+  expect(window.__writedoc.current?.view).toBe(view);
   expect(doc.dirty).toBe(true);
   expect(location.hash).toBe('#/new');
   expect(sdk.auth.signIn).not.toHaveBeenCalled();
@@ -48,14 +48,14 @@ it('offers keep editing, leave, or sign in and save when leaving unsaved work wi
   location.hash = '#/home';
   await vi.waitFor(() => expect(dialogTitle()).toBe('Save before leaving?'));
   buttons()[2].click();
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('home'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
   expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);
-  expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['Documents/Untitled document.docx']);
+  expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['writedoc/Untitled document.docx']);
   expect(doc.dirty).toBe(false);
   expect(location.hash).toBe('#/home');
   // The home screen lists the account, not the sign-in.
   expect(document.querySelector('.user-btn').title).toBe('nariman');
 
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   vi.unstubAllGlobals();
 });

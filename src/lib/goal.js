@@ -7,7 +7,7 @@ import { localStore as store } from './storage.js';
 import { documentPathKey, migrateDocumentMap } from './document-paths.js';
 import { accountKey } from './account-key.js';
 
-const KEY = 'documents:goals';
+const KEY = 'writedoc:goals';
 export const GOAL_MAX = 10000000;
 
 function read(storage) {

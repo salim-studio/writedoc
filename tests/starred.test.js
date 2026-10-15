@@ -9,40 +9,40 @@ describe('starred documents', () => {
 
   it('stars and unstars by path, remembering the order', () => {
     expect(starredPaths()).toEqual([]);
-    expect(toggleStar('Documents/A.docx')).toBe(true);
-    expect(toggleStar('Documents/B.docx')).toBe(true);
-    expect(isStarred('Documents/A.docx')).toBe(true);
-    expect(starredPaths()).toEqual(['Documents/A.docx', 'Documents/B.docx']);
-    expect(toggleStar('Documents/A.docx')).toBe(false);
-    expect(starredPaths()).toEqual(['Documents/B.docx']);
+    expect(toggleStar('writedoc/A.docx')).toBe(true);
+    expect(toggleStar('writedoc/B.docx')).toBe(true);
+    expect(isStarred('writedoc/A.docx')).toBe(true);
+    expect(starredPaths()).toEqual(['writedoc/A.docx', 'writedoc/B.docx']);
+    expect(toggleStar('writedoc/A.docx')).toBe(false);
+    expect(starredPaths()).toEqual(['writedoc/B.docx']);
     expect(toggleStar('')).toBe(false);
     expect(isStarred(null)).toBe(false);
   });
 
   it('follows a rename and forgets a deletion', () => {
-    toggleStar('Documents/A.docx');
-    moveStar('Documents/A.docx', 'Documents/Renamed.docx');
-    expect(starredPaths()).toEqual(['Documents/Renamed.docx']);
-    moveStar('Documents/Nope.docx', 'Documents/X.docx');
-    expect(starredPaths()).toEqual(['Documents/Renamed.docx']);
-    forgetStar('Documents/Renamed.docx');
+    toggleStar('writedoc/A.docx');
+    moveStar('writedoc/A.docx', 'writedoc/Renamed.docx');
+    expect(starredPaths()).toEqual(['writedoc/Renamed.docx']);
+    moveStar('writedoc/Nope.docx', 'writedoc/X.docx');
+    expect(starredPaths()).toEqual(['writedoc/Renamed.docx']);
+    forgetStar('writedoc/Renamed.docx');
     expect(starredPaths()).toEqual([]);
   });
 
   it('prunes stars for missing files and puts starred files first', () => {
-    toggleStar('Documents/B.docx');
-    toggleStar('Documents/Gone.docx');
-    const files = [{ path: 'Documents/A.docx' }, { path: 'Documents/B.docx' }, { path: 'Documents/C.docx' }];
-    expect(pruneStars(files)).toEqual(['Documents/B.docx']);
-    expect(starredPaths()).toEqual(['Documents/B.docx']);
-    expect(starredFirst(files).map((f) => f.path)).toEqual(['Documents/B.docx', 'Documents/A.docx', 'Documents/C.docx']);
-    expect(starredFirst(files, []).map((f) => f.path)).toEqual(['Documents/A.docx', 'Documents/B.docx', 'Documents/C.docx']);
+    toggleStar('writedoc/B.docx');
+    toggleStar('writedoc/Gone.docx');
+    const files = [{ path: 'writedoc/A.docx' }, { path: 'writedoc/B.docx' }, { path: 'writedoc/C.docx' }];
+    expect(pruneStars(files)).toEqual(['writedoc/B.docx']);
+    expect(starredPaths()).toEqual(['writedoc/B.docx']);
+    expect(starredFirst(files).map((f) => f.path)).toEqual(['writedoc/B.docx', 'writedoc/A.docx', 'writedoc/C.docx']);
+    expect(starredFirst(files, []).map((f) => f.path)).toEqual(['writedoc/A.docx', 'writedoc/B.docx', 'writedoc/C.docx']);
   });
 
   it('survives corrupt storage', () => {
-    store.set('documents:starred', '{bad');
+    store.set('writedoc:starred', '{bad');
     expect(starredPaths()).toEqual([]);
-    store.set('documents:starred', JSON.stringify([1, null, 'Documents/A.docx']));
-    expect(starredPaths()).toEqual(['Documents/A.docx']);
+    store.set('writedoc:starred', JSON.stringify([1, null, 'writedoc/A.docx']));
+    expect(starredPaths()).toEqual(['writedoc/A.docx']);
   });
 });

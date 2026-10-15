@@ -73,7 +73,7 @@ describe('createOutline', () => {
     o.onToggle(() => toggles++);
     o.toggle();
     expect(o.isOpen).toBe(true);
-    expect(localStorage.getItem('documents:outline')).toBe('1');
+    expect(localStorage.getItem('writedoc:outline')).toBe('1');
     o.close();
     expect(o.isOpen).toBe(false);
     expect(toggles).toBe(2);

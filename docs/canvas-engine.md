@@ -1,6 +1,6 @@
 # Canvas engine: tables, styles, text and page formatting
 
-Documents now open on a best-effort basis when they contain features outside the
+Files now open on a best-effort basis when they contain features outside the
 editable subset. Supported content uses the canvas renderer; unsupported content
 is approximated where possible. These documents open read-only, and **Download
 .docx** returns the unchanged original. Search, selection, copying and zoom remain

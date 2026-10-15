@@ -1,7 +1,8 @@
 {
-  "name": "documents",
+  "name": "writedoc",
   "version": "1.0.0",
-  "description": "Documents: a fast, private word processor on Puter. Real .docx files in your own cloud.",
+  "description": "writedoc: a fast, private word processor. Real .docx files in your own cloud.",
+  "author": "salim-slimani",
   "type": "module",
   "private": true,
   "scripts": {
@@ -18,7 +19,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/documents.git"
+    "url": "git+https://github.com/salim-studio/writedoc.git"
   },
   "dependencies": {
     "@zip.js/zip.js": "2.14.1",

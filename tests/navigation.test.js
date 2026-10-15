@@ -17,8 +17,8 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   history.replaceState(null, '', '#/new');
   const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const view = window.__writedoc.current.view;
   const doc = view.doc;
   const destroy = vi.spyOn(view, 'destroy');
   doc.attach(async () => new Blob(['unsaved work']));
@@ -27,7 +27,7 @@ it('keeps the editor and its unsaved content when saving before navigation fails
 
   location.hash = '#/home';
   await vi.waitFor(() => expect(doc.status).toBe('error'));
-  expect(window.__docs.current?.view).toBe(view);
+  expect(window.__writedoc.current?.view).toBe(view);
   expect(destroy).not.toHaveBeenCalled();
   expect(doc.dirty).toBe(true);
   expect(document.getElementById('app').contains(view.el)).toBe(true);
@@ -39,10 +39,10 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   // Retrying after the connection recovers saves and navigates normally.
   puter.fs.write.mockResolvedValue({});
   location.hash = '#/home';
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('home'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
   expect(doc.dirty).toBe(false);
   expect(destroy).toHaveBeenCalledTimes(1);
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   errors.mockRestore();
   vi.unstubAllGlobals();
 });

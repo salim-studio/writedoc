@@ -103,7 +103,7 @@ test('types a list, inserts fields, previews, saves and merges to a new document
 
   // Finish: one document per recipient, opened as a new document.
   await ribbon(page).getByRole('button', { name: 'Finish & Merge' }).click();
-  await page.getByRole('menuitem', { name: 'Edit Individual Documents…' }).click();
+  await page.getByRole('menuitem', { name: 'Edit individual files…' }).click();
   acceptNext(page);
   await page.getByRole('dialog', { name: 'Merge to New Document' }).getByRole('button', { name: 'OK' }).click();
   await expect(page.locator('.canvas-title')).toHaveValue(/merged/);
@@ -238,7 +238,7 @@ test('prints one copy per recipient and saves email messages when sending is una
 
   // Print: three recipients, one page each, captured in one print job; the placeholders return afterwards.
   await ribbon(page).getByRole('button', { name: 'Finish & Merge' }).click();
-  await page.getByRole('menuitem', { name: 'Print Documents…' }).click();
+  await page.getByRole('menuitem', { name: 'Print files…' }).click();
   await page.getByRole('dialog', { name: 'Merge to Printer' }).getByRole('button', { name: 'OK' }).click();
   await expect.poll(() => page.evaluate(() => window.printCalls)).toBe(1);
   await expect(page.locator('.print-stage canvas')).toHaveCount(3);

@@ -3,7 +3,7 @@
  * dictionary. The word list is the vendored en_US Hunspell dictionary (SCOWL), loaded on first use.
  */
 
-const PERSONAL_KEY = 'documents:dictionary';
+const PERSONAL_KEY = 'writedoc:dictionary';
 
 /** The default proofing options: skip words in UPPERCASE, words with numbers, and internet and file addresses. */
 const ADDRESS = /^(?:https?:\/\/|www\.|mailto:)|@|\\|\/|\.[a-z]{2,4}$/i;

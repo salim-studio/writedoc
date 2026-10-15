@@ -93,7 +93,7 @@ test('shows the table tabs inside a table and keeps their commands working', asy
   await page.getByRole('menu', { name: 'Insert table' }).getByRole('button', { name: 'Insert', exact: true }).click();
   await expect(tab(page, 'Table Design')).toBeVisible(); await expect(tab(page, 'Table Layout')).toBeVisible();
   await tab(page, 'Table Layout').click();
-  const rows = () => page.evaluate(() => window.__docs.current.view.engine.model.tables[0].rows.length);
+  const rows = () => page.evaluate(() => window.__writedoc.current.view.engine.model.tables[0].rows.length);
   const before = await rows();
   await ribbon(page).getByRole('button', { name: 'Insert Below', exact: true }).click();
   expect(await rows()).toBe(before + 1);
@@ -106,7 +106,7 @@ test('shows the table tabs inside a table and keeps their commands working', asy
 
 test('lays the page out from the Layout tab and undoes it in one step', async ({ page }) => {
   await openEditor(page);
-  const settings = () => page.evaluate(() => { const p = window.__docs.current.view.engine.model.pageSettings; return [p.orientation, p.width, p.height, p.left, p.top]; });
+  const settings = () => page.evaluate(() => { const p = window.__writedoc.current.view.engine.model.pageSettings; return [p.orientation, p.width, p.height, p.left, p.top]; });
   await tab(page, 'Layout').click();
   await ribbon(page).getByRole('button', { name: 'Margins', exact: true }).click(); await page.getByRole('menuitemradio', { name: /^Narrow/ }).click();
   expect(await settings()).toEqual(['portrait', 12240, 15840, 720, 720]);

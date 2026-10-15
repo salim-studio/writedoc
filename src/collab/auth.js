@@ -16,12 +16,12 @@ const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 async function loadCredential(puter, parent, refused) {
   // App KV is private to this account; credentials survive reloads, as minting is rate limited.
   const context = await hash(parent);
-  const key = `documents-collab-auth-v1:${context}`;
+  const key = `writedoc-collab-auth-v1:${context}`;
   const saved = await puter.kv.get(key);
   if (saved && saved.expires > Date.now() + 60_000 && (!refused || saved.token !== refused.token)) return saved;
   const keys = saved?.keys ?? await keyPair();
   const fingerprint = (await hash(JSON.stringify(keys.publicKey))).slice(0, 32);
-  const file = await puter.fs.write(`documents-collab/identity/${context}-${fingerprint}.json`, JSON.stringify({ version: 1, publicKey: keys.publicKey }), { overwrite: true, dedupeName: false, createMissingParents: true });
+  const file = await puter.fs.write(`writedoc-collab/identity/${context}-${fingerprint}.json`, JSON.stringify({ version: 1, publicKey: keys.publicKey }), { overwrite: true, dedupeName: false, createMissingParents: true });
   const issued = Date.now();
   const url = new URL(await puter.fs.getReadURL(file.path, '24h'));
   const token = url.searchParams.get('token');

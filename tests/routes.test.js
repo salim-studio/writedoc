@@ -14,7 +14,7 @@ describe('route parsing', () => {
   });
 
   it('preserves encoded file paths, Unicode, percent signs, and template identifiers', () => {
-    const path = 'Documents/한글 100%.docx';
+    const path = 'writedoc/한글 100%.docx';
     expect(parseHash(`#/edit/${encodeURIComponent(path)}`)).toEqual({ route: 'edit', path });
     expect(parseHash('#/new/meeting-notes')).toEqual({ route: 'new', template: 'meeting-notes' });
     expect(parseHash('#/new')).toEqual({ route: 'new', template: null });

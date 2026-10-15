@@ -1,6 +1,6 @@
 # Review tab parity
 
-What the Review tab and the Tools menu's proofing and protection items do in Documents, compared
+What the Review tab and the Tools menu's proofing and protection items do in writedoc, compared
 with the leading desktop word processors. Everything listed as implemented saves to DOCX and
 reopens, and goes through the editor's transactions (undo, read-only rules, protection).
 
@@ -64,11 +64,11 @@ reopens, and goes through the editor's transactions (undo, read-only rules, prot
   and stop tracking; Previous/Next change; balloons have accept/reject buttons.
 
 **Compare**
-- Compare Documents: original and revised from this document, the device or Puter; label for
+- Compare files: original and revised from this document, the device or Puter; label for
   changes (defaults to the revised file's last author); word or character level; formatting, case,
   white space and table options. The result shows the original, compared and revised text side by
   side with synchronized scrolling, then opens as a new document or downloads.
-- Combine Documents: keeps the original with its own changes and comments and adds the revised
+- Combine files: keeps the original with its own changes and comments and adds the revised
   copy's differences as tracked changes (its own tracked insertions keep their authors).
 
 **Protect**

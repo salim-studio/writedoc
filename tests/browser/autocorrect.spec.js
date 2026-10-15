@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const input = page => page.getByRole('textbox', { name: 'Document text' });
-const links = page => page.evaluate(() => window.__docs.current.view.engine.model.paragraphs.flatMap(p => p.runs).filter(r => r.link).map(r => [r.text, r.link.target]));
+const links = page => page.evaluate(() => window.__writedoc.current.view.engine.model.paragraphs.flatMap(p => p.runs).filter(r => r.link).map(r => [r.text, r.link.target]));
 async function blank(page) {
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();

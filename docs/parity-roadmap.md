@@ -1,6 +1,6 @@
 # Desktop word-processor parity roadmap
 
-Documents aims to offer the full capability set of a professional desktop word processor, with
+writedoc aims to offer the full capability set of a professional desktop word processor, with
 cleaner dialogs and better keyboard flow where the conventional design is clumsy. This file tracks
 the work by area; each area keeps a detailed record in `docs/parity/<area>.md` (what is
 implemented, what is approximated, remaining gaps) and its OOXML notes in `docs/conformance.md`.

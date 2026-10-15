@@ -10,7 +10,7 @@ import { styleDisplayName } from '../lib/style-names.js';
 
 /** Styles a desktop word processor recommends first, by name. */
 const RECOMMENDED = ['normal', 'no spacing', 'heading 1', 'heading 2', 'heading 3', 'heading 4', 'title', 'subtitle', 'quote', 'intense quote', 'list paragraph', 'emphasis', 'strong', 'subtle emphasis', 'intense emphasis', 'book title', 'caption'];
-const PREVIEW_KEY = 'documents.stylesPane.preview', FILTER_KEY = 'documents.stylesPane.filter';
+const PREVIEW_KEY = 'writedoc.stylesPane.preview', FILTER_KEY = 'writedoc.stylesPane.filter';
 const stored = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
 const store = (key, value) => { try { localStorage.setItem(key, value); } catch { /* storage unavailable */ } };
 const VIEWS = { styles: 'Styles', inspector: 'Style Inspector', reveal: 'Reveal Formatting' };

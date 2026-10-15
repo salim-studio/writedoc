@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Doc, publishing, versioning } from '../src/lib/doc.js';
 
-const path = 'Documents/Report.docx';
+const path = 'writedoc/Report.docx';
 let files, docs, modified;
 
 beforeEach(() => {
@@ -48,7 +48,7 @@ async function open() {
 
 it.each(['changed', 'deleted'])('refuses to restore a version over a file another window has %s', async (action) => {
   const doc = await open();
-  const versionPath = 'Documents/.versions/Report/1.docx';
+  const versionPath = 'writedoc/.versions/Report/1.docx';
   files.set(versionPath, { blob: new Blob(['old version']), modified: 50 });
   if (action === 'changed') await puter.fs.write(path, new Blob(['other window']));
   else files.delete(path);

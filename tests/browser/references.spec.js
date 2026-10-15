@@ -7,7 +7,7 @@ const SHOTS = process.env.REF_SHOTS || null;
 const shot = async (page, name) => { if (SHOTS) { mkdirSync(SHOTS, { recursive: true }); await page.screenshot({ path: `${SHOTS}/${name}.png` }); } };
 const input = page => page.getByRole('textbox', { name: 'Document text' });
 const ribbon = page => page.locator('#ribbon-panel-references');
-const engineText = page => page.evaluate(() => window.__docs.current.view.engine.session.body.text);
+const engineText = page => page.evaluate(() => window.__writedoc.current.view.engine.session.body.text);
 
 async function openEditor(page, width = 1440) {
   await page.setViewportSize({ width, height: 900 });
@@ -18,7 +18,7 @@ async function openEditor(page, width = 1440) {
 async function typeDocument(page) {
   // Headings through the editor model: the same paths the Styles gallery uses.
   await page.evaluate(() => {
-    const engine = window.__docs.current.view.engine, m = engine.model;
+    const engine = window.__writedoc.current.view.engine, m = engine.model;
     engine.execute(() => {
       m.replace('Introduction\nEngines compute numbers quickly.\nHistory\nThe analytical engine came first.\nConclusion\nMachines learn.');
       const style = name => m.paragraphStyles.find(s => s.name === name).id;
@@ -64,7 +64,7 @@ test('table of contents: gallery, custom options, add text, update and remove', 
   await page.getByRole('menuitem', { name: /^Classic/ }).click();
   await expect.poll(() => engineText(page)).toMatch(/^Contents\nIntroduction\t1\nHistory\t1\nConclusion\t1\nIntroduction/);
   // Add Text: make a body paragraph a level-2 entry, then update the entire table.
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model; m.select(m.text.indexOf('Machines')); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; m.select(m.text.indexOf('Machines')); });
   await ribbon(page).getByRole('button', { name: 'Add Text', exact: true }).click();
   await page.getByRole('menuitemradio', { name: 'Level 2', exact: true }).click();
   await ribbon(page).getByRole('button', { name: 'Update Table', exact: true }).click();
@@ -90,7 +90,7 @@ test('table of contents: gallery, custom options, add text, update and remove', 
 test('footnotes and endnotes: insert, navigate, settings, convert and save', async ({ page }, info) => {
   await openEditor(page);
   await page.keyboard.type('First claim. Second claim.');
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model; m.select(m.text.indexOf('.')); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; m.select(m.text.indexOf('.')); });
   await onTab(page, 'references');
   await ribbon(page).getByRole('button', { name: 'Insert Footnote', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Footnote text' })).toBeFocused();
@@ -100,7 +100,7 @@ test('footnotes and endnotes: insert, navigate, settings, convert and save', asy
   await input(page).press(process.platform === 'darwin' ? 'Meta+Alt+e' : 'Control+Alt+d');
   await expect(page.getByRole('textbox', { name: 'Endnote text' })).toBeFocused();
   await page.keyboard.type('An endnote.');
-  const layoutNotes = () => page.evaluate(() => { const l = window.__docs.current.view.engine.layout; return { foot: l.footnoteAreas?.flatMap(a => a.notes.map(n => n.display)), end: l.endnoteAreas?.flatMap(a => a.notes.map(n => n.display)) }; });
+  const layoutNotes = () => page.evaluate(() => { const l = window.__writedoc.current.view.engine.layout; return { foot: l.footnoteAreas?.flatMap(a => a.notes.map(n => n.display)), end: l.endnoteAreas?.flatMap(a => a.notes.map(n => n.display)) }; });
   expect(await layoutNotes()).toEqual({ foot: ['1'], end: ['i'] });
   await shot(page, 'notes-on-page');
   // Show Notes returns to the reference; Next Footnote moves between references.
@@ -108,7 +108,7 @@ test('footnotes and endnotes: insert, navigate, settings, convert and save', asy
   await expect(input(page)).toBeFocused();
   await ribbon(page).getByRole('button', { name: 'Next Footnote', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Next Footnote', exact: true }).click();
-  await expect.poll(() => page.evaluate(() => window.__docs.current.view.engine.model.range[0])).toBe(12);
+  await expect.poll(() => page.evaluate(() => window.__writedoc.current.view.engine.model.range[0])).toBe(12);
   // Settings: symbols for footnotes, restart for endnotes; Apply keeps the dialog open.
   await ribbon(page).getByRole('button', { name: 'Footnote and Endnote Settings', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Footnote and Endnote' });
@@ -133,7 +133,7 @@ test('footnotes and endnotes: insert, navigate, settings, convert and save', asy
 test('citations, sources and bibliography follow the chosen style', async ({ page }, info) => {
   await openEditor(page);
   await page.keyboard.type('Engines compute.');
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model; m.select(m.text.indexOf('.')); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; m.select(m.text.indexOf('.')); });
   await onTab(page, 'references');
   await ribbon(page).getByRole('button', { name: 'Insert Citation', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Add New Source…' }).click();
@@ -150,7 +150,7 @@ test('citations, sources and bibliography follow the chosen style', async ({ pag
   await source.getByRole('button', { name: 'OK', exact: true }).click();
   await expect.poll(() => engineText(page)).toBe('Engines compute (Lovelace, 2020).');
   // A bibliography from the gallery, then a style change updates both.
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model; m.select(m.text.length); m.replace('\n'); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; m.select(m.text.length); m.replace('\n'); });
   await ribbon(page).getByRole('button', { name: 'Bibliography', exact: true }).click();
   await shot(page, 'bibliography-gallery');
   await page.getByRole('menuitem', { name: /^References:/ }).click();
@@ -215,7 +215,7 @@ test('captions, cross-references and a table of figures', async ({ page }, info)
 test('index entries, the index and a table of authorities', async ({ page }, info) => {
   await openEditor(page);
   await page.keyboard.type('Mercury is hot. Venus is cloudy. Mercury is small. Smith v. Jones, 1 U.S. 1 (1999), decided it.');
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model; m.select(0, 7); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; m.select(0, 7); });
   await onTab(page, 'references');
   await ribbon(page).getByRole('button', { name: 'Mark Entry', exact: true }).click();
   const mark = page.getByRole('dialog', { name: 'Mark Index Entry' });
@@ -225,7 +225,7 @@ test('index entries, the index and a table of authorities', async ({ page }, inf
   await mark.getByRole('button', { name: 'Mark All', exact: true }).click();
   await expect(mark.getByText('2 entries marked.')).toBeVisible();
   // The panel stays open while other text is selected.
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model, at = m.text.indexOf('Venus'); m.select(at, at + 5); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model, at = m.text.indexOf('Venus'); m.select(at, at + 5); });
   // Coming back to the panel picks up the new selection.
   await mark.getByLabel('Subentry').focus();
   await expect(mark.getByLabel('Main entry')).toHaveValue('Venus');
@@ -244,7 +244,7 @@ test('index entries, the index and a table of authorities', async ({ page }, inf
   await index.getByRole('button', { name: 'Insert', exact: true }).click();
   await expect.poll(() => engineText(page)).toContain('\nM\nMercury\nplanet, 1\nV\nVenus, 1');
   // Table of authorities.
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model, t = 'Smith v. Jones, 1 U.S. 1 (1999)', at = m.text.indexOf(t); m.select(at, at + t.length); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model, t = 'Smith v. Jones, 1 U.S. 1 (1999)', at = m.text.indexOf(t); m.select(at, at + t.length); });
   await page.getByRole('tab', { name: 'References', exact: true }).click();
   await openGroup(page, 'authorities');
   await page.getByRole('button', { name: 'Mark Citation', exact: true }).click();
@@ -270,7 +270,7 @@ test('index entries, the index and a table of authorities', async ({ page }, inf
 test('Smart Lookup explains the selection, and the menus offer References commands', async ({ page }) => {
   await openEditor(page);
   await page.keyboard.type('The aphelion of an orbit is far.');
-  await page.evaluate(() => { const m = window.__docs.current.view.engine.model, at = m.text.indexOf('aphelion'); m.select(at + 2); });
+  await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model, at = m.text.indexOf('aphelion'); m.select(at + 2); });
   await onTab(page, 'references');
   await ribbon(page).getByRole('button', { name: 'Smart Lookup', exact: true }).click();
   const pane = page.getByRole('complementary', { name: 'Smart Lookup' });
@@ -285,7 +285,7 @@ test('Smart Lookup explains the selection, and the menus offer References comman
   await expect(page.getByRole('menu', { name: 'Document menu' }).getByRole('menuitem', { name: 'Smart Lookup', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   // The menu-bar contract: Insert holds the References commands.
-  const items = await page.evaluate(() => window.__docs.current.view.engine && null);
+  const items = await page.evaluate(() => window.__writedoc.current.view.engine && null);
   expect(items).toBeNull();
 });
 

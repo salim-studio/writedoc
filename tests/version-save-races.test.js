@@ -6,7 +6,7 @@ let doc;
 afterEach(() => { doc?.destroy(); vi.unstubAllGlobals(); versioning.enabled = true; });
 
 it.each(['rename', 'remove'])('serializes manual version creation with %s', async (action) => {
-  const files = new Map([['Documents/A.docx', new Blob(['original'])]]);
+  const files = new Map([['writedoc/A.docx', new Blob(['original'])]]);
   const missing = () => Object.assign(new Error('Not found'), { code: 'ENOENT' });
   versioning.enabled = true;
   vi.stubGlobal('puter', { fs: {
@@ -25,7 +25,7 @@ it.each(['rename', 'remove'])('serializes manual version creation with %s', asyn
       for (const key of files.keys()) if (key === path || recursive && key.startsWith(`${path}/`)) files.delete(key);
     },
   } });
-  doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: files.get('Documents/A.docx') });
+  doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: files.get('writedoc/A.docx') });
   let release;
   doc.attach(() => new Promise((resolve) => { release = resolve; }));
   const snapshot = doc.saveVersionNow();
@@ -33,6 +33,6 @@ it.each(['rename', 'remove'])('serializes manual version creation with %s', asyn
   const changing = action === 'rename' ? doc.rename('B') : doc.remove();
   await Promise.resolve(); await Promise.resolve();
   release(new Blob(['snapshot'])); await Promise.all([snapshot, changing]);
-  expect(await listVersions('Documents/A.docx')).toEqual([]);
-  expect(await listVersions('Documents/B.docx')).toHaveLength(action === 'rename' ? 1 : 0);
+  expect(await listVersions('writedoc/A.docx')).toEqual([]);
+  expect(await listVersions('writedoc/B.docx')).toHaveLength(action === 'rename' ? 1 : 0);
 });

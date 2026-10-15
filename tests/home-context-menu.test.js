@@ -11,7 +11,7 @@ beforeEach(() => {
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   vi.stubGlobal('puter', { fs: {
     mkdir: async () => {},
-    readdir: async () => [{ path: 'Documents/Report.docx', name: 'Report.docx', size: 1200, modified: 1 }],
+    readdir: async () => [{ path: 'writedoc/Report.docx', name: 'Report.docx', size: 1200, modified: 1 }],
     stat: async () => { throw new Error('missing'); },
   } });
   Object.defineProperty(document.documentElement, 'clientWidth', { value: 1000, configurable: true });

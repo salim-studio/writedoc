@@ -38,8 +38,8 @@ it('opens files dropped anywhere the screen underneath does not take them itself
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const blank = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const blank = window.__writedoc.current.view;
 
   // The drag is accepted so the browser cannot leave the app for the file.
   const over = dragFiles([new File(['word bytes'], 'Report.docx')], { stop: true });
@@ -49,7 +49,7 @@ it('opens files dropped anywhere the screen underneath does not take them itself
 
   const open = vi.spyOn(Doc, 'fromImportFile');
   dragFiles([new File(['word bytes'], 'Report.docx')]);
-  await vi.waitFor(() => expect(window.__docs.current.view.doc.name).toBe('Report'));
+  await vi.waitFor(() => expect(window.__writedoc.current.view.doc.name).toBe('Report'));
   expect(open).toHaveBeenCalledOnce();
   expect(blank.destroy).toHaveBeenCalledOnce();
   // An imported document has no file yet; the URL says so until it is saved.
@@ -57,17 +57,17 @@ it('opens files dropped anywhere the screen underneath does not take them itself
   expect(document.querySelector('.drop-hint')).toBeNull();
 
   // A drop the screen underneath answered is left alone.
-  const opened = window.__docs.current.view;
+  const opened = window.__writedoc.current.view;
   const handled = dragFiles([new File(['word bytes'], 'Other.docx')], { handled: true });
   expect(handled.defaultPrevented).toBe(true);
   await new Promise((resolve) => setTimeout(resolve, 0));
   expect(open).toHaveBeenCalledOnce();
-  expect(window.__docs.current.view).toBe(opened);
+  expect(window.__writedoc.current.view).toBe(opened);
 
   // Several at once: they are written into the folder, behind the open document.
   dragFiles([new File(['word bytes'], 'First.docx'), new File(['word bytes'], 'Second.docx')]);
-  await vi.waitFor(() => expect(writes).toEqual(['Documents/First.docx', 'Documents/Second.docx']));
-  expect(window.__docs.current.view).toBe(opened);
+  await vi.waitFor(() => expect(writes).toEqual(['writedoc/First.docx', 'writedoc/Second.docx']));
+  expect(window.__writedoc.current.view).toBe(opened);
 
   // Nothing reports the drag leaving the window, so the hint goes when the dragover repeats stop.
   vi.useFakeTimers();
@@ -78,7 +78,7 @@ it('opens files dropped anywhere the screen underneath does not take them itself
     expect(document.querySelector('.drop-hint')).toBeNull();
   } finally { vi.useRealTimers(); }
 
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });

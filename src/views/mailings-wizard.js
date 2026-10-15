@@ -65,7 +65,7 @@ export function createWizard(mm) {
       }
       default: return [section('Complete the merge',
         para('Merge to a new document to review or edit each copy, print them, or send them by email.'),
-        action('Edit Individual Documents…', () => mm.finish('document'), { disabled: !records.length }),
+        action('Edit individual files…', () => mm.finish('document'), { disabled: !records.length }),
         action('Print…', () => mm.finish('print'), { disabled: !records.length }),
         type === 'email' ? action('Send Email Messages…', () => mm.finish('email'), { disabled: !records.length }) : null,
         action('Check for Errors…', () => mm.checkErrors()))];

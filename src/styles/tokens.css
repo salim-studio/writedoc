@@ -24,17 +24,17 @@
   --paper-ink: #111111;
 
   /* Accent fill carries white text, so it needs 4.5:1 with white. */
-  /* Median opaque blue sampled from the project icon. */
-  --brand: #375f91;
+  /* Median opaque indigo sampled from the writedoc icon. */
+  --brand: #4f46e5;
   --accent: var(--brand);
-  --accent-strong: #2c4c74;
+  --accent-strong: #4338c9;
   --accent-ink: #ffffff;
-  --accent-wash: rgba(55, 95, 145, 0.12);
+  --accent-wash: rgba(79, 70, 229, 0.12);
   /* Selected text in the app's own fields: an opaque tint, since a wash of the accent is invisible. */
-  --selection: #c3cfde;
+  --selection: #ccd0f2;
   /* Toasts invert the theme (dark on light, light on dark), so their action
      link takes the other theme's accent to stay legible. */
-  --toast-action: #a9c5e5;
+  --toast-action: #b9c0f5;
   /* The toolbar selects' chevron, in the theme's --ink-3 (a background image cannot read a color token). */
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b6964' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
@@ -81,12 +81,12 @@
     --paper: #f6f6f3;
     --paper-ink: #111111;
 
-    --accent: #88acd5;
-    --accent-strong: #a9c5e5;
+    --accent: #a5b4fc;
+    --accent-strong: #c7d2fe;
     --accent-ink: #0d0d0d;
-    --accent-wash: rgba(136, 172, 213, 0.18);
-    --selection: #3e4b59;
-    --toast-action: #2c4c74;
+    --accent-wash: rgba(165, 180, 252, 0.18);
+    --selection: #3d4160;
+    --toast-action: #4338c9;
     --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23918f88' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
     --pos: #3fb950;
@@ -114,12 +114,12 @@
   --paper: #f6f6f3;
   --paper-ink: #111111;
 
-  --accent: #88acd5;
-  --accent-strong: #a9c5e5;
+  --accent: #a5b4fc;
+  --accent-strong: #c7d2fe;
   --accent-ink: #0d0d0d;
-  --accent-wash: rgba(136, 172, 213, 0.18);
-  --selection: #3e4b59;
-  --toast-action: #2c4c74;
+  --accent-wash: rgba(165, 180, 252, 0.18);
+  --selection: #3d4160;
+  --toast-action: #4338c9;
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23918f88' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 
   --pos: #3fb950;

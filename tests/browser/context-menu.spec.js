@@ -41,7 +41,7 @@ test('a right-click in a table offers its row and column commands', async ({ pag
   await (await onTab(page, 'insert')).getByRole('button', { name: 'Insert table', exact: true }).click();
   await page.getByRole('button', { name: 'Insert', exact: true }).click();
   await page.keyboard.type('A1');
-  const shape = () => page.evaluate(() => window.__docs.current.view.engine.model.tables.map(t => [t.rows.length, t.rows[0].cells.length]));
+  const shape = () => page.evaluate(() => window.__writedoc.current.view.engine.model.tables.map(t => [t.rows.length, t.rows[0].cells.length]));
   expect(await shape()).toEqual([[2, 2]]);
   const canvas = page.locator('canvas.canvas-page').first(), menu = page.getByRole('menu', { name: 'Document menu' });
   const choose = async (first, ...path) => { await canvas.click({ button: 'right', position: { x: 120, y: 150 } }); await menu.getByRole('menuitem', { name: first, exact: true }).click(); for (const name of path) await page.getByRole('menu').getByRole('menuitem', { name, exact: true }).click(); };

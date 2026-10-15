@@ -34,7 +34,7 @@ export const SORTS = [
 /** Lists longer than this filter after a pause in the typing rather than on every keystroke. */
 const SEARCH_AT_ONCE = 400;
 const SEARCH_PAUSE_MS = 120;
-const SORT_KEY = 'documents:sort';
+const SORT_KEY = 'writedoc:sort';
 
 /** Files ordered by the chosen key: newest, A to Z, or largest first. Names compare as shown, without their extension. */
 export function sortFiles(files, sort) {
@@ -82,7 +82,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     },
   });
 
-  const list = el('div.file-list', { role: 'region', 'aria-label': 'Documents' });
+  const list = el('div.file-list', { role: 'region', 'aria-label': 'writedoc' });
   // One live region, on the page from the start, carries what the list is doing: loading, failed, or filtered down to
   // so many documents. A region that arrives already filled is missed by many screen readers; changes to it are read.
   const listStatus = el('span.visually-hidden', { role: 'status' });
@@ -120,7 +120,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   const root = el('div.home.view', {},
     fileInput,
     el('header.home-head', {},
-      el('h1.brand', {}, el('img.brand-mark', { src: `${import.meta.env.BASE_URL}icons/icon-64.png`, width: 30, height: 30, alt: '' }), el('span', {}, 'Documents')),
+      el('h1.brand', {}, el('img.brand-mark', { src: `${import.meta.env.BASE_URL}logo.svg`, width: 30, height: 30, alt: 'writedoc logo' }), el('span', {}, 'writedoc')),
       el('div.grow'),
       avatar),
     el('main.home-main', {},
@@ -199,7 +199,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
           if (pending.has(t.path)) return;
           pending.add(t.path);
           const button = e.currentTarget;
-          const ok = await confirmDialog({ title: 'Delete template?', message: `"${t.name}" will be removed from your templates. Documents made from it are not affected.`, confirmLabel: 'Delete' });
+          const ok = await confirmDialog({ title: 'Delete template?', message: `"${t.name}" will be removed from your templates. Files made from it are not affected.`, confirmLabel: 'Delete' });
           if (!ok) { pending.delete(t.path); return; }
           button.disabled = true;
           button.textContent = 'Deleting…';
@@ -359,7 +359,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   async function remove(file) {
     const ok = await confirmDialog({
       title: 'Delete document?',
-      message: `"${P.stripExtension(file.name)}" will be moved out of your Documents folder and deleted. This cannot be undone.`,
+      message: `"${P.stripExtension(file.name)}" will be moved out of your writedoc folder and deleted. This cannot be undone.`,
       confirmLabel: 'Delete',
     });
     if (!ok) return;
@@ -414,7 +414,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
       list.append(el('div.empty', {},
         el('div.empty-icon', { html: icon('cloud', 28) }),
         el('h3.empty-title', {}, 'Sign in to see your documents'),
-        el('p.empty-sub', {}, 'Documents are saved as .docx files in your own Puter cloud. Sign in to open them here, or start writing without an account.'),
+        el('p.empty-sub', {}, 'writedoc saves your work as .docx files in your own Puter cloud. Sign in to open them here, or start writing without an account.'),
         el('div.row', { style: { justifyContent: 'center', marginTop: '6px' } },
           el('button.btn.btn-primary', { type: 'button', html: icon('login', 16, 2.2), onclick: () => session.signIn() }, el('span', {}, 'Sign in to Puter')),
           el('button.btn.btn-outline', { type: 'button', html: icon('plus', 16, 2.2), onclick: newDoc }, el('span', {}, 'New document')))));

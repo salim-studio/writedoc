@@ -15,7 +15,7 @@ vi.mock('../src/lib/puter.js', async (importOriginal) => {
       const stem = real.stripExtension(base) || 'Untitled document';
       let name = `${stem}.docx`;
       let n = 2;
-      while (fs.has(`Documents/${name}`)) name = `${stem} ${n++}.docx`;
+      while (fs.has(`writedoc/${name}`)) name = `${stem} ${n++}.docx`;
       return name;
     },
     writeFile,
@@ -71,7 +71,7 @@ describe('Doc', () => {
     const converted = doc.blob;
     doc.attach(async () => converted);
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(doc.path).toBe('Documents/한글.docx');
+    expect(doc.path).toBe('writedoc/한글.docx');
     expect(P.__fs.get(doc.path)).toBe(converted);
     doc.destroy();
   });
@@ -79,15 +79,15 @@ describe('Doc', () => {
   it('opens a Puter HWP as a fresh copy without overwriting or renaming the source', async () => {
     const original = new Blob([hwp()]);
     P.__fs.set('Elsewhere/원본.hwp', original);
-    P.__fs.set('Documents/원본.docx', blob('existing'));
+    P.__fs.set('writedoc/원본.docx', blob('existing'));
     const doc = await Doc.fromPath('Elsewhere/원본.hwp');
     expect(doc.path).toBeNull();
     const converted = doc.blob; doc.attach(async () => converted);
     await doc.save();
-    expect(doc.path).toBe('Documents/원본 2.docx');
+    expect(doc.path).toBe('writedoc/원본 2.docx');
     expect(P.__fs.get('Elsewhere/원본.hwp')).toBe(original);
-    expect(await P.__fs.get('Documents/원본.docx').text()).toBe('existing');
-    expect(P.writeFile).toHaveBeenCalledWith('Documents/원본 2.docx', converted, { dedupe: true });
+    expect(await P.__fs.get('writedoc/원본.docx').text()).toBe('existing');
+    expect(P.writeFile).toHaveBeenCalledWith('writedoc/원본 2.docx', converted, { dedupe: true });
     doc.destroy();
   });
 
@@ -97,7 +97,7 @@ describe('Doc', () => {
   });
 
   it('converts a Hanword template before editing and preserves the template on save', async () => {
-    const path = 'Documents/Templates/양식.HWP';
+    const path = 'writedoc/Templates/양식.HWP';
     const original = new Blob([hwp()]);
     P.__fs.set(path, original);
     const doc = await Doc.fromTemplateFile(path);
@@ -107,7 +107,7 @@ describe('Doc', () => {
     expect(doc.dirty).toBe(true);
     doc.attach(async () => doc.blob);
     await doc.save();
-    expect(doc.path).toBe('Documents/양식.docx');
+    expect(doc.path).toBe('writedoc/양식.docx');
     expect(P.__fs.get(path)).toBe(original);
     doc.destroy();
   });
@@ -121,20 +121,20 @@ describe('Doc', () => {
     expect(doc.status).toBe('unsaved');
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
     expect(P.writeFile).toHaveBeenCalledTimes(1);
-    expect(doc.path).toBe('Documents/Untitled document.docx');
-    expect(paths).toEqual(['Documents/Untitled document.docx']);
+    expect(doc.path).toBe('writedoc/Untitled document.docx');
+    expect(paths).toEqual(['writedoc/Untitled document.docx']);
     expect(doc.dirty).toBe(false);
     expect(statuses).toEqual(['unsaved', 'saving', 'saved']);
     expect(doc.size).toBe(2);
   });
 
   it('picks a free name when the default is taken', async () => {
-    P.__fs.set('Documents/Untitled document.docx', blob('x'));
+    P.__fs.set('writedoc/Untitled document.docx', blob('x'));
     const doc = Doc.blank();
     doc.attach(async () => blob('v1'));
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(doc.path).toBe('Documents/Untitled document 2.docx');
+    expect(doc.path).toBe('writedoc/Untitled document 2.docx');
     expect(doc.name).toBe('Untitled document 2');
   });
 
@@ -166,8 +166,8 @@ describe('Doc', () => {
     expect(doc.path).toBe('Desktop/Old.dotx');
     expect(paths).not.toHaveBeenCalled();
     expect(await doc.save()).toBe(true);
-    expect(await P.__fs.get('Documents/Old.docx').text()).toBe('copy');
-    expect(doc.path).toBe('Documents/Old.docx');
+    expect(await P.__fs.get('writedoc/Old.docx').text()).toBe('copy');
+    expect(doc.path).toBe('writedoc/Old.docx');
     doc.destroy();
   });
 
@@ -199,7 +199,7 @@ describe('Doc', () => {
   });
 
   it('serializes multiple save requests waiting for an earlier save', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx' });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx' });
     const exports = [];
     doc.attach(() => new Promise((resolve) => exports.push(resolve)));
     doc.changed();
@@ -243,7 +243,7 @@ describe('Doc', () => {
   });
 
   it.each(['export', 'write'])('retries newer edits when autosave waits on a failed manual %s', async (stage) => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let reject;
     const pending = new Promise((_, fail) => { reject = fail; });
@@ -312,12 +312,12 @@ describe('Doc', () => {
     expect(await doc.save()).toBe(false);
     doc.attach(async () => blob('exported'));
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(doc.path).toBe('Documents/Memo.docx');
+    expect(doc.path).toBe('writedoc/Memo.docx');
     expect(doc.dirty).toBe(false);
   });
 
   it('flushes edits made during a slow save before allowing the editor to close', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx' });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx' });
     let release;
     const exported = new Promise((resolve) => { release = resolve; });
     const exporter = vi.fn().mockReturnValueOnce(exported).mockResolvedValue(blob('latest'));
@@ -349,7 +349,7 @@ describe('Doc', () => {
     expect(doc.status).toBe('unsaved');
     if (!ready) doc.attach(async () => content);
     await doc.flush();
-    expect(doc.path).toBe('Documents/Project notes.docx');
+    expect(doc.path).toBe('writedoc/Project notes.docx');
     expect(P.__fs.get(doc.path)).toBe(content);
     expect(doc.dirty).toBe(false);
     doc.destroy();
@@ -366,21 +366,21 @@ describe('Doc', () => {
   });
 
   it('renames the file on disk and refuses collisions', async () => {
-    P.__fs.set('Documents/Taken.docx', blob('t'));
-    const doc = new Doc({ name: 'Report', path: 'Documents/Report.docx', blob: blob('r') });
-    P.__fs.set('Documents/Report.docx', doc.blob);
+    P.__fs.set('writedoc/Taken.docx', blob('t'));
+    const doc = new Doc({ name: 'Report', path: 'writedoc/Report.docx', blob: blob('r') });
+    P.__fs.set('writedoc/Report.docx', doc.blob);
     expect(await doc.rename('Taken')).toBe('A file with that name already exists');
     expect(await doc.rename('')).toBe('Enter a name');
     for (const dots of ['.', '..', '...docx']) expect(await doc.rename(dots)).toBe('Enter a name');
     expect(await doc.rename('Report')).toBeNull();
     expect(await doc.rename('Final/Report.docx')).toBeNull();
-    expect(doc.path).toBe('Documents/Final Report.docx');
+    expect(doc.path).toBe('writedoc/Final Report.docx');
     expect(doc.name).toBe('Final Report');
-    expect(P.renameFile).toHaveBeenCalledWith('Documents/Report.docx', 'Final Report.docx');
+    expect(P.renameFile).toHaveBeenCalledWith('writedoc/Report.docx', 'Final Report.docx');
   });
 
   it('refuses to name an unsaved document after a file that exists', async () => {
-    P.__fs.set('Documents/Taken.docx', blob('t'));
+    P.__fs.set('writedoc/Taken.docx', blob('t'));
     const fresh = Doc.blank();
     expect(await fresh.rename('Taken')).toBe('A file with that name already exists');
     expect(fresh.name).toBe(UNTITLED);
@@ -421,14 +421,14 @@ describe('Doc', () => {
     // An edit is what turns it into a document of its own.
     doc.changed();
     expect(await doc.save()).toBe(true);
-    expect(doc.path).toBe('Documents/T.docx');
+    expect(doc.path).toBe('writedoc/T.docx');
   });
 
   it('keeps a clean document saved when a restore fails before anything is written', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('a') });
-    P.__fs.set('Documents/A.docx', doc.blob);
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('a') });
+    P.__fs.set('writedoc/A.docx', doc.blob);
     doc.attach(async () => blob('a'));
-    await expect(doc.restoreVersion('Documents/.versions/A/missing.docx')).rejects.toThrow();
+    await expect(doc.restoreVersion('writedoc/.versions/A/missing.docx')).rejects.toThrow();
     expect(doc.status).toBe('saved');
     expect(doc.dirty).toBe(false);
   });
@@ -442,7 +442,7 @@ describe('Doc', () => {
   });
 
   it('clears the "Not saved" pill of a clean document after a failed copy once it is saved again', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('a') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('a') });
     doc.attach(async () => blob('a2'));
     P.writeFile.mockRejectedValueOnce(new Error('quota'));
     expect(await doc.saveAs('B')).toBe('quota');
@@ -453,17 +453,17 @@ describe('Doc', () => {
   });
 
   it('saves a copy and switches to it', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('a') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('a') });
     doc.attach(async () => blob('a2'));
     expect(await doc.saveAs('B')).toBeNull();
-    expect(doc.path).toBe('Documents/B.docx');
+    expect(doc.path).toBe('writedoc/B.docx');
     expect(doc.name).toBe('B');
-    expect(P.__fs.has('Documents/B.docx')).toBe(true);
+    expect(P.__fs.has('writedoc/B.docx')).toBe(true);
     expect(await doc.saveAs('B')).toBe('A file with that name already exists');
   });
 
   it('waits for an active save before exporting a copy', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let release;
     const writing = new Promise((resolve) => { release = resolve; });
@@ -481,14 +481,14 @@ describe('Doc', () => {
     await saving;
     expect(await copying).toBeNull();
     expect(exportsDuringWrite).toBe(1);
-    expect(await P.__fs.get('Documents/A.docx').text()).toBe('earlier');
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('latest');
+    expect(await P.__fs.get('writedoc/A.docx').text()).toBe('earlier');
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('latest');
     expect(doc.dirty).toBe(false);
     doc.destroy();
   });
 
   it('saves edits to the copy when autosave fires during a slow copy export', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let release;
     const exporting = new Promise((resolve) => { release = resolve; });
@@ -503,14 +503,14 @@ describe('Doc', () => {
     await copying;
     await doc.flush();
     expect(exportsDuringCopy).toBe(1);
-    expect(await P.__fs.get('Documents/A.docx').text()).toBe('original');
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('latest');
+    expect(await P.__fs.get('writedoc/A.docx').text()).toBe('original');
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('latest');
     expect(doc.dirty).toBe(false);
     doc.destroy();
   });
 
   it('keeps a clean document open until saving its copy finishes', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     let release;
     doc.attach(() => new Promise((resolve) => { release = resolve; }));
     const copying = doc.saveAs('B');
@@ -522,12 +522,12 @@ describe('Doc', () => {
     release(blob('copy'));
     await Promise.all([copying, leaving]);
     expect(leftDuringCopy).toBe(false);
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('copy');
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('copy');
     doc.destroy();
   });
 
   it('waits for a pending write before renaming its file', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let release;
     const writing = new Promise((resolve) => { release = resolve; });
@@ -540,20 +540,20 @@ describe('Doc', () => {
     await vi.advanceTimersByTimeAsync(0);
     release();
     await Promise.all([saving, renaming]);
-    expect(P.__fs.has('Documents/A.docx')).toBe(false);
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('latest');
-    expect(doc.path).toBe('Documents/B.docx');
+    expect(P.__fs.has('writedoc/A.docx')).toBe(false);
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('latest');
+    expect(doc.path).toBe('writedoc/B.docx');
     doc.destroy();
   });
 
   it('holds autosave until a slow rename has finished', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let release;
     const moving = new Promise((resolve) => { release = resolve; });
     P.renameFile.mockImplementationOnce(async (path, name) => {
       await moving;
-      P.__fs.set(`Documents/${name}`, P.__fs.get(path));
+      P.__fs.set(`writedoc/${name}`, P.__fs.get(path));
       P.__fs.delete(path);
     });
     doc.attach(async () => blob('latest'));
@@ -567,13 +567,13 @@ describe('Doc', () => {
     release();
     await Promise.all([renaming, saving]);
     expect(writesDuringRename).toBe(0);
-    expect(P.__fs.has('Documents/A.docx')).toBe(false);
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('latest');
+    expect(P.__fs.has('writedoc/A.docx')).toBe(false);
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('latest');
     doc.destroy();
   });
 
   it('allows Save a copy to recover after an active save fails', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let reject;
     P.writeFile.mockReturnValueOnce(new Promise((_, fail) => { reject = fail; }));
@@ -585,24 +585,24 @@ describe('Doc', () => {
     reject(new Error('Original is read only'));
     await failure;
     expect(await copying).toBeNull();
-    expect(await P.__fs.get('Documents/A.docx').text()).toBe('original');
-    expect(await P.__fs.get('Documents/B.docx').text()).toBe('latest');
+    expect(await P.__fs.get('writedoc/A.docx').text()).toBe('original');
+    expect(await P.__fs.get('writedoc/B.docx').text()).toBe('latest');
     expect(doc.dirty).toBe(false);
     doc.destroy();
   });
 
   it('resumes autosave of pending edits on the original if saving a copy fails', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     doc.attach(async () => blob('latest'));
     doc.changed();
     P.writeFile.mockRejectedValueOnce(new Error('Copy failed'));
     expect(await doc.saveAs('B')).toBe('Copy failed');
-    expect(doc.path).toBe('Documents/A.docx');
+    expect(doc.path).toBe('writedoc/A.docx');
     expect(doc.dirty).toBe(true);
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS);
-    expect(await P.__fs.get('Documents/A.docx').text()).toBe('latest');
-    expect(P.__fs.has('Documents/B.docx')).toBe(false);
+    expect(await P.__fs.get('writedoc/A.docx').text()).toBe('latest');
+    expect(P.__fs.has('writedoc/B.docx')).toBe(false);
     expect(doc.dirty).toBe(false);
     doc.destroy();
   });
@@ -614,9 +614,9 @@ describe('Doc', () => {
     doc.attach(async () => blob('new'));
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(doc.path).toBe('Documents/Old.docx');
+    expect(doc.path).toBe('writedoc/Old.docx');
     // The template keeps its star, goal and reading position; the copy gets them too.
-    expect(paths.mock.calls[0][0].detail).toEqual({ path: 'Documents/Old.docx', name: 'Old', copy: true });
+    expect(paths.mock.calls[0][0].detail).toEqual({ path: 'writedoc/Old.docx', name: 'Old', copy: true });
   });
 
   it('renames the copy a template becomes, not the template file, while edits are pending', async () => {
@@ -629,12 +629,12 @@ describe('Doc', () => {
     expect(P.renameFile.mock.calls.length).toBe(renames);
     expect(doc.name).toBe('My letter');
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(doc.path).toBe('Documents/My letter.docx');
+    expect(doc.path).toBe('writedoc/My letter.docx');
     expect(P.__fs.has('Desktop/T.dotx')).toBe(true);
   });
 
   it('lets the opened bytes go once the engine has them, keeping their size for the details', async () => {
-    const doc = new Doc({ name: 'Big', path: 'Documents/Big.docx', blob: blob('x'.repeat(4096)) });
+    const doc = new Doc({ name: 'Big', path: 'writedoc/Big.docx', blob: blob('x'.repeat(4096)) });
     expect(doc.size).toBe(4096);
     doc.attach(async () => blob('y'.repeat(10)));
     expect(doc.blob).toBeNull();
@@ -644,7 +644,7 @@ describe('Doc', () => {
     expect(doc.blob).toBeNull();
     expect(doc.size).toBe(10);
     // A document without an engine still hands out the bytes it was opened with.
-    const plain = new Doc({ name: 'P', path: 'Documents/P.docx', blob: blob('abc') });
+    const plain = new Doc({ name: 'P', path: 'writedoc/P.docx', blob: blob('abc') });
     expect(await plain.toBlob()).toBe(plain.blob);
   });
 
@@ -659,16 +659,16 @@ describe('Doc', () => {
   });
 
   it('opens from a path', async () => {
-    P.__fs.set('Documents/Plan.docx', blob('plan'));
-    const doc = await Doc.fromPath('Documents/Plan.docx');
+    P.__fs.set('writedoc/Plan.docx', blob('plan'));
+    const doc = await Doc.fromPath('writedoc/Plan.docx');
     expect(doc.name).toBe('Plan');
     expect(doc.blob.size).toBe(4);
     expect(doc.dirty).toBe(false);
-    await expect(Doc.fromPath('Documents/Missing.docx')).rejects.toThrow();
+    await expect(Doc.fromPath('writedoc/Missing.docx')).rejects.toThrow();
   });
 
   it('waits for a save before deleting and prevents queued autosaves from recreating the file', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     let release;
     const writing = new Promise((resolve) => { release = resolve; });
@@ -680,7 +680,7 @@ describe('Doc', () => {
     release(); await Promise.all([saving, deleting, queued]);
     doc.changed();
     await vi.advanceTimersByTimeAsync(RETRY_MS);
-    expect(P.__fs.has('Documents/A.docx')).toBe(false);
+    expect(P.__fs.has('writedoc/A.docx')).toBe(false);
     expect(doc.path).toBeNull();
     expect(doc.dirty).toBe(false);
     expect(await doc.flush()).toBe(true);
@@ -688,12 +688,12 @@ describe('Doc', () => {
   });
 
   it('resumes autosaving pending edits when deletion fails', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     P.__fs.set(doc.path, doc.blob);
     doc.attach(async () => blob('latest')); doc.changed();
     P.deleteFile.mockRejectedValueOnce(new Error('Delete failed'));
     await expect(doc.remove()).rejects.toThrow('Delete failed');
-    expect(doc.path).toBe('Documents/A.docx');
+    expect(doc.path).toBe('writedoc/A.docx');
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS);
     expect(await P.__fs.get(doc.path).text()).toBe('latest');
     expect(doc.dirty).toBe(false);
@@ -701,7 +701,7 @@ describe('Doc', () => {
   });
 
   it('stops autosaving and retrying once the editor has closed', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('original') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('original') });
     let fail;
     const exporter = vi.fn(() => new Promise((_, reject) => { fail = reject; }));
     doc.attach(exporter); doc.changed();
@@ -717,14 +717,14 @@ describe('Doc', () => {
   });
 
   it('exports the last known bytes when no engine is attached', async () => {
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('a') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('a') });
     expect((await doc.toBlob()).size).toBe(1);
     await expect(Doc.blank().toBlob()).rejects.toThrow();
   });
 
   it('warns before unload only while edits are pending or a save is in flight', async () => {
     expect(needsUnloadWarning(null)).toBe(false);
-    const doc = new Doc({ name: 'A', path: 'Documents/A.docx', blob: blob('a') });
+    const doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: blob('a') });
     expect(needsUnloadWarning(doc)).toBe(false);
     doc.changed();
     expect(needsUnloadWarning(doc)).toBe(true);
@@ -759,15 +759,15 @@ describe('Doc versioning', () => {
       for (const k of [...files.keys()]) if (k.startsWith(`${path}/`)) { files.set(`${t}${k.slice(path.length)}`, files.get(k)); files.delete(k); }
     });
     try {
-      const doc = new Doc({ name: 'Notes', path: 'Documents/Notes.docx', blob: blob('n') });
-      files.set('Documents/Notes.docx', doc.blob);
+      const doc = new Doc({ name: 'Notes', path: 'writedoc/Notes.docx', blob: blob('n') });
+      files.set('writedoc/Notes.docx', doc.blob);
       doc.attach(async () => blob('edit 1'));
       doc.changed();
       await doc.save();
       await doc._snapshotting;
-      const versionKeys = () => [...files.keys()].filter((k) => k.startsWith('Documents/.versions/'));
+      const versionKeys = () => [...files.keys()].filter((k) => k.startsWith('writedoc/.versions/'));
       expect(versionKeys()).toHaveLength(1);
-      expect(versionKeys()[0].startsWith('Documents/.versions/Notes/')).toBe(true);
+      expect(versionKeys()[0].startsWith('writedoc/.versions/Notes/')).toBe(true);
       expect(typeof doc.lastVersionAt).toBe('number');
       // A second save right away is too soon for another snapshot.
       doc.changed();
@@ -776,12 +776,12 @@ describe('Doc versioning', () => {
       expect(versionKeys()).toHaveLength(1);
       // On demand always snapshots.
       const v = await doc.saveVersionNow();
-      expect(v.path.startsWith('Documents/.versions/Notes/')).toBe(true);
+      expect(v.path.startsWith('writedoc/.versions/Notes/')).toBe(true);
       expect(versionKeys()).toHaveLength(2);
       // The history follows a rename.
       expect(await doc.rename('Journal')).toBeNull();
       expect(versionKeys()).toHaveLength(2);
-      expect(versionKeys().every((k) => k.startsWith('Documents/.versions/Journal/'))).toBe(true);
+      expect(versionKeys().every((k) => k.startsWith('writedoc/.versions/Journal/'))).toBe(true);
     } finally {
       delete globalThis.puter;
       versioning.enabled = false;
@@ -798,12 +798,12 @@ describe('published pages follow the file', () => {
     publishing.enabled = true;
     try {
       const P = await import('../src/lib/puter.js');
-      P.__fs.set('Documents/Draft.docx', new Blob(['x']));
-      const doc = new Doc({ name: 'Draft', path: 'Documents/Draft.docx', blob: new Blob(['x']) });
+      P.__fs.set('writedoc/Draft.docx', new Blob(['x']));
+      const doc = new Doc({ name: 'Draft', path: 'writedoc/Draft.docx', blob: new Blob(['x']) });
       expect(await doc.rename('Final')).toBeNull();
-      expect(move).toHaveBeenCalledWith('Documents/Draft.docx', 'Documents/Final.docx');
+      expect(move).toHaveBeenCalledWith('writedoc/Draft.docx', 'writedoc/Final.docx');
       await doc.remove();
-      expect(down).toHaveBeenCalledWith('Documents/Final.docx');
+      expect(down).toHaveBeenCalledWith('writedoc/Final.docx');
     } finally { publishing.enabled = false; move.mockRestore(); down.mockRestore(); }
   });
 });
@@ -811,7 +811,7 @@ describe('published pages follow the file', () => {
 describe('a closed document', () => {
   it('neither becomes dirty nor writes its file once the editor has closed', async () => {
     P.writeFile.mockClear();
-    const doc = new Doc({ name: 'Alpha', path: 'Documents/Alpha.docx' });
+    const doc = new Doc({ name: 'Alpha', path: 'writedoc/Alpha.docx' });
     const exporter = vi.fn(async () => blob('partial'));
     doc.attach(exporter);
     doc.destroy();
@@ -831,7 +831,7 @@ describe('offline', () => {
     vi.stubGlobal('navigator', { onLine: false });
     P.writeFile.mockImplementationOnce(async () => { throw new TypeError('Failed to fetch'); });
     try {
-      const doc = new Doc({ name: 'Alpha', path: 'Documents/Alpha.docx' });
+      const doc = new Doc({ name: 'Alpha', path: 'writedoc/Alpha.docx' });
       const exporter = vi.fn(async () => blob('offline edit'));
       doc.attach(exporter);
       doc.changed();
@@ -853,7 +853,7 @@ describe('files that vanished under the document', () => {
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
   it('treats deleting a file another window already removed as done, so the next edit cannot recreate it', async () => {
-    const doc = new Doc({ name: 'Gone', path: 'Documents/Gone.docx', blob: blob('x') });
+    const doc = new Doc({ name: 'Gone', path: 'writedoc/Gone.docx', blob: blob('x') });
     doc.attach(async () => blob('y'));
     P.deleteFile.mockRejectedValueOnce(gone());
     await doc.remove();
@@ -864,10 +864,10 @@ describe('files that vanished under the document', () => {
   });
 
   it('says that a file being renamed no longer exists when Puter cannot find it', async () => {
-    const doc = new Doc({ name: 'Old', path: 'Documents/Old.docx', blob: blob('x') });
+    const doc = new Doc({ name: 'Old', path: 'writedoc/Old.docx', blob: blob('x') });
     P.renameFile.mockRejectedValueOnce(gone());
     expect(await doc.rename('New')).toBe('That file no longer exists');
-    expect(doc.path).toBe('Documents/Old.docx');
+    expect(doc.path).toBe('writedoc/Old.docx');
   });
 });
 
@@ -908,8 +908,8 @@ describe('Save while another operation holds the file', () => {
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
   it('reports the save\'s own outcome, not the failure of the delete it waited for', async () => {
-    const doc = new Doc({ name: 'Report', path: 'Documents/Report.docx', blob: blob('x') });
-    P.__fs.set('Documents/Report.docx', doc.blob);
+    const doc = new Doc({ name: 'Report', path: 'writedoc/Report.docx', blob: blob('x') });
+    P.__fs.set('writedoc/Report.docx', doc.blob);
     doc.attach(async () => blob('y'));
     P.deleteFile.mockImplementationOnce(() => new Promise((_, reject) => setTimeout(() => reject(new Error('Permission denied for delete')), 100)));
     const removing = doc.remove().catch((e) => e.message);
@@ -919,7 +919,7 @@ describe('Save while another operation holds the file', () => {
     expect(await removing).toBe('Permission denied for delete');
     expect(await saving).toBe(true);
     expect(doc.status).toBe('saved');
-    expect(P.writeFile).toHaveBeenCalledWith('Documents/Report.docx', expect.anything());
+    expect(P.writeFile).toHaveBeenCalledWith('writedoc/Report.docx', expect.anything());
   });
 });
 
@@ -928,7 +928,7 @@ describe('autosave pacing', () => {
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
   it('waits longer between autosaves of a document whose save takes long, up to half a minute', async () => {
-    const doc = new Doc({ name: 'Big', path: 'Documents/Big.docx', blob: blob('x') });
+    const doc = new Doc({ name: 'Big', path: 'writedoc/Big.docx', blob: blob('x') });
     doc.attach(() => new Promise((resolve) => setTimeout(() => resolve(blob('big')), 4000)));
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 4000);
@@ -961,7 +961,7 @@ describe('autosave pacing after an import', () => {
   afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
   it('does not count the wait for the layout of an imported document as save time', async () => {
-    const doc = new Doc({ name: 'Imported', path: 'Documents/Imported.docx', blob: blob('x') });
+    const doc = new Doc({ name: 'Imported', path: 'writedoc/Imported.docx', blob: blob('x') });
     doc.changed();
     let laidOut;
     doc.attach(async () => blob('laid out'), { ready: new Promise((resolve) => { laidOut = resolve; }) });
@@ -983,15 +983,15 @@ describe('a file open in two windows', () => {
   });
   afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
   const opened = (modified = 100) => {
-    P.__fs.set('Documents/Report.docx', blob('a'));
-    const doc = new Doc({ name: 'Report', path: 'Documents/Report.docx', blob: blob('a'), modified });
+    P.__fs.set('writedoc/Report.docx', blob('a'));
+    const doc = new Doc({ name: 'Report', path: 'writedoc/Report.docx', blob: blob('a'), modified });
     doc.attach(async () => blob('b'));
     return doc;
   };
 
   it('does not write over a file another window changed, and does not keep trying on its own', async () => {
     const doc = opened();
-    vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'Documents/Report.docx', modified: 200 });
+    vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'writedoc/Report.docx', modified: 200 });
     doc.changed();
     await expect(doc.save()).rejects.toThrow('This document was changed in another window. Use Save a copy to keep your changes, or reopen it to see theirs');
     expect(P.writeFile).not.toHaveBeenCalled();
@@ -1002,7 +1002,7 @@ describe('a file open in two windows', () => {
     // A copy keeps the edits, and the document follows the copy's own time stamp from then on.
     P.writeFile.mockImplementationOnce(async (path, content) => { P.__fs.set(path, content); return { path, modified: 300 }; });
     expect(await doc.saveAs('Report copy')).toBeNull();
-    expect(doc.path).toBe('Documents/Report copy.docx');
+    expect(doc.path).toBe('writedoc/Report copy.docx');
     P.statFile.mockResolvedValue({ path: doc.path, modified: 300 });
     doc.changed();
     P.writeFile.mockImplementationOnce(async (path, content) => { P.__fs.set(path, content); return { path, modified: 301 }; });
@@ -1023,16 +1023,16 @@ describe('a file open in two windows', () => {
 
   it('writes when the file is as it left it, and learns the time stamp of each write', async () => {
     const doc = opened();
-    const stat = vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'Documents/Report.docx', modified: 100 });
+    const stat = vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'writedoc/Report.docx', modified: 100 });
     P.writeFile.mockImplementation(async (path, content) => { P.__fs.set(path, content); return { path, modified: 150 }; });
     doc.changed();
     expect(await doc.save()).toBe(true);
     expect(P.writeFile).toHaveBeenCalledTimes(1);
     // The stamp the write returned is the one to expect next time.
-    stat.mockResolvedValue({ path: 'Documents/Report.docx', modified: 150 });
+    stat.mockResolvedValue({ path: 'writedoc/Report.docx', modified: 150 });
     doc.changed();
     expect(await doc.save()).toBe(true);
-    stat.mockResolvedValue({ path: 'Documents/Report.docx', modified: 151 });
+    stat.mockResolvedValue({ path: 'writedoc/Report.docx', modified: 151 });
     doc.changed();
     await expect(doc.save()).rejects.toThrow('changed in another window');
     expect(P.writeFile).toHaveBeenCalledTimes(2);
@@ -1040,7 +1040,7 @@ describe('a file open in two windows', () => {
 
   it('saves as before when the time stamp is unknown or the check itself fails', async () => {
     const unknown = opened(null);
-    vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'Documents/Report.docx', modified: 999 });
+    vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'writedoc/Report.docx', modified: 999 });
     unknown.changed();
     expect(await unknown.save()).toBe(true);
     const known = opened(100);
@@ -1053,11 +1053,11 @@ describe('a file open in two windows', () => {
   it('learns the time stamp from its first write when the document was opened without one', async () => {
     // Opening reads the file's bytes and nothing more; the first write's answer arms the check.
     const doc = opened(null);
-    const stat = vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'Documents/Report.docx', modified: 42 });
+    const stat = vi.spyOn(P, 'statFile').mockResolvedValue({ path: 'writedoc/Report.docx', modified: 42 });
     P.writeFile.mockImplementationOnce(async (path, content) => { P.__fs.set(path, content); return { path, modified: 42 }; });
     doc.changed();
     expect(await doc.save()).toBe(true);
-    stat.mockResolvedValue({ path: 'Documents/Report.docx', modified: 43 });
+    stat.mockResolvedValue({ path: 'writedoc/Report.docx', modified: 43 });
     doc.changed();
     await expect(doc.save()).rejects.toThrow('changed in another window');
     expect(P.writeFile).toHaveBeenCalledTimes(1);

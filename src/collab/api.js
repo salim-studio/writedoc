@@ -9,8 +9,8 @@
 import { workerURL } from './protocol.js';
 import { authorize, refuseCredential } from './auth.js';
 
-export const WORKER_KEY = 'documents-collab-worker-v1';
-export const WORKER_BUNDLE = 'worker/documents-worker.js';
+export const WORKER_KEY = 'writedoc-collab-worker-v1';
+export const WORKER_BUNDLE = 'worker/writedoc-worker.js';
 
 export class CollabError extends Error {
   constructor(message, status = 0) { super(message); this.status = status; }
@@ -59,12 +59,12 @@ export async function deploy(puter, progress = () => {}, fetchBundle = defaultBu
   check();
   progress('Preparing the collaboration server…');
   const source = await fetchBundle();
-  const build = /documents-worker build=([a-f0-9]+)/.exec(source)?.[1];
+  const build = /writedoc-worker build=([a-f0-9]+)/.exec(source)?.[1];
   if (!build) throw new Error('The collaboration server bundle is invalid.');
   check();
   if (!config) {
     const name = `documents-${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
-    const file = await puter.fs.write('documents-collab/documents-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
+    const file = await puter.fs.write('writedoc-collab/writedoc-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
     check();
     const deployed = await puter.workers.create(name, file.path);
     check();

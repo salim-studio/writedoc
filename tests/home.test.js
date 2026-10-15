@@ -18,7 +18,7 @@ describe('sortFiles', () => {
   });
 
   it('orders names as shown, without the extension competing with spaces and dashes', () => {
-    const names = ['Notes-2.docx', 'Notes (draft).docx', 'Notes.docx', 'Notes 3.docx'].map((name) => ({ name, path: `Documents/${name}`, size: 1, modified: 1 }));
+    const names = ['Notes-2.docx', 'Notes (draft).docx', 'Notes.docx', 'Notes 3.docx'].map((name) => ({ name, path: `writedoc/${name}`, size: 1, modified: 1 }));
     expect(sortFiles(names, 'name').map((f) => f.name)).toEqual(['Notes.docx', 'Notes (draft).docx', 'Notes 3.docx', 'Notes-2.docx']);
   });
 
@@ -26,9 +26,9 @@ describe('sortFiles', () => {
     const store = new Map();
     vi.stubGlobal('localStorage', { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, String(v)), removeItem: (k) => store.delete(k) });
     expect(rememberedSort()).toBe('modified');
-    localStorage.setItem('documents:sort', 'name');
+    localStorage.setItem('writedoc:sort', 'name');
     expect(rememberedSort()).toBe('name');
-    localStorage.setItem('documents:sort', 'nonsense');
+    localStorage.setItem('writedoc:sort', 'nonsense');
     expect(rememberedSort()).toBe('modified');
     expect(SORTS.map((s) => s.id)).toEqual(['modified', 'name', 'size']);
   });

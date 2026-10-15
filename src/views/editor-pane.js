@@ -10,8 +10,8 @@ import { textStatistics, easeLabel } from '../lib/readability.js';
 import { checkGrammar, SUGGESTION_KINDS } from '../lib/proofing-ai.js';
 import { sidePane, section, button, hint, preference, reveal } from './review-ui.js';
 
-const AI_ON = preference('documents:editor-ai', false);
-const AI_KINDS = preference('documents:editor-ai-kinds', ['grammar', 'punctuation', 'clarity', 'conciseness']);
+const AI_ON = preference('writedoc:editor-ai', false);
+const AI_KINDS = preference('writedoc:editor-ai-kinds', ['grammar', 'punctuation', 'clarity', 'conciseness']);
 
 export function createEditorPane({ editor, pkg, proofing, error, onState = () => {} }) {
   let spellingIssues = [], current = null, aiSuggestions = [], aiBusy = null, ignoredSuggestions = new Set();

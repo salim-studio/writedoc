@@ -7,7 +7,7 @@
  */
 export default function collabDevServer() {
   return {
-    name: 'documents-collab-dev-server',
+    name: 'writedoc-collab-dev-server',
     apply: 'serve',
     configureServer(server) {
       const kv = new Map(), files = new Map();

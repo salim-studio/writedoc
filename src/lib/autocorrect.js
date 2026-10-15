@@ -9,9 +9,9 @@
  * switched off from the account menu.
  */
 
-const KEY = 'documents:autocorrect';
-const CAP_KEY = 'documents:autocapitalize';
-const HINTED_KEY = 'documents:autocorrect-hinted';
+const KEY = 'writedoc:autocorrect';
+const CAP_KEY = 'writedoc:autocapitalize';
+const HINTED_KEY = 'writedoc:autocorrect-hinted';
 
 const storage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
 

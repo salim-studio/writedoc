@@ -258,7 +258,7 @@ describe('createCommentsPanel', () => {
     expect(p.el.querySelector('.comments-actions button').disabled).toBe(false);
     p.toggle();
     expect(p.isOpen).toBe(true);
-    expect(localStorage.getItem('documents:comments')).toBe('1');
+    expect(localStorage.getItem('writedoc:comments')).toBe('1');
   });
 });
 

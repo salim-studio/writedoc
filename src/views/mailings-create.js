@@ -7,9 +7,9 @@ import { dialog, field, select, input, textarea, checkbox, radios, button, print
 import { ENVELOPE_SIZES, LABEL_LAYOUTS, SHEETS, layoutProblems } from '../engine/mail-documents.js';
 
 const IN = 1440, MM = 1440 / 25.4;
-const RETURN_KEY = 'documents.mailings.returnAddress';
-const LAYOUT_KEY = 'documents.mailings.labelLayout';
-const ENVELOPE_KEY = 'documents.mailings.envelope';
+const RETURN_KEY = 'writedoc.mailings.returnAddress';
+const LAYOUT_KEY = 'writedoc.mailings.labelLayout';
+const ENVELOPE_KEY = 'writedoc.mailings.envelope';
 const stored = key => { try { return localStorage.getItem(key); } catch { return null; } };
 const store = (key, value) => { try { localStorage.setItem(key, value); } catch { /* Private windows keep nothing. */ } };
 const round = (n, d = 2) => String(Math.round(n * 10 ** d) / 10 ** d);

@@ -14,13 +14,13 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
 describe('home document actions', () => {
   let files, view;
-  const original = 'Documents/Report.docx';
-  const renamed = 'Documents/Final.docx';
+  const original = 'writedoc/Report.docx';
+  const renamed = 'writedoc/Final.docx';
   const snapshot = versionName(Date.UTC(2026, 8, 1));
 
   beforeEach(() => {
     localStorage.clear();
-    files = new Map([[original, new Blob(['current'])], [`Documents/.versions/Report/${snapshot}`, new Blob(['earlier'])]]);
+    files = new Map([[original, new Blob(['current'])], [`writedoc/.versions/Report/${snapshot}`, new Blob(['earlier'])]]);
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     vi.stubGlobal('puter', { fs: {
       mkdir: async () => {},
@@ -157,7 +157,7 @@ describe('home document actions', () => {
     await vi.waitFor(() => expect(form.querySelector('[role="alert"]').textContent).toContain('already exists'));
     expect(files.get(renamed)).toBe(other);
     form.querySelector('input').value = 'Final revised'; form.requestSubmit();
-    await vi.waitFor(() => expect(files.has('Documents/Final revised.docx')).toBe(true));
+    await vi.waitFor(() => expect(files.has('writedoc/Final revised.docx')).toBe(true));
     expect(files.get(renamed)).toBe(other);
   });
 
@@ -206,29 +206,29 @@ describe('home document actions', () => {
   });
 
   it.each(['duplicate another file', 'reopen the home screen'])('preserves a renamed star while history is moving and the user chooses to %s', async (action) => {
-    files.set('Documents/Other.docx', new Blob(['other']));
+    files.set('writedoc/Other.docx', new Blob(['other']));
     rememberGoal(original, 1200); rememberPosition(original, { blockId: 'paragraph-2', offset: 12 }); toggleStar(original);
     let finish;
     const pending = new Promise((resolve) => { finish = resolve; });
     const rename = puter.fs.rename.getMockImplementation();
     puter.fs.rename.mockImplementation(async (path, name) => {
-      if (path === 'Documents/.versions/Report') await pending;
+      if (path === 'writedoc/.versions/Report') await pending;
       return rename(path, name);
     });
     await setup(); submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
+    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('writedoc/.versions/Report', 'Final'));
     expect(files.has(renamed)).toBe(true);
     closeAllModals();
     if (action === 'duplicate another file') {
-      view.el.querySelector('[data-path="Documents/Other.docx"] .file-menu-btn').click();
+      view.el.querySelector('[data-path="writedoc/Other.docx"] .file-menu-btn').click();
       [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Duplicate').click();
-      await vi.waitFor(() => expect(view.el.querySelector('[data-path="Documents/Other copy.docx"]')).not.toBeNull());
+      await vi.waitFor(() => expect(view.el.querySelector('[data-path="writedoc/Other copy.docx"]')).not.toBeNull());
     } else {
       view.destroy(); view.el.remove(); await setup();
     }
     expect(view.el.querySelector(`[data-path="${renamed}"]`)).not.toBeNull();
     finish();
-    await vi.waitFor(() => expect(files.has(`Documents/.versions/Final/${snapshot}`)).toBe(true));
+    await vi.waitFor(() => expect(files.has(`writedoc/.versions/Final/${snapshot}`)).toBe(true));
     expect(isStarred(renamed)).toBe(true);
     expect(isStarred(original)).toBe(false);
     expect(recallGoal(renamed)).toBe(1200);
@@ -236,7 +236,7 @@ describe('home document actions', () => {
   });
 
   it('ignores a pre-rename listing after local state has moved to the accepted new path', async () => {
-    files.set('Documents/Other.docx', new Blob(['other'])); toggleStar(original);
+    files.set('writedoc/Other.docx', new Blob(['other'])); toggleStar(original);
     let renameFile, moveHistory, finishListing;
     const filePending = new Promise((resolve) => { renameFile = resolve; });
     const historyPending = new Promise((resolve) => { moveHistory = resolve; });
@@ -244,19 +244,19 @@ describe('home document actions', () => {
     const rename = puter.fs.rename.getMockImplementation();
     puter.fs.rename.mockImplementation(async (path, name) => {
       if (path === original) await filePending;
-      if (path === 'Documents/.versions/Report') await historyPending;
+      if (path === 'writedoc/.versions/Report') await historyPending;
       return rename(path, name);
     });
     await setup(); submitRename();
     await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith(original, 'Final.docx'));
     closeAllModals();
     const list = vi.spyOn(P, 'listFiles').mockReturnValueOnce(listing);
-    view.el.querySelector('[data-path="Documents/Other.docx"] .file-menu-btn').click();
+    view.el.querySelector('[data-path="writedoc/Other.docx"] .file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Duplicate').click();
     await vi.waitFor(() => expect(list).toHaveBeenCalledOnce());
     renameFile();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
-    finishListing(['Report.docx', 'Other.docx', 'Other copy.docx'].map((name) => ({ name, path: `Documents/${name}` })));
+    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('writedoc/.versions/Report', 'Final'));
+    finishListing(['Report.docx', 'Other.docx', 'Other copy.docx'].map((name) => ({ name, path: `writedoc/${name}` })));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(isStarred(renamed)).toBe(true);
     expect(isStarred(original)).toBe(false);
@@ -280,41 +280,41 @@ describe('home document actions', () => {
   it('preserves a copy created by another tab after the file list loaded', async () => {
     await setup();
     const other = new Blob(['other tab']);
-    files.set('Documents/Report copy.docx', other);
+    files.set('writedoc/Report copy.docx', other);
     view.el.querySelector('.file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
     await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
-    expect(files.get('Documents/Report copy.docx')).toBe(other);
-    expect(files.get('Documents/Report copy (1).docx')).toBe(files.get(original));
+    expect(files.get('writedoc/Report copy.docx')).toBe(other);
+    expect(files.get('writedoc/Report copy (1).docx')).toBe(files.get(original));
   });
 
   it('finds the next duplicate name without repeatedly scanning every file', async () => {
-    files.set('Documents/REPORT COPY.docx', new Blob(['first copy']));
-    for (let i = 2; i <= 200; i++) files.set(`Documents/Report copy ${i}.docx`, new Blob(['copy']));
+    files.set('writedoc/REPORT COPY.docx', new Blob(['first copy']));
+    for (let i = 2; i <= 200; i++) files.set(`writedoc/Report copy ${i}.docx`, new Blob(['copy']));
     await setup();
-    view.el.querySelector('[data-path="Documents/Report.docx"] .file-menu-btn').click();
+    view.el.querySelector('[data-path="writedoc/Report.docx"] .file-menu-btn').click();
     const duplicate = [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate'));
     const folded = vi.spyOn(String.prototype, 'toLowerCase');
     duplicate.click();
     await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
-    expect(files.get('Documents/Report copy 201.docx')).toBe(files.get(original));
+    expect(files.get('writedoc/Report copy 201.docx')).toBe(files.get(original));
     // Count work, not wall-clock time: naming must stay linear as copies grow.
     const nameFolds = folded.mock.contexts.filter((value) => /^report(?: copy(?: \d+)?)?\.docx$/i.test(value));
     expect(nameFolds.length).toBeLessThan(10 * files.size);
   });
 
   it('reads starred state a bounded number of times when rendering a large file list', async () => {
-    for (let i = 0; i < 120; i++) files.set(`Documents/File ${i}.docx`, new Blob(['text']));
-    localStorage.setItem('documents:starred', JSON.stringify([...files.keys()].filter((path) => path.includes('File'))));
+    for (let i = 0; i < 120; i++) files.set(`writedoc/File ${i}.docx`, new Blob(['text']));
+    localStorage.setItem('writedoc:starred', JSON.stringify([...files.keys()].filter((path) => path.includes('File'))));
     const reads = vi.spyOn(Storage.prototype, 'getItem');
     await setup();
-    const starReads = () => reads.mock.calls.filter(([key]) => key === 'documents:starred').length;
+    const starReads = () => reads.mock.calls.filter(([key]) => key === 'writedoc:starred').length;
     expect(view.el.querySelectorAll('.file-row')).toHaveLength(121);
     expect(view.el.querySelectorAll('.is-starred')).toHaveLength(120);
     expect(starReads()).toBeLessThan(5);
     reads.mockClear();
     // Read fresh state on each render so changes from another tab are visible.
-    localStorage.setItem('documents:starred', '[]');
+    localStorage.setItem('writedoc:starred', '[]');
     const search = view.el.querySelector('.home-search');
     search.value = 'File';
     search.dispatchEvent(new Event('input'));
@@ -324,7 +324,7 @@ describe('home document actions', () => {
   });
 
   it('keeps keyboard focus on the star button when its row moves', async () => {
-    files.set('Documents/Another.docx', new Blob(['text']));
+    files.set('writedoc/Another.docx', new Blob(['text']));
     await setup();
     const button = view.el.querySelector('[aria-label="Star Report.docx"]');
     button.focus();
@@ -348,7 +348,7 @@ describe('home document actions', () => {
   });
 
   it('keeps keyboard focus in the list after renaming and deleting through a row menu', async () => {
-    files.set('Documents/Another.docx', new Blob(['text']));
+    files.set('writedoc/Another.docx', new Blob(['text']));
     await setup();
     const button = view.el.querySelector(`[data-path="${original}"] .file-menu-btn`);
     button.focus();
@@ -362,11 +362,11 @@ describe('home document actions', () => {
     document.querySelector('.modal-panel .btn-danger').click();
     await vi.waitFor(() => expect(view.el.querySelector(`[data-path="${renamed}"]`)).toBeNull());
     // The deleted row's place is taken by the next document, which now has focus.
-    await vi.waitFor(() => expect(document.activeElement).toBe(view.el.querySelector('[data-path="Documents/Another.docx"] .file-main')));
+    await vi.waitFor(() => expect(document.activeElement).toBe(view.el.querySelector('[data-path="writedoc/Another.docx"] .file-main')));
   });
 
   it('leaves the search box alone after deleting the last document that matched', async () => {
-    files.set('Documents/Another.docx', new Blob(['text']));
+    files.set('writedoc/Another.docx', new Blob(['text']));
     puter.fs.delete = vi.fn(async (path) => { files.delete(path); });
     await setup();
     const search = view.el.querySelector('.home-search');
@@ -393,8 +393,8 @@ describe('home document actions', () => {
     button.focus();
     button.click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Duplicate').click();
-    await vi.waitFor(() => expect(view.el.querySelector(`[data-path="${root}/Documents/Report copy.docx"]`)).not.toBeNull());
-    await vi.waitFor(() => expect(document.activeElement).toBe(view.el.querySelector(`[data-path="${root}/Documents/Report copy.docx"] .file-menu-btn`)));
+    await vi.waitFor(() => expect(view.el.querySelector(`[data-path="${root}/writedoc/Report copy.docx"]`)).not.toBeNull());
+    await vi.waitFor(() => expect(document.activeElement).toBe(view.el.querySelector(`[data-path="${root}/writedoc/Report copy.docx"] .file-menu-btn`)));
   });
 
   it('returns focus to the same file options after starring through its menu', async () => {

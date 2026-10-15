@@ -44,7 +44,7 @@ it('keeps the keyboard on Retry while the list fails, then on the first document
   await vi.advanceTimersByTimeAsync(0);
   // Failed again: the new Retry button has the focus, not the page body.
   expect(document.activeElement).toBe(retryButton());
-  listFiles.mockResolvedValue([{ name: 'Report.docx', path: 'Documents/Report.docx', size: 10, modified: 2 }, { name: 'Notes.docx', path: 'Documents/Notes.docx', size: 10, modified: 1 }]);
+  listFiles.mockResolvedValue([{ name: 'Report.docx', path: 'writedoc/Report.docx', size: 10, modified: 2 }, { name: 'Notes.docx', path: 'writedoc/Notes.docx', size: 10, modified: 1 }]);
   retryButton().click();
   await vi.advanceTimersByTimeAsync(0);
   expect(retryButton()).toBeUndefined();

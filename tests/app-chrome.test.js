@@ -190,7 +190,7 @@ describe('status bar', () => {
     expect(bar.el.querySelector('.ed-status-track').classList.contains('is-user-hidden')).toBe(false);
     bar.toggle('words');
     expect(bar.isShown('words')).toBe(false);
-    expect(JSON.parse(localStorage.getItem('documents:statusbar'))).toEqual(['words']);
+    expect(JSON.parse(localStorage.getItem('writedoc:statusbar'))).toEqual(['words']);
     bar.el.remove();
   });
 });

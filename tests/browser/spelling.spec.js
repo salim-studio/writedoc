@@ -4,7 +4,7 @@ import { reopenDocx } from './helpers/reopen-docx.js';
 
 async function newDocument(page, text) {
   await page.goto('/playground.html');
-  await page.evaluate(() => { localStorage.removeItem('documents:dictionary'); localStorage.removeItem('documents:spellcheck'); });
+  await page.evaluate(() => { localStorage.removeItem('writedoc:dictionary'); localStorage.removeItem('writedoc:spellcheck'); });
   await page.getByRole('button', { name: 'New', exact: true }).click();
   const input = page.getByRole('textbox', { name: 'Document text' });
   await input.fill(text);
@@ -59,7 +59,7 @@ test('Ignore All, Add to Dictionary and turning checking off', async ({ page }) 
   await expect(proofing(page)).toHaveAttribute('aria-label', /1 error found/);
   await (await wordMenu(page, input, 'Quuxly')).getByRole('menuitem', { name: 'Add to Dictionary' }).click();
   await expect(proofing(page)).toHaveAttribute('aria-label', 'Spelling: no errors');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('documents:dictionary')))).toEqual(['Quuxly']);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('writedoc:dictionary')))).toEqual(['Quuxly']);
   await onTab(page, 'review');
   await page.getByRole('button', { name: 'Spelling options' }).click();
   await page.getByRole('menuitemcheckbox', { name: 'Check Spelling as You Type' }).click();

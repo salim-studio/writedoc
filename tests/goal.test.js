@@ -18,16 +18,16 @@ describe('word count goal', () => {
 
   it('stores, clears, and moves goals by path', () => {
     const storage = memory();
-    expect(recallGoal('Documents/A.docx', { storage })).toBeNull();
-    rememberGoal('Documents/A.docx', 1500, { storage });
-    expect(recallGoal('Documents/A.docx', { storage })).toBe(1500);
-    moveGoal('Documents/A.docx', 'Documents/B.docx', { storage });
-    expect(recallGoal('Documents/A.docx', { storage })).toBeNull();
-    expect(recallGoal('Documents/B.docx', { storage })).toBe(1500);
-    rememberGoal('Documents/B.docx', null, { storage });
-    expect(recallGoal('Documents/B.docx', { storage })).toBeNull();
-    storage.setItem('documents:goals', 'garbage');
-    expect(recallGoal('Documents/B.docx', { storage })).toBeNull();
+    expect(recallGoal('writedoc/A.docx', { storage })).toBeNull();
+    rememberGoal('writedoc/A.docx', 1500, { storage });
+    expect(recallGoal('writedoc/A.docx', { storage })).toBe(1500);
+    moveGoal('writedoc/A.docx', 'writedoc/B.docx', { storage });
+    expect(recallGoal('writedoc/A.docx', { storage })).toBeNull();
+    expect(recallGoal('writedoc/B.docx', { storage })).toBe(1500);
+    rememberGoal('writedoc/B.docx', null, { storage });
+    expect(recallGoal('writedoc/B.docx', { storage })).toBeNull();
+    storage.setItem('writedoc:goals', 'garbage');
+    expect(recallGoal('writedoc/B.docx', { storage })).toBeNull();
   });
 
   it('describes progress for the status bar', () => {

@@ -6,7 +6,7 @@ let files, hosting;
 const missing = () => Object.assign(new Error('Not found'), { code: 'ENOENT' });
 beforeEach(() => {
   files = new Map(); hosting = new Map();
-  vi.spyOn(P, 'statFile').mockResolvedValue({ path: '/demo/AppData/documents-app/Documents' });
+  vi.spyOn(P, 'statFile').mockResolvedValue({ path: '/demo/AppData/writedoc-app/writedoc' });
   vi.spyOn(P, 'writeFile').mockImplementation(async (path, blob) => { files.set(path, await blob.text()); });
   vi.spyOn(P, 'readFile').mockImplementation(async (path) => {
     if (!files.has(path)) throw missing();
@@ -23,7 +23,7 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 it.each([false, true])('finds and updates a published page through its other path form (absolute first: %s)', async (absoluteFirst) => {
-  const relative = 'Documents/Notes.docx', absolute = '/demo/AppData/documents-app/Documents/Notes.docx';
+  const relative = 'writedoc/Notes.docx', absolute = '/demo/AppData/writedoc-app/writedoc/Notes.docx';
   const [source, reopened] = absoluteFirst ? [absolute, relative] : [relative, absolute];
   const original = await publishPage(source, 'Notes', '<p>Original</p>');
   const found = await findSite(reopened);
@@ -39,15 +39,15 @@ it.each([false, true])('finds and updates a published page through its other pat
 });
 
 it('does not match the app publication to the same filename in another absolute folder', async () => {
-  await publishPage('Documents/Notes.docx', 'Notes', '<p>App document</p>');
-  expect(await findSite('/demo/Documents/Notes.docx')).toBeNull();
-  expect(await findSite('/demo/AppData/other-app/Documents/Notes.docx')).toBeNull();
+  await publishPage('writedoc/Notes.docx', 'Notes', '<p>App document</p>');
+  expect(await findSite('/demo/writedoc/Notes.docx')).toBeNull();
+  expect(await findSite('/demo/AppData/other-app/writedoc/Notes.docx')).toBeNull();
 });
 
 it('reports a failed folder lookup instead of presenting an existing publication as absent', async () => {
-  await publishPage('Documents/Notes.docx', 'Notes', '<p>App document</p>');
+  await publishPage('writedoc/Notes.docx', 'Notes', '<p>App document</p>');
   P.statFile.mockRejectedValue(new Error('Connection lost'));
-  await expect(publishPage('/demo/AppData/documents-app/Documents/Notes.docx', 'Notes', '<p>Updated</p>')).rejects.toThrow('Connection lost');
+  await expect(publishPage('/demo/AppData/writedoc-app/writedoc/Notes.docx', 'Notes', '<p>Updated</p>')).rejects.toThrow('Connection lost');
   expect(hosting.size).toBe(1);
 });
 
@@ -65,7 +65,7 @@ it('keeps document paths and publication metadata outside the publicly served di
 });
 
 it.each(['slug', 'digest'])('migrates a %s publication record while keeping its URL and directory', async (format) => {
-  const docPath = 'Documents/Notes.docx';
+  const docPath = 'writedoc/Notes.docx';
   const dir = format === 'slug' ? `${PUBLISH_FOLDER}/notes` : await publishDir(docPath);
   const record = { docPath, subdomain: 'notes-existing', publishedAt: 5 };
   files.set(`${dir}/site.json`, JSON.stringify(record));
@@ -82,7 +82,7 @@ it.each(['slug', 'digest'])('migrates a %s publication record while keeping its 
 });
 
 it('retains the private record and reports failure if removing legacy public metadata fails', async () => {
-  const docPath = 'Documents/Notes.docx', dir = await publishDir(docPath);
+  const docPath = 'writedoc/Notes.docx', dir = await publishDir(docPath);
   files.set(`${dir}/site.json`, JSON.stringify({ docPath, subdomain: 'notes-existing' }));
   P.deleteFile.mockRejectedValueOnce(new Error('Permission denied'));
   await expect(publishPage(docPath, 'Notes', '<p>Updated</p>')).rejects.toThrow('Permission denied');
@@ -96,22 +96,22 @@ it('takes a new page offline if its publication record cannot be saved, then all
     if (path.endsWith('.json')) throw new Error('Storage unavailable');
     files.set(path, await blob.text());
   });
-  await expect(publishPage('Documents/Notes.docx', 'Notes', '<p>Content</p>')).rejects.toThrow('Storage unavailable');
+  await expect(publishPage('writedoc/Notes.docx', 'Notes', '<p>Content</p>')).rejects.toThrow('Storage unavailable');
   expect(hosting.size).toBe(0);
-  expect(await findSite('Documents/Notes.docx')).toBeNull();
+  expect(await findSite('writedoc/Notes.docx')).toBeNull();
   P.writeFile.mockImplementation(async (path, blob) => { files.set(path, await blob.text()); });
-  const site = await publishPage('Documents/Notes.docx', 'Notes', '<p>Content</p>');
+  const site = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Content</p>');
   expect(hosting.size).toBe(1);
-  expect(await findSite('Documents/Notes.docx')).toMatchObject({ subdomain: site.subdomain });
+  expect(await findSite('writedoc/Notes.docx')).toMatchObject({ subdomain: site.subdomain });
 });
 
 it('keeps an existing page online if saving its updated record fails', async () => {
-  const site = await publishPage('Documents/Notes.docx', 'Notes', '<p>Content</p>');
+  const site = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Content</p>');
   P.writeFile.mockImplementation(async (path, blob) => {
     if (path.endsWith('.json')) throw new Error('Storage unavailable');
     files.set(path, await blob.text());
   });
-  await expect(publishPage('Documents/Notes.docx', 'Notes', '<p>Updated</p>')).rejects.toThrow('Storage unavailable');
+  await expect(publishPage('writedoc/Notes.docx', 'Notes', '<p>Updated</p>')).rejects.toThrow('Storage unavailable');
   expect(hosting.get(site.subdomain)).toBe(site.dir);
   expect(P.hostingDelete).not.toHaveBeenCalled();
 });
@@ -122,7 +122,7 @@ it('reports the live URL when a failed publication also cannot be taken offline'
     files.set(path, await blob.text());
   });
   P.hostingDelete.mockRejectedValue(new Error('Offline'));
-  await expect(publishPage('Documents/Notes.docx', 'Notes', '<p>Content</p>', { random: () => 0 }))
+  await expect(publishPage('writedoc/Notes.docx', 'Notes', '<p>Content</p>', { random: () => 0 }))
     .rejects.toThrow('https://notes-aaaaaaaaaaaa.puter.site');
   expect(hosting.size).toBe(1);
 });
@@ -134,12 +134,12 @@ it('looks the publication records up side by side rather than one round trip aft
     pending.push({ path, resolve, reject });
     if (pending.length % 4 === 0) for (const item of pending.splice(0)) item.reject(missing());
   }));
-  await expect(findSite('Documents/Notes.docx')).resolves.toBeNull();
+  await expect(findSite('writedoc/Notes.docx')).resolves.toBeNull();
   expect(pending).toEqual([]);
 });
 
 it('prefers the path-based record over a legacy record even when the legacy read answers first', async () => {
-  const docPath = 'Documents/Notes.docx';
+  const docPath = 'writedoc/Notes.docx';
   const dir = await publishDir(docPath);
   files.set(`${dir}.json`, JSON.stringify({ subdomain: 'newer-12345', docPath, publishedAt: 2 }));
   files.set(`${PUBLISH_FOLDER}/notes.json`, JSON.stringify({ subdomain: 'older-12345', docPath, publishedAt: 1 }));
@@ -150,25 +150,25 @@ it('prefers the path-based record over a legacy record even when the legacy read
 });
 
 it('keeps a published page under its address when the document is renamed, and takes it down with the document', async () => {
-  const original = await publishPage('Documents/Draft.docx', 'Draft', '<p>v1</p>');
-  const moved = await movePublication('Documents/Draft.docx', 'Documents/Final.docx');
-  expect(moved).toMatchObject({ subdomain: original.subdomain, dir: original.dir, docPath: 'Documents/Final.docx' });
+  const original = await publishPage('writedoc/Draft.docx', 'Draft', '<p>v1</p>');
+  const moved = await movePublication('writedoc/Draft.docx', 'writedoc/Final.docx');
+  expect(moved).toMatchObject({ subdomain: original.subdomain, dir: original.dir, docPath: 'writedoc/Final.docx' });
   // The old record is gone; the new path finds the same page and folder.
-  expect(await findSite('Documents/Draft.docx')).toBeNull();
-  const found = await findSite('Documents/Final.docx');
+  expect(await findSite('writedoc/Draft.docx')).toBeNull();
+  const found = await findSite('writedoc/Final.docx');
   expect(found).toMatchObject({ subdomain: original.subdomain, dir: original.dir, url: original.url });
-  expect(found.recordPath).toBe(`${await publishDir('Documents/Final.docx')}.json`);
+  expect(found.recordPath).toBe(`${await publishDir('writedoc/Final.docx')}.json`);
   // Updating writes the same folder and keeps the record where the new path looks for it.
-  const updated = await publishPage('Documents/Final.docx', 'Final', '<p>v2</p>', { existing: found });
+  const updated = await publishPage('writedoc/Final.docx', 'Final', '<p>v2</p>', { existing: found });
   expect(updated).toMatchObject({ subdomain: original.subdomain, dir: original.dir, created: false });
   expect(files.get(`${original.dir}/index.html`)).toBe('<p>v2</p>');
   expect(files.get(found.recordPath)).toContain(`"dir":"${original.dir}"`);
   expect([...files.keys()].filter((k) => k.endsWith('.json'))).toEqual([found.recordPath]);
   // Renaming an unpublished document does nothing.
-  expect(await movePublication('Documents/Other.docx', 'Documents/Else.docx')).toBeNull();
+  expect(await movePublication('writedoc/Other.docx', 'writedoc/Else.docx')).toBeNull();
   // Deleting the document takes everything down.
-  expect(await unpublishAt('Documents/Final.docx')).toBe(true);
+  expect(await unpublishAt('writedoc/Final.docx')).toBe(true);
   expect(hosting.size).toBe(0);
   expect([...files.keys()].some((k) => k.startsWith(PUBLISH_FOLDER))).toBe(false);
-  expect(await unpublishAt('Documents/Final.docx')).toBe(false);
+  expect(await unpublishAt('writedoc/Final.docx')).toBe(false);
 });

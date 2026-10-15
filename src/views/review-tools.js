@@ -189,9 +189,9 @@ export function createReviewTools({ editor, pkg, error, author, review, proofing
         { label: restrict.trackingLocked ? 'Unlock Tracking…' : 'Lock Tracking…', disabled: !ready(), onSelect: lockTracking },
         { label: 'Tracking Options…', onSelect: trackingOptions },
         { separator: true },
-        { label: 'Compare Documents…', icon: 'compare', onSelect: commands.compareDocuments },
+        { label: 'Compare files…', icon: 'compare', onSelect: commands.compareDocuments },
       ] },
-      { label: 'Combine Documents…', icon: 'combine', disabled: !has, onSelect: commands.combineDocuments },
+      { label: 'Combine files…', icon: 'combine', disabled: !has, onSelect: commands.combineDocuments },
       { separator: true },
       { label: 'Protect Document…', icon: 'protect', disabled: !has || !!pkg()?.readOnly, onSelect: commands.restrictEditing },
     ];

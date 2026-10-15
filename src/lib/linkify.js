@@ -12,7 +12,7 @@
 import { paragraphText } from './autocorrect.js';
 import { textAnchor } from './hyperlink-target.js';
 
-const KEY = 'documents:autolink';
+const KEY = 'writedoc:autolink';
 const storage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
 
 /** Whether linking as you type is on (it is, until turned off). */

@@ -19,7 +19,7 @@ import { BroadcastRoom, WorkerTransport } from './transports.js';
 import { call, deploy } from './api.js';
 import { canEdit, canManage, decode, encode, hash, randomId, shareLink, INVITE_ROLES } from './protocol.js';
 
-const ROOM_KEY = 'documents-collab-room:';
+const ROOM_KEY = 'writedoc-collab-room:';
 const hexToRgba = (hex, alpha) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`; };
 
 /** The SDK, when there is one (the mock SDK in development). */

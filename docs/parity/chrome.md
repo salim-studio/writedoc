@@ -30,7 +30,7 @@ commands. OOXML behaviour (document properties, `w:lang`) is recorded in `docs/c
 
 **Title bar**
 - AutoSave switch (cloud documents; remembered on the device; turning it back on saves pending
-  edits), quick access (All Documents, Save, Undo with a history drop-down, Redo, Print) with a
+  edits), quick access (Home, Save, Undo with a history drop-down, Redo, Print) with a
   Customize Quick Access menu (New, Open, Find, Spelling, Save as PDF, formatting marks, New Comment,
   Track Changes, Word Count, Read Aloud, Repeat; remembered).
 - Undo history: each step is named after the ribbon or menu command that made it ("Bold",

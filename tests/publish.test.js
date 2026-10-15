@@ -22,7 +22,7 @@ describe('publishing', () => {
     vi.spyOn(P, 'hostingCreate').mockImplementation(async (sub, dir) => { hosting.set(sub, dir); return { subdomain: sub }; });
     vi.spyOn(P, 'hostingDelete').mockImplementation(async (sub) => { hosting.delete(sub); });
     const { publishPage, findSite, unpublishPage } = await import('../src/lib/publish.js');
-    const paths = ['Documents/Notes.docx', 'Private/Notes.docx', 'Documents/Notes!.docx', 'Documents/한글.docx', 'Documents/문서.docx'];
+    const paths = ['writedoc/Notes.docx', 'Private/Notes.docx', 'writedoc/Notes!.docx', 'writedoc/한글.docx', 'writedoc/문서.docx'];
     const sites = [];
     for (const [i, path] of paths.entries()) {
       expect(await findSite(path)).toBeNull();
@@ -51,11 +51,11 @@ describe('publishing', () => {
     subdomainFor('x', () => { draws.push(1); return Math.random(); });
     expect(draws).toHaveLength(12);
     expect(siteUrl(sub)).toBe(`https://${sub}.puter.site`);
-    expect(await publishDir('Documents/Q3 Report.docx')).toMatch(/^Documents\/\.published\/q3-report-[a-f0-9]{64}$/);
+    expect(await publishDir('writedoc/Q3 Report.docx')).toMatch(/^writedoc\/\.published\/q3-report-[a-f0-9]{64}$/);
   });
 
   it('reads site records and rejects broken ones', () => {
-    expect(parseSiteRecord('{"subdomain":"abc-12345","docPath":"Documents/A.docx","publishedAt":5}')).toEqual({ subdomain: 'abc-12345', docPath: 'Documents/A.docx', publishedAt: 5 });
+    expect(parseSiteRecord('{"subdomain":"abc-12345","docPath":"writedoc/A.docx","publishedAt":5}')).toEqual({ subdomain: 'abc-12345', docPath: 'writedoc/A.docx', publishedAt: 5 });
     expect(parseSiteRecord('{"subdomain":"Bad Name"}')).toBeNull();
     expect(parseSiteRecord('nope')).toBeNull();
     expect(parseSiteRecord('')).toBeNull();
@@ -63,7 +63,7 @@ describe('publishing', () => {
 
   it('keeps legacy publications working only for the document recorded as their owner', async () => {
     const P = await import('../src/lib/puter.js');
-    const docPath = 'Documents/Notes.docx';
+    const docPath = 'writedoc/Notes.docx';
     const dir = `${PUBLISH_FOLDER}/notes`;
     const record = { docPath, subdomain: 'notes-existing', publishedAt: 5 };
     vi.spyOn(P, 'readFile').mockImplementation(async (path) => {
@@ -102,36 +102,36 @@ describe('publishing', () => {
     vi.spyOn(P, 'hostingDelete').mockImplementation(async (sub) => { hosting.delete(sub); });
     const { publishPage, findSite, unpublishPage } = await import('../src/lib/publish.js');
 
-    expect(await findSite('Documents/Notes.docx')).toBeNull();
-    const first = await publishPage('Documents/Notes.docx', 'Notes', '<p>Hi</p>', { random: () => 0.25 });
+    expect(await findSite('writedoc/Notes.docx')).toBeNull();
+    const first = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Hi</p>', { random: () => 0.25 });
     expect(first.created).toBe(true);
-    expect(first.dir).toBe(await publishDir('Documents/Notes.docx'));
+    expect(first.dir).toBe(await publishDir('writedoc/Notes.docx'));
     expect(hosting.get(first.subdomain)).toBe(first.dir);
     expect(files.get(`${first.dir}/index.html`)).toBe('<p>Hi</p>');
-    const found = await findSite('Documents/Notes.docx');
+    const found = await findSite('writedoc/Notes.docx');
     expect(found).toMatchObject({ subdomain: first.subdomain, url: first.url, dir: first.dir });
 
-    const second = await publishPage('Documents/Notes.docx', 'Notes', '<p>Hi again</p>', { existing: found, random: () => 0.75 });
+    const second = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Hi again</p>', { existing: found, random: () => 0.75 });
     expect(second.created).toBe(false);
     expect(second.subdomain).toBe(first.subdomain);
     expect(files.get(`${first.dir}/index.html`)).toBe('<p>Hi again</p>');
 
     // A subdomain that vanished on the server is recreated.
     hosting.delete(first.subdomain);
-    const third = await publishPage('Documents/Notes.docx', 'Notes', '<p>Back</p>', { existing: found, random: () => 0.1 });
+    const third = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Back</p>', { existing: found, random: () => 0.1 });
     expect(third.created).toBe(true);
     expect(third.subdomain).not.toBe(first.subdomain);
 
-    await unpublishPage(await findSite('Documents/Notes.docx'));
+    await unpublishPage(await findSite('writedoc/Notes.docx'));
     expect(hosting.size).toBe(0);
-    expect(await findSite('Documents/Notes.docx')).toBeNull();
+    expect(await findSite('writedoc/Notes.docx')).toBeNull();
     await expect(publishPage(null, 'x', '')).rejects.toThrow('Save the document first');
 
     // Without an injected source the tail comes from the platform's random
     // values, not Math.random: it is what keeps the page from being guessed.
     const secure = vi.spyOn(crypto, 'getRandomValues');
     const guessable = vi.spyOn(Math, 'random');
-    const fourth = await publishPage('Documents/Notes.docx', 'Notes', '<p>Secure</p>');
+    const fourth = await publishPage('writedoc/Notes.docx', 'Notes', '<p>Secure</p>');
     expect(fourth.subdomain).toMatch(/^notes-[a-z0-9]{12}$/);
     expect(secure).toHaveBeenCalled();
     expect(guessable).not.toHaveBeenCalled();
@@ -140,12 +140,12 @@ describe('publishing', () => {
 });
 
 it('takes a served folder only when it is one folder of its own under the publications folder', () => {
-  const record = (dir) => parseSiteRecord(JSON.stringify({ subdomain: 'report-abc', docPath: 'Documents/Report.docx', dir }));
-  expect(record('Documents/.published/report-abc').dir).toBe('Documents/.published/report-abc');
+  const record = (dir) => parseSiteRecord(JSON.stringify({ subdomain: 'report-abc', docPath: 'writedoc/Report.docx', dir }));
+  expect(record('writedoc/.published/report-abc').dir).toBe('writedoc/.published/report-abc');
   // A damaged record naming the publications folder itself would have every page taken down with this one.
-  expect(record('Documents/.published/').dir).toBeUndefined();
-  expect(record('Documents/.published').dir).toBeUndefined();
-  expect(record('Documents/.published/a/b').dir).toBeUndefined();
-  expect(record('Documents/.published/..').dir).toBeUndefined();
-  expect(record('Documents/Report').dir).toBeUndefined();
+  expect(record('writedoc/.published/').dir).toBeUndefined();
+  expect(record('writedoc/.published').dir).toBeUndefined();
+  expect(record('writedoc/.published/a/b').dir).toBeUndefined();
+  expect(record('writedoc/.published/..').dir).toBeUndefined();
+  expect(record('writedoc/Report').dir).toBeUndefined();
 });

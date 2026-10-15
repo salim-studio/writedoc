@@ -1,6 +1,6 @@
 # Paragraph property coverage
 
-Reviewed 2026-10-09 against the Documents sources in grouped branch baseline
+Reviewed 2026-10-09 against the upstream sources in grouped branch baseline
 `12ae1368`. This covers the 36 direct children of the supplied Strict and
 Transitional `CT_PPr` declarations, including children inherited from
 `CT_PPrBase`. It is a bounded contribution to roadmap A01, not an exhaustive

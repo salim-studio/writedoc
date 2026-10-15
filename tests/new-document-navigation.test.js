@@ -22,8 +22,8 @@ it('saves an unsaved document before creating another document on the same route
   const { editorView } = await import('../src/views/editor.js');
   const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   try {
-    await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-    const first = window.__docs.current.view;
+    await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+    const first = window.__writedoc.current.view;
     const bytes = new Blob(['Work awaiting autosave']);
     first.doc.attach(async () => bytes); first.doc.changed();
     write.mockRejectedValueOnce(new Error('Offline'));
@@ -31,43 +31,43 @@ it('saves an unsaved document before creating another document on the same route
     await vi.waitFor(() => expect(document.querySelector('[aria-label="Leave without saving?"]')).not.toBeNull());
     document.querySelector('.modal-panel .btn-ghost').click();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(window.__docs.current.view).toBe(first);
+    expect(window.__writedoc.current.view).toBe(first);
     expect(first.doc.dirty).toBe(true);
     expect(first.destroy).not.toHaveBeenCalled();
 
     editorView.mock.lastCall[0].newDoc();
-    await vi.waitFor(() => expect(window.__docs.current.view).not.toBe(first));
-    expect(write).toHaveBeenCalledWith('Documents/Untitled document.docx', bytes, expect.anything());
+    await vi.waitFor(() => expect(window.__writedoc.current.view).not.toBe(first));
+    expect(write).toHaveBeenCalledWith('writedoc/Untitled document.docx', bytes, expect.anything());
     expect(first.doc.dirty).toBe(false);
     expect(first.destroy).toHaveBeenCalledOnce();
-    expect(window.__docs.current.view.doc.path).toBeNull();
-    expect(window.__docs.current.view.doc.dirty).toBe(false);
+    expect(window.__writedoc.current.view.doc.path).toBeNull();
+    expect(window.__writedoc.current.view.doc.dirty).toBe(false);
     expect(location.hash).toBe('#/new');
 
     // Choosing the same template again is also an explicit new-document action.
     editorView.mock.lastCall[0].newFromTemplate('letter');
-    await vi.waitFor(() => expect(window.__docs.current.view.doc.template).toBe('letter'));
-    const letter = window.__docs.current.view;
+    await vi.waitFor(() => expect(window.__writedoc.current.view.doc.template).toBe('letter'));
+    const letter = window.__writedoc.current.view;
     letter.doc.attach(async () => bytes);
     editorView.mock.lastCall[0].newFromTemplate('letter');
-    await vi.waitFor(() => expect(window.__docs.current.view).not.toBe(letter));
+    await vi.waitFor(() => expect(window.__writedoc.current.view).not.toBe(letter));
     expect(letter.doc.dirty).toBe(false);
-    expect(window.__docs.current.view.doc.template).toBe('letter');
-    expect(window.__docs.current.view.doc.path).toBeNull();
+    expect(window.__writedoc.current.view.doc.template).toBe('letter');
+    expect(window.__writedoc.current.view.doc.path).toBeNull();
 
     // Laying a template out clears the template from the document, so a blank
     // document asked for from one is not the document already open.
-    window.__docs.current.view.doc.attach(async () => bytes);
+    window.__writedoc.current.view.doc.attach(async () => bytes);
     editorView.mock.lastCall[0].newFromTemplate('essay');
-    await vi.waitFor(() => expect(window.__docs.current.view.doc.template).toBe('essay'));
-    const essay = window.__docs.current.view;
+    await vi.waitFor(() => expect(window.__writedoc.current.view.doc.template).toBe('essay'));
+    const essay = window.__writedoc.current.view;
     essay.doc.template = null;
     essay.doc.attach(async () => bytes);
     editorView.mock.lastCall[0].newDoc();
-    await vi.waitFor(() => expect(window.__docs.current.view).not.toBe(essay));
-    expect(window.__docs.current.view.doc.template).toBeNull();
+    await vi.waitFor(() => expect(window.__writedoc.current.view).not.toBe(essay));
+    expect(window.__writedoc.current.view.doc.template).toBeNull();
     expect(location.hash).toBe('#/new');
   } finally {
-    window.__docs.current?.view.destroy(); versioning.enabled = true; errors.mockRestore(); vi.unstubAllGlobals();
+    window.__writedoc.current?.view.destroy(); versioning.enabled = true; errors.mockRestore(); vi.unstubAllGlobals();
   }
 });

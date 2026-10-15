@@ -1,5 +1,5 @@
 /** Local settings use one key for the app-relative and verified absolute path. */
-export const DOCUMENT_FOLDER = 'Documents';
+export const DOCUMENT_FOLDER = 'writedoc';
 const roots = new WeakMap();
 const provider = () => globalThis.puter;
 const validOwner = (owner) => owner && (typeof owner === 'object' || typeof owner === 'function');
@@ -9,7 +9,7 @@ export function documentRoot(owner = provider()) {
   return validOwner(owner) ? roots.get(owner) : undefined;
 }
 
-/** Only call with a directory path returned for the app's Documents request. */
+/** Only call with a directory path returned for the app's writedoc request. */
 export function rememberDocumentRoot(root, owner = provider()) {
   if (validOwner(owner) && typeof root === 'string' && root.startsWith('/') && root.length > 1) roots.set(owner, root.replace(/\/+$/, ''));
 }

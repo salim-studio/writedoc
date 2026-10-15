@@ -5,7 +5,7 @@ import { onTab, downloadDocx, menuBarMenu } from './helpers/editor-tools.js';
 
 async function newDocument(page, text) {
   await page.goto('/playground.html');
-  await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('documents:')) localStorage.removeItem(key); });
+  await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('writedoc:')) localStorage.removeItem(key); });
   await page.getByRole('button', { name: 'New', exact: true }).click();
   const input = page.getByRole('textbox', { name: 'Document text' });
   await input.fill(text);
@@ -13,7 +13,7 @@ async function newDocument(page, text) {
 }
 async function openFixture(page, name) {
   await page.goto('/playground.html');
-  await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('documents:')) localStorage.removeItem(key); });
+  await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('writedoc:')) localStorage.removeItem(key); });
   const input = page.getByRole('textbox', { name: 'Document text' });
   await input.waitFor();
   page.once('dialog', dialog => dialog.accept());
@@ -225,14 +225,14 @@ test('Restrict Editing enforces read-only with an editable region and a password
   expect(errors).toEqual([]);
 });
 
-test('Compare Documents shows both sources beside the result and opens it with tracked changes', async ({ page }, info) => {
+test('Compare files shows both sources beside the result and opens it with tracked changes', async ({ page }, info) => {
   const errors = []; page.on('pageerror', e => errors.push(e.message));
   await page.setViewportSize({ width: 1440, height: 900 });
   const input = await newDocument(page, 'Placeholder.');
   await onTab(page, 'review');
   await page.evaluate(() => document.querySelector('#ribbon-panel-review [aria-label="Compare"][aria-haspopup="menu"]')?.click());
   await page.getByRole('menuitem', { name: 'Compare…' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Compare Documents' });
+  const dialog = page.getByRole('dialog', { name: 'Compare files' });
   const [original, revised] = await dialog.locator('input[type="file"]').all();
   await original.setInputFiles('tests/fixtures/review/original.docx');
   await revised.setInputFiles('tests/fixtures/review/revised.docx');
@@ -454,13 +454,13 @@ test('Tracking Options change how changes look, and Specific People hides a revi
   expect(errors).toEqual([]);
 });
 
-test('Combine Documents adds the copy\'s differences to the original and the Reviewing Pane can sit below', async ({ page }, info) => {
+test('Combine files adds the copy\'s differences to the original and the Reviewing Pane can sit below', async ({ page }, info) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const input = await newDocument(page, 'Placeholder.');
   await onTab(page, 'review');
   await page.evaluate(() => document.querySelector('#ribbon-panel-review [aria-label="Compare"][aria-haspopup="menu"]')?.click());
   await page.getByRole('menuitem', { name: 'Combine…' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Combine Documents' });
+  const dialog = page.getByRole('dialog', { name: 'Combine files' });
   const [original, revised] = await dialog.locator('input[type="file"]').all();
   await original.setInputFiles('tests/fixtures/review/original.docx');
   await revised.setInputFiles('tests/fixtures/review/revised.docx');

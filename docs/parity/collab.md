@@ -1,6 +1,6 @@
 # Co-authoring, sharing, version history and the Assistant: parity
 
-What Documents offers for working together and for writing help, compared with the leading desktop
+What writedoc offers for working together and for writing help, compared with the leading desktop
 word processors. The design is in [collaboration.md](../collaboration.md).
 
 ## Implemented

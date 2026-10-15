@@ -5,8 +5,8 @@
  */
 import { DEFAULT_PAGE_SETTINGS, validatePageSettings } from '../engine/page-settings.js';
 
-const DEFAULTS_KEY = 'documents:page-defaults';
-const MARGINS_KEY = 'documents:last-custom-margins';
+const DEFAULTS_KEY = 'writedoc:page-defaults';
+const MARGINS_KEY = 'writedoc:last-custom-margins';
 /** Section geometry a default can carry; document compatibility settings never come from storage. */
 const DEFAULT_KEYS = ['width', 'height', 'orientation', 'top', 'right', 'bottom', 'left', 'header', 'footer', 'gutter', 'gutterAtTop', 'mirrorMargins', 'printTwoOnOne', 'columns', 'verticalAlignment'];
 export const MARGIN_KEYS = ['top', 'bottom', 'left', 'right', 'gutter', 'mirrorMargins'];

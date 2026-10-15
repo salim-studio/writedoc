@@ -6,8 +6,8 @@ import { command, small, commandIconEl } from '../ui/ribbon.js';
 import { searchEntries } from '../ui/command-index.js';
 import { localStore } from '../lib/storage.js';
 
-const QUICK_STORE = 'documents:quick-access';
-const RECENT_STORE = 'documents:recent-commands';
+const QUICK_STORE = 'writedoc:quick-access';
+const RECENT_STORE = 'writedoc:recent-commands';
 export const DEFAULT_QUICK = ['home', 'save', 'undo', 'redo', 'print'];
 export const EDITING_MODES = [
   ['editing', 'Editing', 'pencil', 'Edit the document directly.'],
@@ -28,7 +28,7 @@ function writeList(key, list) { try { localStore()?.setItem(key, JSON.stringify(
 export function createTitleBar({ w, c, a, local, title, status, account, menus, focusEditor, entries, openShortcuts, keymapShortcut = () => null }) {
   /* ---- Quick access ---- */
   small(c.undo, { icon: 'undo' }); small(c.redo, { icon: 'redo' });
-  const homeButton = command('All Documents', 'home', () => a.goHome?.());
+  const homeButton = command('Home', 'home', () => a.goHome?.());
   const saveQuick = command(local ? 'Download .docx' : 'Save', 'save', () => (local ? c.exportButton : c.saveButton).click(), { shortcut: local ? null : `${MOD_KEY}+S` });
   const printQuick = command('Print', 'print', () => c.printButton.click(), { shortcut: `${MOD_KEY}+P` });
   // Undo's arrow lists what can be undone; choosing an entry undoes it and everything after it.
@@ -55,7 +55,7 @@ export function createTitleBar({ w, c, a, local, title, status, account, menus, 
     repeat: () => w.repeat && command('Repeat', 'redo', () => w.repeat(), { shortcut: 'F4' }),
   };
   const base = { home: homeButton, save: local ? null : saveQuick, undo: undoSplit, redo: c.redo, print: printQuick };
-  const LABELS = { home: 'All Documents', save: 'Save', undo: 'Undo', redo: 'Redo', print: 'Print', new: 'New Document', open: 'Open', find: 'Find', spelling: 'Spelling',
+  const LABELS = { home: 'Home', save: 'Save', undo: 'Undo', redo: 'Redo', print: 'Print', new: 'New Document', open: 'Open', find: 'Find', spelling: 'Spelling',
     pdf: 'Save as PDF', marks: 'Show Formatting Marks', comment: 'New Comment', track: 'Track Changes', wordCount: 'Word Count', readAloud: 'Read Aloud', repeat: 'Repeat' };
   const built = new Map();
   const nodeFor = id => {

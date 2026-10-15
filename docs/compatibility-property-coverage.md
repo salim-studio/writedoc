@@ -1,6 +1,6 @@
 # Document compatibility property coverage
 
-Reviewed 2026-10-09 against Documents baseline `f1f9a270` (latest main merged;
+Reviewed 2026-10-09 against the upstream baseline `f1f9a270` (latest main merged;
 incoming changes confined to Whiteboard). Supplied ECMA-376 Part 1 §17.15.3
 and Part 4 compatibility schemas declare eight Strict CT_Compat children.
 Transitional adds 58, for 66 total. CT_Compat has no own attributes.

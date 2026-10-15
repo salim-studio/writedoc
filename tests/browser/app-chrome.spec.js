@@ -6,7 +6,7 @@ const MAC = process.platform === 'darwin';
 const text = page => page.getByRole('textbox', { name: 'Document text' });
 const menubar = page => page.getByRole('menubar', { name: 'Menu bar' });
 const engine = page => page.evaluate(() => {
-  const e = window.__docs.current.view.engine;
+  const e = window.__writedoc.current.view.engine;
   return { text: e.model.text, range: [...e.model.range], bold: e.model.runFormatting.bold, italic: e.model.runFormatting.italic, viewOnly: !!e.viewOnly,
     tracking: !!e.session.body.trackChanges, history: e.session.history.length };
 });
@@ -169,7 +169,7 @@ test('command search finds and runs ribbon and menu commands, and falls back to 
   await search.click(); await search.fill('landscape');
   await expect(page.getByRole('listbox', { name: 'Commands' }).getByRole('option').first()).toContainText('Orientation');
   await search.press('Enter');
-  await expect.poll(() => page.evaluate(() => window.__docs.current.view.engine.model.pageSettings.orientation)).toBe('landscape');
+  await expect.poll(() => page.evaluate(() => window.__writedoc.current.view.engine.model.pageSettings.orientation)).toBe('landscape');
   // A menu command: Word Count.
   await search.click(); await search.fill('word count'); await search.press('Enter');
   await expect(page.getByRole('dialog', { name: 'Word Count' })).toBeVisible();
@@ -243,7 +243,7 @@ test('the ribbon collapses to its tabs and shows KeyTips for the keyboard', asyn
 
 test('the right-click menu fits a link, and Edit > Links lists and removes links', async ({ page }) => {
   await openEditor(page);
-  await page.evaluate(() => { const e = window.__docs.current.view.engine; e.model.replace('Visit the site today'); e.model.select(6, 14); e.setHyperlink('https://example.com', null, { appearance: true }); e.model.select(8); e.syncInput(); e.onSelection(); });
+  await page.evaluate(() => { const e = window.__writedoc.current.view.engine; e.model.replace('Visit the site today'); e.model.select(6, 14); e.setHyperlink('https://example.com', null, { appearance: true }); e.model.select(8); e.syncInput(); e.onSelection(); });
   const canvas = page.locator('canvas.canvas-page').first();
   await canvas.click({ button: 'right', position: { x: 155, y: 110 } });
   const menu = page.getByRole('menu', { name: 'Document menu' });
@@ -284,7 +284,7 @@ test('copy and paste formatting, Repeat, and Customize Keyboard bindings', async
   await dialog.getByRole('button', { name: 'Done' }).click();
   await select(page, 14, 19);
   await text(page).press('ControlOrMeta+Alt+j');
-  expect(await page.evaluate(() => window.__docs.current.view.engine.model.runFormatting.underline)).toBe(true);
+  expect(await page.evaluate(() => window.__writedoc.current.view.engine.model.runFormatting.underline)).toBe(true);
   // The help sheet lists it.
   await text(page).press('ControlOrMeta+/');
   await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toContainText('Underline');

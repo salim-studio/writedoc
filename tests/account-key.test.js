@@ -12,29 +12,29 @@ afterEach(() => { session.user = null; storage.m.clear(); });
 
 describe('settings kept per account', () => {
   it('uses the plain key for nobody and a key of the account\'s own once signed in, inheriting the device\'s once', () => {
-    expect(accountKey('documents:x', storage)).toBe('documents:x');
-    storage.setItem('documents:x', '["kept"]');
+    expect(accountKey('writedoc:x', storage)).toBe('writedoc:x');
+    storage.setItem('writedoc:x', '["kept"]');
     session.user = { username: 'ann', uuid: 'u-ann' };
-    expect(accountKey('documents:x', storage)).toBe('documents:x:u-ann');
-    expect(storage.getItem('documents:x:u-ann')).toBe('["kept"]');
-    expect(storage.getItem('documents:x')).toBeNull();
+    expect(accountKey('writedoc:x', storage)).toBe('writedoc:x:u-ann');
+    expect(storage.getItem('writedoc:x:u-ann')).toBe('["kept"]');
+    expect(storage.getItem('writedoc:x')).toBeNull();
     // The second account starts with nothing of its own.
     session.user = { username: 'bob' };
-    expect(accountKey('documents:x', storage)).toBe('documents:x:bob');
-    expect(storage.getItem('documents:x:bob')).toBeNull();
-    expect(storage.getItem('documents:x:u-ann')).toBe('["kept"]');
+    expect(accountKey('writedoc:x', storage)).toBe('writedoc:x:bob');
+    expect(storage.getItem('writedoc:x:bob')).toBeNull();
+    expect(storage.getItem('writedoc:x:u-ann')).toBe('["kept"]');
   });
 
   it('keeps one account\'s stars when another signs in and lists different files', () => {
     session.user = { uuid: 'a' };
-    toggleStar('Documents/Ann.docx');
-    expect(starredPaths()).toEqual(['Documents/Ann.docx']);
+    toggleStar('writedoc/Ann.docx');
+    expect(starredPaths()).toEqual(['writedoc/Ann.docx']);
     session.user = { uuid: 'b' };
     expect(starredPaths()).toEqual([]);
-    expect(pruneStars([{ path: 'Documents/Bob.docx' }])).toEqual([]);
-    toggleStar('Documents/Bob.docx');
+    expect(pruneStars([{ path: 'writedoc/Bob.docx' }])).toEqual([]);
+    toggleStar('writedoc/Bob.docx');
     session.user = { uuid: 'a' };
-    expect(starredPaths()).toEqual(['Documents/Ann.docx']);
+    expect(starredPaths()).toEqual(['writedoc/Ann.docx']);
     session.user = null;
     expect(starredPaths()).toEqual([]);
   });
@@ -42,14 +42,14 @@ describe('settings kept per account', () => {
   it('keeps goals and reading positions apart between accounts', () => {
     const own = memory();
     session.user = { uuid: 'a' };
-    rememberGoal('Documents/Same.docx', 2000, { storage: own });
-    rememberPosition('Documents/Same.docx', { blockId: 'p9', offset: 3 }, { storage: own, now: 5 });
+    rememberGoal('writedoc/Same.docx', 2000, { storage: own });
+    rememberPosition('writedoc/Same.docx', { blockId: 'p9', offset: 3 }, { storage: own, now: 5 });
     session.user = { uuid: 'b' };
-    expect(recallGoal('Documents/Same.docx', { storage: own })).toBeNull();
-    expect(recallPosition('Documents/Same.docx', { storage: own })).toBeNull();
+    expect(recallGoal('writedoc/Same.docx', { storage: own })).toBeNull();
+    expect(recallPosition('writedoc/Same.docx', { storage: own })).toBeNull();
     session.user = { uuid: 'a' };
-    expect(recallGoal('Documents/Same.docx', { storage: own })).toBe(2000);
-    expect(recallPosition('Documents/Same.docx', { storage: own })).toEqual({ blockId: 'p9', offset: 3, at: 5 });
-    expect([...own.m.keys()].sort()).toEqual(['documents:goals:a', 'documents:positions:a']);
+    expect(recallGoal('writedoc/Same.docx', { storage: own })).toBe(2000);
+    expect(recallPosition('writedoc/Same.docx', { storage: own })).toEqual({ blockId: 'p9', offset: 3, at: 5 });
+    expect([...own.m.keys()].sort()).toEqual(['writedoc:goals:a', 'writedoc:positions:a']);
   });
 });

@@ -35,7 +35,7 @@ describe('measurement units', () => {
     off();
     rememberUnit('in');
     expect(seen).toEqual(['cm']);
-    store.set('documents:unit', 'bogus');
+    store.set('writedoc:unit', 'bogus');
     expect(recallUnit('fr-FR')).toBe('cm');
   });
 

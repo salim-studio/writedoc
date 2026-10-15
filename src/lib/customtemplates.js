@@ -1,5 +1,5 @@
 /**
- * Templates of your own: any document saved into Documents/Templates on
+ * Templates of your own: any document saved into writedoc/Templates on
  * Puter. They show up next to the built-in templates, and a new document
  * from one starts as a copy of the file (saved under its own name once the
  * engine is ready). The id "file:<path>" travels in the #/new/<template>
@@ -38,7 +38,7 @@ export function customTemplatesFrom(items) {
   return (items || [])
     .filter((it) => it && !it.isDir && P.OPENABLE.test(it.name || ''))
     // The id names the file the way the app spells its folder: a listing spells it from the drive's root
-    // (/user/AppData/<app>/Documents/Templates/...), which is not an address the app would open.
+    // (/user/AppData/<app>/writedoc/Templates/...), which is not an address the app would open.
     .map((it) => ({ id: customTemplateId(`${TEMPLATE_FOLDER}/${it.name}`), name: P.stripExtension(it.name), path: it.path, modified: it.modified || 0 }))
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 }

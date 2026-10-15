@@ -6,7 +6,7 @@ const input = page => page.getByRole('textbox', { name: 'Document text' });
 const ribbon = page => page.locator('.ribbon-card');
 /** The client rectangles of a table's cells: [row][cell] = { x, y, w, h }. */
 const cells = (page, t = 0) => page.evaluate(t => {
-  const e = window.__docs.current.view.engine, table = e.model.tables[t];
+  const e = window.__writedoc.current.view.engine, table = e.model.tables[t];
   return table.rows.map(row => row.cells.map(cell => {
     const box = e.selectionLayout.cells.find(c => c.id === cell.id);
     if (!box) return null;
@@ -14,8 +14,8 @@ const cells = (page, t = 0) => page.evaluate(t => {
     return { x: r.left + box.x * e.zoom, y: r.top + box.y * e.zoom, w: box.width * e.zoom, h: box.height * e.zoom };
   }));
 }, t);
-const tables = page => page.evaluate(() => window.__docs.current.view.engine.model.tables.map(t => ({ grid: [...t.grid], layout: t.layout, rows: t.rows.map(r => ({ height: r.minHeight, rule: r.heightRule, explicit: !!r.heightExplicit, cells: r.cells.length })), top: t.rows[0].cells[0].borders?.top || null })));
-const block = page => page.evaluate(() => { const b = window.__docs.current.view.engine.model.activeCellBlock; return b && [b.top, b.bottom, b.left, b.right]; });
+const tables = page => page.evaluate(() => window.__writedoc.current.view.engine.model.tables.map(t => ({ grid: [...t.grid], layout: t.layout, rows: t.rows.map(r => ({ height: r.minHeight, rule: r.heightRule, explicit: !!r.heightExplicit, cells: r.cells.length })), top: t.rows[0].cells[0].borders?.top || null })));
+const block = page => page.evaluate(() => { const b = window.__writedoc.current.view.engine.model.activeCellBlock; return b && [b.top, b.bottom, b.left, b.right]; });
 async function newTable(page, columns, rows) {
   await page.goto('/mock.html#/new');
   await expect((await onTab(page, 'home')).getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
@@ -138,7 +138,7 @@ test('a block of cells formats every cell, and typing replaces only its first ce
   await input(page).evaluate(el => { el.setSelectionRange(el.value.indexOf('X1'), el.value.indexOf('X5') + 1); el.dispatchEvent(new Event('select', { bubbles: true })); });
   await expect.poll(() => block(page)).toEqual([0, 1, 1, 3]);
   await page.keyboard.press('ControlOrMeta+b');
-  const bold = await page.evaluate(() => { const m = window.__docs.current.view.engine.model; return Object.fromEntries(m.paragraphs.filter(p => p.cellId).map(p => [p.runs.map(r => r.text).join(''), !!p.runs[0]?.bold])); });
+  const bold = await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; return Object.fromEntries(m.paragraphs.filter(p => p.cellId).map(p => [p.runs.map(r => r.text).join(''), !!p.runs[0]?.bold])); });
   expect(bold).toMatchObject({ X0: false, X1: true, X2: true, X3: false, X4: true, X5: true });
   await page.keyboard.type('Z');
   await expect(input(page)).toHaveValue(/\nX0\nZ\nX2\nX3\nX4\nX5\n/);

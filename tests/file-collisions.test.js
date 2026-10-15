@@ -45,17 +45,17 @@ describe('concurrent file creation', () => {
   it('refuses a Save a copy collision that appears while exporting', async () => {
     const doc = document('Original', 'original');
     await doc.save();
-    doc.attach(async () => { files.set('Documents/Copy.docx', new Blob(['other tab'])); return new Blob(['mine']); });
+    doc.attach(async () => { files.set('writedoc/Copy.docx', new Blob(['other tab'])); return new Blob(['mine']); });
     expect(await doc.saveAs('Copy')).toMatch(/already exists/);
-    expect(doc.path).toBe('Documents/Original.docx');
-    expect(await files.get('Documents/Copy.docx').text()).toBe('other tab');
+    expect(doc.path).toBe('writedoc/Original.docx');
+    expect(await files.get('writedoc/Copy.docx').text()).toBe('other tab');
   });
 
   it('only replaces a template when replacement was explicitly selected', async () => {
     await saveAsTemplate(new Blob(['original']), 'Letter');
     await expect(saveAsTemplate(new Blob(['unconfirmed']), 'Letter')).rejects.toThrow(/already exists/);
-    expect(await files.get('Documents/Templates/Letter.docx').text()).toBe('original');
+    expect(await files.get('writedoc/Templates/Letter.docx').text()).toBe('original');
     await saveAsTemplate(new Blob(['replacement']), 'Letter', { overwrite: true });
-    expect(await files.get('Documents/Templates/Letter.docx').text()).toBe('replacement');
+    expect(await files.get('writedoc/Templates/Letter.docx').text()).toBe('replacement');
   });
 });

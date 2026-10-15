@@ -10,15 +10,15 @@ it('treats denied browser storage as unavailable for all document preferences', 
   vi.spyOn(window, 'localStorage', 'get').mockImplementation(() => {
     throw new DOMException('Storage is blocked', 'SecurityError');
   });
-  expect(recallGoal('Documents/A.docx')).toBeNull();
-  expect(recallPosition('Documents/A.docx')).toBeNull();
+  expect(recallGoal('writedoc/A.docx')).toBeNull();
+  expect(recallPosition('writedoc/A.docx')).toBeNull();
   expect(recallZoom()).toBeNull();
   expect(() => {
-    rememberGoal('Documents/A.docx', 500);
-    moveGoal('Documents/A.docx', 'Documents/B.docx');
-    rememberPosition('Documents/A.docx', { blockId: 'p1', offset: 2 });
-    movePosition('Documents/A.docx', 'Documents/B.docx');
-    forgetPosition('Documents/B.docx');
+    rememberGoal('writedoc/A.docx', 500);
+    moveGoal('writedoc/A.docx', 'writedoc/B.docx');
+    rememberPosition('writedoc/A.docx', { blockId: 'p1', offset: 2 });
+    movePosition('writedoc/A.docx', 'writedoc/B.docx');
+    forgetPosition('writedoc/B.docx');
     rememberZoom({ value: 125 });
   }).not.toThrow();
 });

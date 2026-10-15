@@ -7,7 +7,7 @@ import { openModal } from '../ui/modal.js';
 import { textStatistics } from '../lib/readability.js';
 import { preference } from './review-ui.js';
 
-const INCLUDE_NOTES = preference('documents:word-count-notes', true);
+const INCLUDE_NOTES = preference('writedoc:word-count-notes', true);
 const paragraphText = p => p.runs.map(r => r.text).join('');
 
 /** Paragraphs held in drawings' text boxes, found anywhere inside the assets' scenes. */

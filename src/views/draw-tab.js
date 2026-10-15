@@ -20,7 +20,7 @@ import { createInkCommitter, inkFrames, inkOf } from './draw-commit.js';
 import { createDrawSurface } from './draw-surface.js';
 import { loadPens, savePens, penLabel, penIconSvg, penWidthPx, openPenSettings, newPen, TOOL_LABELS } from './draw-pens.js';
 
-const PREFS_KEY = 'documents.draw.prefs.v1';
+const PREFS_KEY = 'writedoc.draw.prefs.v1';
 const ERASER_SIZES = { small: 3, medium: 7, large: 14 };
 const stored = () => { try { return JSON.parse(localStorage.getItem(PREFS_KEY) || '{}') || {}; } catch { return {}; } };
 const store = prefs => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch { /* storage is a convenience */ } };

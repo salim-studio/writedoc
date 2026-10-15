@@ -10,8 +10,8 @@ import * as P from '../lib/puter.js';
 import { translateParagraphs } from '../lib/proofing-ai.js';
 import { LANGUAGES, languageName, englishLanguageName, sidePane, button, hint, preference } from './review-ui.js';
 
-export const DETECT_LANGUAGE = preference('documents:detect-language', true);
-export const TRANSLATION_LANGUAGE = preference('documents:translation-language', (typeof navigator !== 'undefined' && navigator.language && !/^en\b/i.test(navigator.language)) ? navigator.language : 'es-ES');
+export const DETECT_LANGUAGE = preference('writedoc:detect-language', true);
+export const TRANSLATION_LANGUAGE = preference('writedoc:translation-language', (typeof navigator !== 'undefined' && navigator.language && !/^en\b/i.test(navigator.language)) ? navigator.language : 'es-ES');
 
 function languageSelect(value, label) {
   const tags = [...new Set([...(value ? [value] : []), ...LANGUAGES])];

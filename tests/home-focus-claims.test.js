@@ -9,7 +9,7 @@ let view, files, listing;
 
 beforeEach(async () => {
   localStorage.clear();
-  files = new Map([['Documents/Report.docx', new Blob(['r'])], ['Documents/Notes.docx', new Blob(['n'])]]);
+  files = new Map([['writedoc/Report.docx', new Blob(['r'])], ['writedoc/Notes.docx', new Blob(['n'])]]);
   listing = null; // when set, readdir waits for it
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   vi.stubGlobal('puter', { fs: {
@@ -43,7 +43,7 @@ async function remove(path) {
 it('does not take the focus from the search field when a remembered row lands late', async () => {
   let release;
   listing = new Promise((resolve) => { release = resolve; });
-  view.el.querySelector('[data-path="Documents/Report.docx"] .file-menu-btn').click();
+  view.el.querySelector('[data-path="writedoc/Report.docx"] .file-menu-btn').click();
   [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
   await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
   // Meanwhile the user is typing a search.
@@ -58,11 +58,11 @@ it('moves the focus to the search field or the New document button when the last
   const search = view.el.querySelector('.home-search');
   search.value = 'rep'; search.dispatchEvent(new Event('input'));
   expect(view.el.querySelectorAll('.file-row')).toHaveLength(1);
-  await remove('Documents/Report.docx');
+  await remove('writedoc/Report.docx');
   expect(document.activeElement).toBe(search);
   search.value = ''; search.dispatchEvent(new Event('input'));
   await vi.waitFor(() => expect(view.el.querySelectorAll('.file-row')).toHaveLength(1));
-  await remove('Documents/Notes.docx');
+  await remove('writedoc/Notes.docx');
   expect(view.el.querySelectorAll('.file-row')).toHaveLength(0);
   expect(document.activeElement).not.toBe(document.body);
   expect(document.activeElement.textContent).toContain('New document');

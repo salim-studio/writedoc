@@ -1,18 +1,24 @@
 {
-  "name": "Documents",
-  "short_name": "Documents",
-  "description": "A fast, private word processor. Real .docx files, saved to your own Puter cloud.",
-  "id": "puter-documents",
+  "name": "writedoc",
+  "short_name": "writedoc",
+  "description": "writedoc — a fast, private word processor. Real .docx files, saved to your own Puter cloud.",
+  "id": "writedoc",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f9f9f7",
-  "theme_color": "#375f91",
+  "theme_color": "#4f46e5",
   "categories": [
     "productivity",
     "business"
   ],
   "icons": [
+    {
+      "src": "./logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "./icons/icon-192.png",
       "sizes": "192x192",

@@ -9,7 +9,7 @@ import { openModal } from '../ui/modal.js';
 import { revisionView, revisionColor, INSERT_MARKS, DELETE_MARKS, FORMAT_MARKS, MOVE_COLOR } from '../engine/revisions.js';
 import { preference, hint } from './review-ui.js';
 
-const STORED = preference('documents:tracking-options', {});
+const STORED = preference('writedoc:tracking-options', {});
 const VIEW_KEYS = ['balloons', 'insertMark', 'deleteMark', 'insertColor', 'deleteColor', 'formatMark', 'formatColor', 'moveFromMark', 'moveToMark', 'moveColor', 'changeBars', 'changeBarColor', 'authorColors', 'paneOrientation'];
 export const BALLOONS = [['balloons', 'Show Revisions in Balloons'], ['inline', 'Show All Revisions Inline'], ['commentsFormatting', 'Show Only Comments and Formatting in Balloons']];
 const MARK_NAMES = { underline: 'Underline', doubleUnderline: 'Double underline', strikethrough: 'Strikethrough', doubleStrikethrough: 'Double strikethrough', bold: 'Bold', italic: 'Italic', colorOnly: 'Color only', hidden: 'Hidden', none: '(none)' };

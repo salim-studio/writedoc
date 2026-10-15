@@ -174,7 +174,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
   }
 
   /* ---- Captions ---- */
-  const LABELS_KEY = 'documents.captions.labels';
+  const LABELS_KEY = 'writedoc.captions.labels';
   const customLabels = () => { try { const list = JSON.parse(localStorage.getItem(LABELS_KEY) || '[]'); return Array.isArray(list) ? list.filter(l => typeof l === 'string') : []; } catch { return []; } };
   const saveLabels = list => { try { localStorage.setItem(LABELS_KEY, JSON.stringify([...new Set(list)])); } catch { /* storage unavailable */ } };
   async function captionDialog() {

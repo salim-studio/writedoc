@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Documents (mock)</title>
-  <meta name="theme-color" content="#375f91" />
+  <title>writedoc (mock)</title>
+  <meta name="theme-color" content="#4f46e5" />
+  <link rel="icon" href="./logo.svg" type="image/svg+xml" />
   <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
   <script>
     (() => {
       try {
-        const t = localStorage.getItem('documents:theme');
+        const t = localStorage.getItem('writedoc:theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-        if (localStorage.getItem('documents:dark-page') === '1') document.documentElement.dataset.page = 'dark';
+        if (localStorage.getItem('writedoc:dark-page') === '1') document.documentElement.dataset.page = 'dark';
       } catch {}
     })();
   </script>

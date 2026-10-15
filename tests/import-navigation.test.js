@@ -19,28 +19,28 @@ it('does not let a delayed import replace a newer navigation or import', async (
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
   const { editorView } = await import('../src/views/editor.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
   const importFile = editorView.mock.lastCall[0].importFile;
   const pending = new Map();
   const convert = vi.spyOn(Doc, 'fromImportFile').mockImplementation((file) => new Promise((resolve) => pending.set(file.name, resolve)));
   try {
     const oldImport = importFile(new File([], 'slow.hwp'));
-    location.hash = '#/edit/Documents%2FB.docx';
-    await vi.waitFor(() => expect(window.__docs.current?.view.doc.path).toBe('Documents/B.docx'));
-    const newerView = window.__docs.current.view;
+    location.hash = '#/edit/writedoc%2FB.docx';
+    await vi.waitFor(() => expect(window.__writedoc.current?.view.doc.path).toBe('writedoc/B.docx'));
+    const newerView = window.__writedoc.current.view;
     pending.get('slow.hwp')(new Doc({ name: 'Slow' }));
     await oldImport;
-    expect(window.__docs.current.view).toBe(newerView);
+    expect(window.__writedoc.current.view).toBe(newerView);
     expect(newerView.destroy).not.toHaveBeenCalled();
 
     const first = importFile(new File([], 'first.hwp'));
     const second = importFile(new File([], 'second.hwp'));
     pending.get('second.hwp')(new Doc({ name: 'Second' }));
     await second;
-    const latestView = window.__docs.current.view;
+    const latestView = window.__writedoc.current.view;
     pending.get('first.hwp')(new Doc({ name: 'First' }));
     await first;
-    expect(window.__docs.current.view).toBe(latestView);
+    expect(window.__writedoc.current.view).toBe(latestView);
     expect(latestView.doc.name).toBe('Second');
     expect(latestView.destroy).not.toHaveBeenCalled();
 
@@ -55,12 +55,12 @@ it('does not let a delayed import replace a newer navigation or import', async (
     pending.get('fourth.hwp')(new Doc({ name: 'Fourth' }));
     finishSave(new Blob(['saved work']));
     await Promise.all([third, fourth]);
-    expect(window.__docs.current.view.doc.name).toBe('Fourth');
+    expect(window.__writedoc.current.view.doc.name).toBe('Fourth');
     expect(latestView.doc.dirty).toBe(false);
     expect(latestView.destroy).toHaveBeenCalledTimes(1);
     expect(editorView.mock.calls.some(([args]) => args.doc.name === 'Third')).toBe(false);
   } finally {
-    window.__docs.current?.view.destroy();
+    window.__writedoc.current?.view.destroy();
     convert.mockRestore();
     vi.unstubAllGlobals();
   }

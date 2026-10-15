@@ -16,7 +16,7 @@ beforeEach(() => {
       getUser: async () => (sdk._signedIn ? { username: 'nariman' } : null),
     },
     fs: {
-      readdir: vi.fn(async () => [{ path: 'Documents/Report.docx', name: 'Report.docx', size: 12, modified: 1 }]),
+      readdir: vi.fn(async () => [{ path: 'writedoc/Report.docx', name: 'Report.docx', size: 12, modified: 1 }]),
       stat: async () => null, mkdir: async () => {},
     },
   };

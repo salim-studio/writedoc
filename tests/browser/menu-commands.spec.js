@@ -18,7 +18,7 @@ test('Remove link is available only where there is a link', async ({ page }) => 
   // A selection reaching into the link, and the caret inside it, both offer it.
   await select(page, 10, 20); await expect(unlink).toBeEnabled();
   await select(page, 20, 20); await unlink.click();
-  expect(await page.evaluate(() => window.__docs.current.view.engine.model.paragraphs[0].runs.some(r => r.link))).toBe(false);
+  expect(await page.evaluate(() => window.__writedoc.current.view.engine.model.paragraphs[0].runs.some(r => r.link))).toBe(false);
 });
 
 test('Insert table works with text selected and puts the table after it', async ({ page }) => {
@@ -28,7 +28,7 @@ test('Insert table works with text selected and puts the table after it', async 
   const insertTable = (await onTab(page, 'insert')).getByRole('button', { name: 'Insert table', exact: true });
   await expect(insertTable).toBeEnabled(); await insertTable.click();
   await page.getByRole('button', { name: 'Insert', exact: true }).click();
-  const model = await page.evaluate(() => { const m = window.__docs.current.view.engine.model; return { text: m.paragraphs.filter(p => !p.cellId).map(p => p.runs.map(r => r.text).join('')), tables: m.tables.length, inCell: !!m.tableContext }; });
+  const model = await page.evaluate(() => { const m = window.__writedoc.current.view.engine.model; return { text: m.paragraphs.filter(p => !p.cellId).map(p => p.runs.map(r => r.text).join('')), tables: m.tables.length, inCell: !!m.tableContext }; });
   expect(model).toEqual({ text: ['Keep this', ' text'], tables: 1, inCell: true });
   await input(page).press('ControlOrMeta+z');
   await expect(input(page)).toHaveValue('Keep this text');

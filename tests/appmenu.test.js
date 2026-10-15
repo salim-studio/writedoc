@@ -73,5 +73,5 @@ it('keeps the dark page option in view and enables it as soon as the dark theme 
   radios()[2].click();
   item().click();
   expect(document.documentElement.dataset.page).toBe('dark');
-  expect(localStorage.getItem('documents:dark-page')).toBe('1');
+  expect(localStorage.getItem('writedoc:dark-page')).toBe('1');
 });

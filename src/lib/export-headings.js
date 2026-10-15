@@ -1,5 +1,5 @@
 /**
- * Documents often number headings through a list ("1. Introduction", "1.1 Background"),
+ * Files often number headings through a list ("1. Introduction", "1.1 Background"),
  * and the engine's HTML projection writes such a heading as a list item, its
  * level lost. The projection marks those items (see export-images.js); here
  * each becomes a heading of its level with its number kept, and the list it

@@ -281,7 +281,7 @@ button.ed-status-item:hover, .ed-status-view:hover, .ed-zoom-step:hover { backgr
 }
 @media (max-width: 700px) {
   .ed-titlebar { grid-template-columns: auto minmax(0, 1fr) auto; }
-  .ed-quick > button:is([aria-label="Print"], [aria-label="All Documents"]) { display: none; }
+  .ed-quick > button:is([aria-label="Print"], [aria-label="Home"]) { display: none; }
   .ed-header .canvas-title-wrap { overflow: hidden; }
   .ed-header .canvas-title-wrap { justify-content: flex-start; }
   .ribbon-panel { overflow-x: auto; scrollbar-width: thin; height: auto; min-height: 0; }

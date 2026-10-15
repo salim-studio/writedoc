@@ -23,30 +23,30 @@ it('asks for the sign-in before reading a cloud document from the URL, then open
   };
   vi.stubGlobal('puter', sdk);
   document.body.innerHTML = '<div id="app"></div>';
-  history.replaceState(null, '', '#/edit/Documents%2FA.docx');
+  history.replaceState(null, '', '#/edit/writedoc%2FA.docx');
   await import('../src/main.js');
 
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('gate'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('gate'));
   const gate = document.getElementById('app');
   expect(gate.textContent).toContain('Sign in to open this document');
   // Nothing was fetched: without a session the read itself would pop the dialog.
   expect(read).not.toHaveBeenCalled();
-  expect(location.hash).toBe('#/edit/Documents%2FA.docx');
+  expect(location.hash).toBe('#/edit/writedoc%2FA.docx');
 
   // "New document" leaves the file alone and starts writing.
   [...gate.querySelectorAll('button')].find((b) => b.textContent === 'New document').click();
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  expect(window.__docs.current.view.doc.path).toBeNull();
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  expect(window.__writedoc.current.view.doc.path).toBeNull();
   expect(read).not.toHaveBeenCalled();
 
   // Back at the document's URL, signing in opens it.
-  location.hash = '#/edit/Documents%2FA.docx';
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('gate'));
+  location.hash = '#/edit/writedoc%2FA.docx';
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('gate'));
   [...document.getElementById('app').querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
   await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
-  await vi.waitFor(() => expect(window.__docs.current?.view.doc?.path).toBe('Documents/A.docx'));
-  expect(read).toHaveBeenCalledWith('Documents/A.docx');
+  await vi.waitFor(() => expect(window.__writedoc.current?.view.doc?.path).toBe('writedoc/A.docx'));
+  expect(read).toHaveBeenCalledWith('writedoc/A.docx');
 
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   vi.unstubAllGlobals();
 });

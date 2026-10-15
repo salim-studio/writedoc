@@ -16,19 +16,19 @@ beforeEach(() => {
   errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   document.body.innerHTML = '<div id="app"></div>';
 });
-afterEach(() => { window.__docs?.current?.view.destroy(); errors.mockRestore(); vi.unstubAllGlobals(); });
+afterEach(() => { window.__writedoc?.current?.view.destroy(); errors.mockRestore(); vi.unstubAllGlobals(); });
 
 /** An unsaved imported copy whose engine failed, so leaving asks first. */
 async function openUnsavedImport() {
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const previous = window.__docs.current.view;
-  const input = window.__docs.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const previous = window.__writedoc.current.view;
+  const input = window.__writedoc.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
   Object.defineProperty(input, 'files', { value: [new File(['document'], 'Import.docx')] });
   input.dispatchEvent(new Event('change'));
-  await vi.waitFor(() => expect(window.__docs.current?.view !== previous && window.__docs.current?.view.doc?.name === 'Import').toBe(true));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.view !== previous && window.__writedoc.current?.view.doc?.name === 'Import').toBe(true));
+  const view = window.__writedoc.current.view;
   await vi.waitFor(() => expect(view.el.querySelector('.editor-error')).not.toBeNull());
   return view;
 }
@@ -36,31 +36,31 @@ async function openUnsavedImport() {
 it('honors a navigation made while the leave dialog is open: staying shows the document again, leaving goes there', async () => {
   const view = await openUnsavedImport();
   const askToLeave = async () => {
-    view.el.querySelector('[aria-label="All Documents"]').click();
+    view.el.querySelector('[aria-label="Home"]').click();
     await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('Leave without saving?'));
     // With the question open, the user picks somewhere else: a fresh document from a template.
     location.hash = '#/new/letter';
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(window.__docs.current.view === view).toBe(true);
+    expect(window.__writedoc.current.view === view).toBe(true);
   };
   await askToLeave();
   document.querySelector('.modal-root:not(.closing) .modal-panel .btn-ghost').click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
   await new Promise((resolve) => setTimeout(resolve, 20));
-  expect(window.__docs.current.view === view).toBe(true);
+  expect(window.__writedoc.current.view === view).toBe(true);
   expect(location.hash).toBe('#/new');
   await askToLeave();
   document.querySelector('.modal-root:not(.closing) .modal-panel .btn-danger').click();
-  await vi.waitFor(() => expect(window.__docs.current?.view !== view && window.__docs.current?.kind === 'editor').toBe(true));
+  await vi.waitFor(() => expect(window.__writedoc.current?.view !== view && window.__writedoc.current?.kind === 'editor').toBe(true));
   expect(location.hash).toBe('#/new/letter');
-  expect(window.__docs.current.view.doc.template).toBe('letter');
+  expect(window.__writedoc.current.view.doc.template).toBe('letter');
 // This first case cold-imports the application. Its per-action waitFor bounds
 // remain unchanged; allow module transformation separately from UI behavior.
 }, 30000);
 
 it('says that a never-saved document has not been saved, rather than speaking of its latest changes', async () => {
   const view = await openUnsavedImport();
-  view.el.querySelector('[aria-label="All Documents"]').click();
+  view.el.querySelector('[aria-label="Home"]').click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('Leave without saving?'));
   expect(document.querySelector('[role="dialog"]').textContent).toContain('This document has not been saved yet');
   document.querySelector('.modal-root:not(.closing) .modal-panel .btn-ghost').click();
@@ -69,7 +69,7 @@ it('says that a never-saved document has not been saved, rather than speaking of
 
 it('does not stack a second leave question when a file is dropped while the first is up', async () => {
   const view = await openUnsavedImport();
-  view.el.querySelector('[aria-label="All Documents"]').click();
+  view.el.querySelector('[aria-label="Home"]').click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')?.getAttribute('aria-label')).toBe('Leave without saving?'));
   const questions = () => document.querySelectorAll('.modal-root:not(.closing) [role="dialog"]').length;
   const before = questions();
@@ -78,7 +78,7 @@ it('does not stack a second leave question when a file is dropped while the firs
   window.dispatchEvent(drop);
   await new Promise((resolve) => setTimeout(resolve, 50));
   expect(questions()).toBe(before);
-  expect(window.__docs.current.view).toBe(view);
+  expect(window.__writedoc.current.view).toBe(view);
   expect(document.querySelector('.toast')?.textContent).toContain('Answer the question about the open document first');
   document.querySelector('.modal-root:not(.closing) .modal-panel .btn-ghost').click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());

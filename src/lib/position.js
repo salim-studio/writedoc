@@ -9,7 +9,7 @@ import { localStore as store } from './storage.js';
 import { documentPathKey, migrateDocumentMap } from './document-paths.js';
 import { accountKey } from './account-key.js';
 
-const KEY = 'documents:positions';
+const KEY = 'writedoc:positions';
 export const MAX_POSITIONS = 60;
 
 function read(storage) {

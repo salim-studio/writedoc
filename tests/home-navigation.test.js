@@ -26,7 +26,7 @@ const leave = () => { view.destroy(); view.el.remove(); };
 it('ignores a cloud picker result after leaving the document list', async () => {
   const picked = pending(); vi.spyOn(P, 'pickFile').mockReturnValue(picked.promise);
   [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
-  leave(); picked.resolve({ path: 'Documents/Old selection.docx' });
+  leave(); picked.resolve({ path: 'writedoc/Old selection.docx' });
   await vi.advanceTimersByTimeAsync(0);
   expect(openPath).not.toHaveBeenCalled();
 });
@@ -53,16 +53,16 @@ it('does not replace a newer file listing with an older response', async () => {
   const old = pending(), recent = pending();
   P.listFiles.mockReturnValueOnce(old.promise).mockReturnValueOnce(recent.promise);
   const first = view.reload(), second = view.reload();
-  recent.resolve([{ name: 'Latest.docx', path: 'Documents/Latest.docx' }]); await second;
-  old.resolve([{ name: 'Stale.docx', path: 'Documents/Stale.docx' }]); await first;
+  recent.resolve([{ name: 'Latest.docx', path: 'writedoc/Latest.docx' }]); await second;
+  old.resolve([{ name: 'Stale.docx', path: 'writedoc/Stale.docx' }]); await first;
   expect(view.el.querySelector('.file-name').textContent).toBe('Latest');
 });
 
 it.each(['stale listing', 'listing error', 'earlier listing error', 'failed deletion'])('keeps a concurrent deletion consistent with a duplication refresh (%s)', async (result) => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
-  const removed = { name: 'Removed.docx', path: 'Documents/Removed.docx' };
-  const kept = { name: 'Kept.docx', path: 'Documents/Kept.docx' };
-  const copy = { name: 'Kept copy.docx', path: 'Documents/Kept copy.docx' };
+  const removed = { name: 'Removed.docx', path: 'writedoc/Removed.docx' };
+  const kept = { name: 'Kept.docx', path: 'writedoc/Kept.docx' };
+  const copy = { name: 'Kept copy.docx', path: 'writedoc/Kept copy.docx' };
   P.listFiles.mockResolvedValueOnce([removed, kept]);
   await view.reload();
   const deletion = pending(), listing = pending();
@@ -100,8 +100,8 @@ it.each(['stale listing', 'listing error', 'earlier listing error', 'failed dele
 });
 
 it('still opens a cloud selection while the document list is active', async () => {
-  vi.spyOn(P, 'pickFile').mockResolvedValue({ path: 'Documents/Selected.docx' });
+  vi.spyOn(P, 'pickFile').mockResolvedValue({ path: 'writedoc/Selected.docx' });
   [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
   await vi.advanceTimersByTimeAsync(0);
-  expect(openPath).toHaveBeenCalledWith('Documents/Selected.docx');
+  expect(openPath).toHaveBeenCalledWith('writedoc/Selected.docx');
 });

@@ -16,19 +16,19 @@ beforeEach(() => {
   errors = vi.spyOn(console, 'error').mockImplementation(() => {});
   document.body.innerHTML = '<div id="app"></div>';
 });
-afterEach(() => { window.__docs?.current?.view.destroy(); errors.mockRestore(); vi.unstubAllGlobals(); });
+afterEach(() => { window.__writedoc?.current?.view.destroy(); errors.mockRestore(); vi.unstubAllGlobals(); });
 
 const dialogs = () => [...document.querySelectorAll('.modal-root:not(.closing)')];
 
 it('asks once when a second import and a navigation both want to leave an unsaved document', async () => {
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const first = window.__docs.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const first = window.__writedoc.current.view.el.querySelector('input[aria-label="Open DOCX file"]');
   Object.defineProperty(first, 'files', { value: [new File(['document'], 'Import.docx')], configurable: true });
   first.dispatchEvent(new Event('change'));
-  await vi.waitFor(() => expect(window.__docs.current?.view.doc?.name).toBe('Import'));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.view.doc?.name).toBe('Import'));
+  const view = window.__writedoc.current.view;
   await vi.waitFor(() => expect(view.el.querySelector('.editor-error')).not.toBeNull());
   // A second file is imported over the unsaved copy: the leave question comes up.
   const second = view.el.querySelector('input[aria-label="Open DOCX file"]');
@@ -42,7 +42,7 @@ it('asks once when a second import and a navigation both want to leave an unsave
   expect(dialogs()).toHaveLength(1);
   // Leaving goes where the user went last.
   dialogs()[0].querySelector('.modal-panel .btn-danger').click();
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('home'));
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
   expect(location.hash).toBe('#/home');
   expect(dialogs()).toHaveLength(0);
 });

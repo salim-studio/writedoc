@@ -27,8 +27,8 @@ it('opens into a new document without a session, and saves once the status pill 
   await import('../src/main.js');
 
   // No intro, no sign-in screen: the editor, with a blank document.
-  await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('editor'));
-  const view = window.__docs.current.view;
+  await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('editor'));
+  const view = window.__writedoc.current.view;
   const doc = view.doc;
   expect(doc.path).toBeNull();
   expect(document.querySelector('.auth-view')).toBeNull();
@@ -56,9 +56,9 @@ it('opens into a new document without a session, and saves once the status pill 
   pill.click();
   await vi.advanceTimersByTimeAsync(0);
   expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);
-  await vi.waitFor(() => expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['Documents/Untitled document.docx']));
+  await vi.waitFor(() => expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['writedoc/Untitled document.docx']));
   await vi.waitFor(() => expect(doc.dirty).toBe(false));
-  expect(doc.path).toBe('Documents/Untitled document.docx');
+  expect(doc.path).toBe('writedoc/Untitled document.docx');
   expect(pill.classList.contains('signed-out')).toBe(false);
   expect(pill.textContent).toContain('Saved');
   expect(account.title).toBe('nariman');
@@ -67,9 +67,9 @@ it('opens into a new document without a session, and saves once the status pill 
   // From here on autosave runs as usual.
   doc.changed();
   await vi.advanceTimersByTimeAsync(AUTOSAVE_MS);
-  await vi.waitFor(() => expect(write.mock.calls.filter(([path]) => path === 'Documents/Untitled document.docx').length).toBe(2));
+  await vi.waitFor(() => expect(write.mock.calls.filter(([path]) => path === 'writedoc/Untitled document.docx').length).toBe(2));
 
   vi.useRealTimers();
-  window.__docs.current.view.destroy();
+  window.__writedoc.current.view.destroy();
   vi.unstubAllGlobals();
 });

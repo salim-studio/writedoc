@@ -84,10 +84,10 @@ and [mail-messages.js](../../src/lib/mail-messages.js). OOXML details are in
   preview state and active record are saved (`viewMergedData`, `activeRecord`).
 
 **Finish & Merge**
-- Edit Individual Documents: all, current or a range of records; opens a new
+- Edit individual files: all, current or a range of records; opens a new
   document with one section per output document (labels: one sheet per section;
   directory: one continuous document).
-- Print Documents: prints every merged copy in one print job through the
+- Print files: prints every merged copy in one print job through the
   document's normal print path (up to 300 recipients at a time).
 - Send Email Messages: To column, subject, HTML or plain text, record range.
   Messages are sent from the user's Puter email address with

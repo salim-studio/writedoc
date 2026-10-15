@@ -1,6 +1,6 @@
 /**
  * Publishing a document as a web page on Puter hosting. The HTML export is
- * written to Documents/.published/<slug>/index.html, and that folder is
+ * written to writedoc/.published/<slug>/index.html, and that folder is
  * served from a puter.site subdomain (puter.hosting). A private JSON file
  * beside the served folder records the subdomain and source path, so any
  * device can find the publication without exposing that metadata to readers.

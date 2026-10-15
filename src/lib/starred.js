@@ -7,7 +7,7 @@
 import { documentPathKey } from './document-paths.js';
 import { accountKey } from './account-key.js';
 
-const KEY = 'documents:starred';
+const KEY = 'writedoc:starred';
 
 function read() {
   try {

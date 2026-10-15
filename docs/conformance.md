@@ -7256,7 +7256,7 @@ paragraphs. The renderer retains numeric column/paragraph offsets and text
 distances, measures separate text intervals on each baseline, and carries the
 exclusion into following paragraphs. Page placement and wrapping are reconciled
 until stable, so paragraph spacing, page breaks and keep rules move the anchor
-and its exclusion together. Documents without these anchors use one layout pass.
+and its exclusion together. Files without these anchors use one layout pass.
 
 The paired footer controls flag a reference compatibility divergence: with no mode
 setting, the installed reference overlaps footer text and the square; changing only to
@@ -8934,7 +8934,7 @@ and image parts remain retained; only session preview bitmaps are generated.
 Offsets and blur are physical lengths. Expanded effect bounds do not change the
 picture's layout frame. Existing image-resource limits apply before allocating
 the expanded bitmap, and the consumed source bitmap is closed after composition.
-Documents without shadows keep their existing decode paths.
+Files without shadows keep their existing decode paths.
 
 The normal mask uses composed picture alpha, including backing fill, crop and
 outline. Current MS-ODRAWXML §2.3.1.12/CT_ShadowObscured defaults to false. Explicit
@@ -11348,7 +11348,7 @@ Native reference controls establish the facing clearances and minimum frame gaps
 A new vertical level can revisit a taller obstacle; the bounded search allows
 that rescan. Displacement moves cell/text clipping, caret stops, selection
 segments, paragraph decoration and cell boxes together without changing the
-OOXML coordinates. Documents without collision-prevention settings retain the
+OOXML coordinates. Files without collision-prevention settings retain the
 existing placement path without scanning preceding tables for collisions.
 
 The independently authored table-overlap fixtures contain 38 native reference pages.
@@ -13134,7 +13134,7 @@ explicitly unsupported. Legacy-mode coverage is still pending.
 
 The schema checker downloads the published wp14 schema into its temporary cache,
 pins its hash and adds just its percentage-position alternatives to the standard
-CT_PosH/V choices. Documents using direct percentage children require this
+CT_PosH/V choices. Files using direct percentage children require this
 extension view; no standard-only fallback is claimed. Other optional wp14
 metadata retains its existing ignorable processing. Malformed percentage values
 are covered by validator self-checks. Publication source:
@@ -13216,7 +13216,7 @@ preview materializes drawable instances, renames cloned IDs and redirects their
 local resources. This allows the native reference's existing stroke/text/opacity corrections to
 operate on each instance's actual cascade and transformation. Clipping uses stay
 native: a generated group is not a valid replacement for a direct clipping child.
-Documents without reuse keep the previous SVG rendering path.
+Files without reuse keep the previous SVG rendering path.
 
 Independent controls prove two reference differences from SVG 2, implemented
 generically rather than by corpus name or artwork:
@@ -21505,7 +21505,7 @@ the home screen, autosave, editing, export and reopen; the export passes
 The documents screen's Templates menu and its "My templates" dialog tell users to
 save a document as a template from its File menu, but the canvas editor had no
 such command. File → Save as template… now writes the current export to
-Documents/Templates/<name>.docx in Puter (asking before replacing a template of
+writedoc/Templates/<name>.docx in Puter (asking before replacing a template of
 the same name, and signing in first when needed). The open document is unchanged.
 New documents started from it open as copies, as before. The command is absent in
 the local playground and disabled for read-only previews, whose export would not
@@ -21952,7 +21952,7 @@ Clauses: ECMA-376 Part 1 §17.11 (`footnoteReference`, `footnoteRef`, `footnotes
 
 Supported subset:
 
-- Documents whose body references footnotes now open for editing. Each referenced note is a story
+- Files whose body references footnotes now open for editing. Each referenced note is a story
   (`<notes part>#<id>`) laid out at the foot of the page that holds its reference, below a
   two-inch separator rule; pagination reserves that space and repeats until the reservations
   settle. Numbers follow reference order in the document's numbering format and start value.
@@ -21998,7 +21998,7 @@ This does not implement the missing numbering formats or claim native reference 
 
 ## Retained fields (2026-10-09)
 
-Clause: ECMA-376 Part 1 §17.16.5. Documents containing SEQ (captions), REF/NOTEREF/STYLEREF
+Clause: ECMA-376 Part 1 §17.16.5. Files containing SEQ (captions), REF/NOTEREF/STYLEREF
 (cross-references), DATE/TIME and document-information fields (AUTHOR, TITLE, FILENAME,
 DOCPROPERTY…), MERGEFIELD, LISTNUM/AUTONUM, citation add-ins (ADDIN, CITATION, BIBLIOGRAPHY) and
 similar fields no longer open read-only. Their instructions are kept as written (add-in
@@ -22021,7 +22021,7 @@ Tests: `tests/captions.test.js`.
 
 ## Hidden text (2026-10-09)
 
-Clause: §17.3.2.41 `vanish`. Documents with hidden text no longer open read-only. Hidden runs stay in
+Clause: §17.3.2.41 `vanish`. Files with hidden text no longer open read-only. Hidden runs stay in
 the text (search, copy and save keep them) and are laid out with no width; `revisionView.showHidden`
 lets a Show/Hide ¶ control lay them out. Tests: `tests/hidden-text.test.js`.
 
@@ -22089,7 +22089,7 @@ rows use 24px commands spread across a 72px band, in fixed proportions.
 Clicking a ribbon button no longer takes focus from the document, so a dialog it
 opens returns to the text with the selection kept. On the smallest phones the
 title bar hides Search (Find stays on the Home tab) so the document's save status
-remains readable; the hidden quick-access Print and All Documents buttons now
+remains readable; the hidden quick-access Print and Home buttons now
 stay hidden.
 
 ### Font dialog (2026-10-09)
@@ -23048,7 +23048,7 @@ WordprocessingML §17.3.2.6 (`color` with `themeColor`/`themeTint`/`themeShade`)
   part is refreshed to the new resolved value (readers prefer the theme reference).
 - A new app document (body text in the app default font and no theme part) is
   linked to the theme on its first theme or style-set change: `docDefaults`
-  `rFonts` becomes `minorHAnsi` and the Default style set is applied. Documents that
+  `rFonts` becomes `minorHAnsi` and the Default style set is applied. Files that
   name explicit fonts keep them; only theme references follow the theme.
 - Style sets manage `pBdr`, `spacing`, `ind`, `jc` and `rFonts`, `b`, `bCs`, `i`,
   `iCs`, `caps`, `color`, `spacing`, `sz`, `szCs` of Normal, Title, Subtitle,
@@ -23215,7 +23215,7 @@ style `locked` element (§17.7.4).
 
 Supported subset:
 
-- Documents with `documentProtection` now open for editing instead of read-only. Enforced
+- Files with `documentProtection` now open for editing instead of read-only. Enforced
   protection is applied by an editing guard on every transaction (typing, commands, undo and redo):
   `readOnly` and `comments` allow changes only inside permission ranges that name everyone or the
   current user (by name or e-mail, case-insensitive), `comments` also allows comments,
@@ -23356,7 +23356,7 @@ processors read, and keeps its recipient list inside the document.
   included/excluded flags), sort keys, filters, field matching and email
   options. It is an application-defined part: other consumers keep it but do
   not use it, and they will report the merge's data source as unavailable.
-- **Merged output**: Edit Individual Documents copies the saved body once per
+- **Merged output**: Edit individual files copies the saved body once per
   output document, replaces every merge field (and its nested fields) with
   plain result runs (line breaks as `w:br`), separates copies with next-page
   section breaks cloned from the final `w:sectPr` (a directory runs copies

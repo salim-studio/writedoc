@@ -1,4 +1,4 @@
-Third-party notices for Documents
+Third-party notices for writedoc
 
 The application and original canvas engine are MIT licensed.
 This file lists installed runtime dependencies, including packages retained for import helpers.

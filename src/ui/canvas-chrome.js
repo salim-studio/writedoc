@@ -461,7 +461,7 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
     separator, { label: 'Page Setup…', icon: 'pageSetup', disabled: c.pageSetup.disabled, onSelect: () => c.pageSetup.click() },
     { label: 'Document Fonts…', icon: 'documentFonts', disabled: !a.hasDocument?.(), onSelect: a.loadFontFiles },
     separator, { label: 'Keyboard Shortcuts', icon: 'keyboard', shortcut: `${MOD_KEY}+/`, onSelect: openShortcuts },
-    { label: 'All Documents', icon: 'back', onSelect: a.goHome },
+    { label: 'Home', icon: 'back', onSelect: a.goHome },
   ];
   const fileCommand = (control, overrides) => ({ label: control.getAttribute('aria-label') || control.textContent, disabled: control.disabled, onSelect: () => control.click(), ...overrides });
   const fileButton = el('button.ribbon-file', { type: 'button', 'aria-haspopup': w.openBackstage ? 'dialog' : 'menu', 'aria-expanded': 'false', onclick: e => {

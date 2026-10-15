@@ -1,6 +1,6 @@
 /**
  * Version history. Every document in the app folder gets a folder of
- * snapshots at `Documents/.versions/<name>/`, one .docx per version, named
+ * snapshots at `writedoc/.versions/<name>/`, one .docx per version, named
  * by the moment it was taken. A snapshot is written after a save when the
  * last one is older than VERSION_INTERVAL_MS (or there is none), and whenever
  * the user asks for one; the oldest go once there are more than MAX_VERSIONS.
@@ -23,7 +23,7 @@ export function versionsFolder(path) {
   const rest = path.slice(prefix.length);
   if (!/\.docx$/i.test(rest) || rest.includes('/')) return null;
   const stem = P.stripExtension(rest);
-  // These names would resolve to all histories (or Documents itself), including
+  // These names would resolve to all histories (or writedoc itself), including
   // when deleteVersions recursively removes a document's snapshot folder.
   if (!stem || stem === '.' || stem === '..') return null;
   return `${VERSIONS_DIR}/${stem}`;

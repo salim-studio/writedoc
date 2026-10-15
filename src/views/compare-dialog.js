@@ -1,5 +1,5 @@
 /**
- * Compare Documents and Combine Documents. The reader picks an original and a revised document
+ * Compare files and Combine files. The reader picks an original and a revised document
  * (this one, a file from the device, or one from Puter); the result is a new document whose
  * differences are tracked changes, shown first beside both sources and then opened or downloaded.
  */
@@ -9,7 +9,7 @@ import * as P from '../lib/puter.js';
 import { engineApi } from '../lib/engine-api.js';
 import { hint, preference } from './review-ui.js';
 
-const OPTIONS = preference('documents:compare-options', { granularity: 'word', formatting: true, caseChanges: true, whiteSpace: true, tables: true });
+const OPTIONS = preference('writedoc:compare-options', { granularity: 'word', formatting: true, caseChanges: true, whiteSpace: true, tables: true });
 
 const visible = run => run.revision?.type !== 'del';
 const plainText = p => p.runs.filter(visible).map(r => r.text).join('').replace(/￼/g, '');
@@ -73,7 +73,7 @@ export function openCompareDialog({ mode = 'compare', editor, pkg, documentName,
       hint(combine ? 'The result keeps the original document with its own changes and comments, and adds the revised copy\'s differences as tracked changes.' : 'The result is the revised document, with what changed since the original shown as tracked changes. Its comments are kept.')),
     status,
     el('div.modal-actions', {}, el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Cancel'), run));
-  const modal = openModal({ title: combine ? 'Combine Documents' : 'Compare Documents', content, wide: true });
+  const modal = openModal({ title: combine ? 'Combine files' : 'Compare files', content, wide: true });
   if (editor() && pkg()) (combine ? original : revised).current();
   // Compare with an earlier version (Version History): that version is the original, and the comparison runs at once.
   if (presetOriginal) { original.set(presetOriginal); refresh(); queueMicrotask(() => content.requestSubmit()); }

@@ -12,7 +12,7 @@ export async function prepareHanwordFonts(model) {
   if (typeof FontFace === 'undefined') return;
   const available = new Map();
   const local = (name) => {
-    if (!available.has(name)) available.set(name, Promise.resolve().then(() => new FontFace('Documents font probe', `local(${JSON.stringify(name)})`).load()).then(() => true, () => false));
+    if (!available.has(name)) available.set(name, Promise.resolve().then(() => new FontFace('writedoc font probe', `local(${JSON.stringify(name)})`).load()).then(() => true, () => false));
     return available.get(name);
   };
   const names = [...new Set(model.chars.flatMap((c) => [c?.font, c?.eastAsia]).filter(Boolean))];

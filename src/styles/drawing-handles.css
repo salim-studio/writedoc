@@ -1,6 +1,6 @@
 /* Direct manipulation of pictures and shapes on the page (engine/image-interaction.js). */
 .canvas-image-frame {
-  --handle-ink: #375f91;
+  --handle-ink: #4f46e5;
   --guide-ink: #d6338f;
 }
 .canvas-image-handle[data-handle='n'] { left:calc(50% - 6px); top:-6px; }
@@ -28,7 +28,7 @@
 .canvas-image-handle:focus-visible, .canvas-image-rotate:focus-visible, .canvas-layout-options:focus-visible,
 .canvas-crop-handle:focus-visible { outline:2px solid var(--focus, #2563eb); outline-offset:1px; }
 /* Drawings selected together with the main one: a frame without handles. */
-.canvas-image-frame.is-secondary { border:1px dashed #375f91; box-shadow:0 0 0 1px rgba(255,255,255,.7); }
+.canvas-image-frame.is-secondary { border:1px dashed #4f46e5; box-shadow:0 0 0 1px rgba(255,255,255,.7); }
 .canvas-drawing-layer { position:absolute; left:0; top:0; width:0; height:0; pointer-events:none; z-index:3; }
 .canvas-drawing-layer > * { position:absolute; pointer-events:none; }
 .canvas-drawing-guide { background:#d6338f; }
@@ -36,13 +36,13 @@
 .canvas-drawing-guide[data-axis='y'] { height:1px !important; margin-top:-.5px; }
 .canvas-drawing-guide[data-kind='margin'] { background:repeating-linear-gradient(var(--dir, 180deg), #d6338f 0 4px, transparent 4px 7px); }
 .canvas-drawing-guide[data-axis='y'][data-kind='margin'] { --dir:90deg; }
-.canvas-drop-caret { background:#375f91; box-shadow:0 0 0 1px rgba(255,255,255,.8); border-radius:1px; }
-.canvas-anchor-mark { color:#375f91; line-height:0; opacity:.85; }
+.canvas-drop-caret { background:#4f46e5; box-shadow:0 0 0 1px rgba(255,255,255,.8); border-radius:1px; }
+.canvas-anchor-mark { color:#4f46e5; line-height:0; opacity:.85; }
 .canvas-layout-options {
   position:absolute; z-index:4; width:24px; height:24px; padding:0; display:grid; place-items:center;
   border:1px solid #9aa9bd; border-radius:4px; background:white; color:#243e5f; box-shadow:0 1px 3px rgba(0,0,0,.15); cursor:pointer;
 }
-.canvas-layout-options:hover { background:#eef3f9; border-color:#375f91; }
+.canvas-layout-options:hover { background:#eef0fd; border-color:#4f46e5; }
 /* Crop mode: the kept area has heavy black corner and edge marks; the rest of the picture is dimmed. */
 .canvas-crop-preview { z-index:3; box-shadow:0 0 0 1px rgba(55,95,145,.4); }
 .canvas-crop-frame { position:absolute; z-index:4; pointer-events:none; outline:1px solid rgba(0,0,0,.6); }

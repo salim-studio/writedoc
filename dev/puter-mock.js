@@ -8,7 +8,7 @@
  */
 (() => {
   const params = new URLSearchParams(location.search);
-  const LS = 'documents-mock-state';
+  const LS = 'writedoc-mock-state';
   const state = (() => {
     try { return JSON.parse(sessionStorage.getItem(LS)) || { fs: {} }; } catch { return { fs: {} }; }
   })();

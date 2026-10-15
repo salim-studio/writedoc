@@ -7,8 +7,8 @@
  *  files     documents as real files in the app's own folder on Puter FS
  *  pickers   Puter's Open / Save dialogs, feature-detected
  *
- * Files are never stored in KV. Documents are .docx blobs written to
- * `Documents/<name>.docx`, so they show up as ordinary files a user can
+ * Files are never stored in KV. They are .docx blobs written to
+ * `writedoc/<name>.docx`, so they show up as ordinary files a user can
  * move, share, or open with any other app.
  */
 
@@ -276,7 +276,7 @@ export function canSaveFiles() {
   return typeof sdk()?.ui?.showSaveFilePicker === 'function';
 }
 
-/** Puter's Open dialog -> { path, name } or null when cancelled. Documents by default. */
+/** Puter's Open dialog -> { path, name } or null when cancelled. Opens in the writedoc folder by default. */
 export async function pickFile({ accept = DOCUMENT_EXTENSIONS } = {}) {
   if (!canPickFiles()) return null;
   let result;

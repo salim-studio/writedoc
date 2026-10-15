@@ -7,7 +7,7 @@ import { promptDialog } from '../ui/modal.js';
 import { checkAccessibility, summarize, RULES } from '../lib/accessibility.js';
 import { sidePane, button, hint, preference, reveal } from './review-ui.js';
 
-const KEEP_RUNNING = preference('documents:accessibility-live', true);
+const KEEP_RUNNING = preference('writedoc:accessibility-live', true);
 const SEVERITY = { error: 'Errors', warning: 'Warnings', tip: 'Tips' };
 const FIX_LABEL = { altText: 'Add description…', headerRow: 'Use first row as header', autoColor: 'Use automatic color', clearHighlight: 'Remove highlight', removeEmpty: 'Remove empty paragraphs', collapseBlanks: 'Use a single space', deleteRow: 'Delete row' };
 

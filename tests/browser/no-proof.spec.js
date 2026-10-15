@@ -20,7 +20,7 @@ async function replace(page,input,start,end,text) {
 test('proofing honors exemptions, corrections preserve them, and exports/undo retain source',async({page},info)=>{
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('/playground.html');
-  await page.evaluate(()=>{localStorage.removeItem('documents:dictionary');localStorage.removeItem('documents:spellcheck');});
+  await page.evaluate(()=>{localStorage.removeItem('writedoc:dictionary');localStorage.removeItem('writedoc:spellcheck');});
   await page.getByLabel('Open DOCX file').setInputFiles(source);
   const input=page.getByRole('textbox',{name:'Document text'});
   const text=Array(9).fill('Zzqxvble').join('\n');

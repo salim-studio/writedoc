@@ -6,11 +6,11 @@ const state = vi.hoisted(() => ({ version: 0, local: [], synthetic: false }));
 vi.mock('../src/engine/local-fonts.js', () => ({ localFontVersion: () => state.version, localFamilyFontData: async () => state.local, prepareAuthorizedLocalFonts: async () => {} }));
 vi.mock('../src/engine/synthetic-bold.js', () => ({ usesSyntheticAdvance: () => state.synthetic }));
 const bytes = file => new Uint8Array(readFileSync('public/fonts/' + file)).buffer;
-const sources = [{ source: 'url("https://documents.test/fonts/BebasNeue-Regular.ttf")' }];
+const sources = [{ source: 'url("https://writedoc.test/fonts/BebasNeue-Regular.ttf")' }];
 let api, registered, loaded;
 beforeEach(async () => {
   vi.resetModules(); state.version = 0; state.local = []; state.synthetic = false; registered = new Set(); loaded = [];
-  vi.stubGlobal('document', { baseURI: 'https://documents.test/playground.html', fonts: { add: face => registered.add(face), delete: face => registered.delete(face) } });
+  vi.stubGlobal('document', { baseURI: 'https://writedoc.test/playground.html', fonts: { add: face => registered.add(face), delete: face => registered.delete(face) } });
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, arrayBuffer: async () => bytes('BebasNeue-Regular.ttf') })));
   vi.stubGlobal('FontFace', class { constructor(family, data, descriptors) { Object.assign(this, { family, data, descriptors }); } async load() { loaded.push(this); return this; } });
   api = await import('../src/engine/gpos-only-kerning.js');

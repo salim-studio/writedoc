@@ -68,15 +68,15 @@ describe('version details', () => {
   });
   afterEach(() => { delete globalThis.puter; });
   it('keeps who saved a version and its name beside it, and trims both', async () => {
-    const v = await saveVersion('Documents/Plan.docx', new Blob(['x']), { now: Date.UTC(2026, 0, 1), meta: { author: 'ada', label: 'Draft' } });
+    const v = await saveVersion('writedoc/Plan.docx', new Blob(['x']), { now: Date.UTC(2026, 0, 1), meta: { author: 'ada', label: 'Draft' } });
     expect(await readVersionMeta(v)).toEqual({ author: 'ada', label: 'Draft' });
     await writeVersionMeta(v, { author: 'ada', label: 'Final' });
     expect((await readVersionMeta(v)).label).toBe('Final');
     // Details never count as versions.
-    expect((await listVersions('Documents/Plan.docx')).length).toBe(1);
-    for (let i = 1; i <= MAX_VERSIONS; i++) await saveVersion('Documents/Plan.docx', new Blob(['x']), { now: Date.UTC(2026, 0, 1) + i * 1000, meta: { author: 'bob' } });
+    expect((await listVersions('writedoc/Plan.docx')).length).toBe(1);
+    for (let i = 1; i <= MAX_VERSIONS; i++) await saveVersion('writedoc/Plan.docx', new Blob(['x']), { now: Date.UTC(2026, 0, 1) + i * 1000, meta: { author: 'bob' } });
     expect(files.has(v.path)).toBe(false);
     expect(files.has(metaPath(v.path))).toBe(false);
-    expect(await readVersionMeta({ path: 'Documents/.versions/Plan/missing.docx' })).toEqual({});
+    expect(await readVersionMeta({ path: 'writedoc/.versions/Plan/missing.docx' })).toEqual({});
   });
 });

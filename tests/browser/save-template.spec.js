@@ -24,7 +24,7 @@ test('File > Save as template adds the document to the home screen templates', a
   // The first save's notice may still be on screen: the newest one is this save's.
   await expect(page.getByText('Saved as template "Status update"').last()).toBeVisible();
 
-  await page.getByRole('button', { name: 'All Documents', exact: true }).click();
+  await page.getByRole('button', { name: 'Home', exact: true }).click();
   await page.getByRole('button', { name: 'Templates', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Status update', exact: true }).click();
   await expect(input(page)).toHaveValue('Weekly status\nWins:\nRisks: none');

@@ -18,8 +18,8 @@ const EXPLAIN = {
   forms: 'This document is protected: you may only fill in form fields.',
   none: 'Formatting in this document is restricted to the allowed styles.',
 };
-const EXTRA_EDITORS = preference('documents:restrict-editors', []);
-const HIGHLIGHT = preference('documents:restrict-highlight', true);
+const EXTRA_EDITORS = preference('writedoc:restrict-editors', []);
+const HIGHLIGHT = preference('writedoc:restrict-highlight', true);
 const REGION_TINT = 'rgba(255, 214, 92, .32)', DRAFT_TINT = 'rgba(120, 160, 230, .22)';
 
 /** Password and confirmation; resolves the password ('' for none) or null when cancelled. */

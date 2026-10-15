@@ -4,7 +4,7 @@ import { commandIconEl } from './ribbon.js';
 import { iconEl } from './icons.js';
 import { localStore } from '../lib/storage.js';
 
-const MODE_STORE = 'documents:ribbon-mode';
+const MODE_STORE = 'writedoc:ribbon-mode';
 export const RIBBON_MODES = ['always', 'tabs', 'auto'];
 /** KeyTips for the standard tabs; contextual and module tabs get letters from their names. */
 const TAB_KEYS = { home: 'H', insert: 'N', draw: 'JI', design: 'G', layout: 'P', references: 'S', mailings: 'M', review: 'R', view: 'W' };

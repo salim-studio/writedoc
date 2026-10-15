@@ -308,7 +308,7 @@ export function classicMenus(ctx) {
     opt(w.toggleReviewingPane, 'Reviewing Pane', { icon: 'reviewingPane', checked: !!w.reviewingPaneShown?.() }),
     ctx.toggleFormattingPane && { label: 'Formatting Pane', icon: 'formattingPane', checked: !!ctx.formattingPaneShown?.(), onSelect: () => ctx.toggleFormattingPane() },
     sep,
-    { label: 'All Documents', icon: 'home', onSelect: () => a.goHome?.() },
+    { label: 'Home', icon: 'home', onSelect: () => a.goHome?.() },
   ]);
 
   const help = () => withExt('help', [

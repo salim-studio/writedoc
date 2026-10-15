@@ -7,14 +7,14 @@
 
 import { formatBytes, relativeTime } from '../ui/dom.js';
 
-/** "Documents" for "Documents/Report.docx"; "" for a bare name. */
+/** "writedoc" for "writedoc/Report.docx"; "" for a bare name. */
 export function folderOf(path) {
   const p = String(path || '');
   const i = p.lastIndexOf('/');
   return i > 0 ? p.slice(0, i) : '';
 }
 
-/** "Report.docx" for "Documents/Report.docx"; "" without a path. */
+/** "Report.docx" for "writedoc/Report.docx"; "" without a path. */
 export function fileNameOf(path) {
   const p = String(path || '');
   return p.slice(p.lastIndexOf('/') + 1);

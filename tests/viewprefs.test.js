@@ -19,9 +19,9 @@ describe('remembered zoom', () => {
     const storage = memory();
     rememberZoom({ value: 900 }, { storage });
     expect(recallZoom({ storage })).toBeNull();
-    storage.setItem('documents:zoom', '{bad');
+    storage.setItem('writedoc:zoom', '{bad');
     expect(recallZoom({ storage })).toBeNull();
-    storage.setItem('documents:zoom', '{"fit":"diagonal"}');
+    storage.setItem('writedoc:zoom', '{"fit":"diagonal"}');
     expect(recallZoom({ storage })).toBeNull();
   });
 });

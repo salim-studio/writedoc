@@ -17,7 +17,7 @@ describe('pen gallery storage', () => {
   });
   it('falls back to the defaults when storage is unusable or invalid', () => {
     expect(loadPens({ getItem: () => { throw new Error('blocked'); } }).pens).toHaveLength(DEFAULT_PENS.length);
-    const storage = memory(); storage.setItem('documents.draw.pens.v1', JSON.stringify({ pens: [{ id: 'x', tool: 'brush', color: '000000', width: 1 }] }));
+    const storage = memory(); storage.setItem('writedoc.draw.pens.v1', JSON.stringify({ pens: [{ id: 'x', tool: 'brush', color: '000000', width: 1 }] }));
     expect(loadPens(storage).pens).toHaveLength(DEFAULT_PENS.length);
     expect(() => savePens({ pens: [], active: null }, { setItem: () => { throw new Error('full'); } })).not.toThrow();
   });
