@@ -1,6 +1,14 @@
 # writedoc
 
-<img src="public/logo.svg" width="64" height="64" alt="writedoc logo" />
+<p align="center">
+  <img src="public/hero.svg" alt="writedoc — a fast, private word processor with real .docx files in your own cloud" />
+</p>
+
+<p align="center">
+  <a href="https://salim-studio.github.io/writedoc/"><img src="https://img.shields.io/badge/demo-live-4f46e5" alt="Live demo" /></a>
+  <a href="https://github.com/salim-studio/writedoc/actions/workflows/deploy-pages.yml"><img src="https://github.com/salim-studio/writedoc/actions/workflows/deploy-pages.yml/badge.svg" alt="Deploy status" /></a>
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" />
+</p>
 
 A fast, private word processor in the browser, with an original canvas editor and real `.docx` files stored in your own Puter cloud — an open-source alternative to Microsoft Word.
 
