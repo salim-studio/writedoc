@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
+import puterLocalhost from './dev/puter-localhost.mjs';
 import collabDevServer from './dev/collab-dev-server.mjs';
 
 export default defineConfig({
