@@ -56,15 +56,3 @@ it('offers the sign-in in place of the list, then lists the documents once signe
   expect(account.title).toBe('nariman');
   expect(account.textContent).toBe('n');
 });
-
-it('asks for the sign-in before opening Puter\'s file picker', async () => {
-  sdk.ui = { showOpenFilePicker: vi.fn(async () => ({ path: 'Desktop/Picked.docx', name: 'Picked.docx' })) };
-  await session.init();
-  const openPath = vi.fn();
-  view = homeView({ openPath, newDoc: vi.fn(), newFromTemplate: vi.fn(), importFile: vi.fn() });
-  document.body.append(view.el);
-  [...view.el.querySelectorAll('.home-actions button')].find((b) => b.textContent === 'Open from Puter').click();
-  await vi.waitFor(() => expect(openPath).toHaveBeenCalledWith('Desktop/Picked.docx'));
-  expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);
-  expect(sdk.auth.signIn.mock.invocationCallOrder[0]).toBeLessThan(sdk.ui.showOpenFilePicker.mock.invocationCallOrder[0]);
-});

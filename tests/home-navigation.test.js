@@ -23,14 +23,6 @@ afterEach(() => {
 });
 const leave = () => { view.destroy(); view.el.remove(); };
 
-it('ignores a cloud picker result after leaving the document list', async () => {
-  const picked = pending(); vi.spyOn(P, 'pickFile').mockReturnValue(picked.promise);
-  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
-  leave(); picked.resolve({ path: 'writedoc/Old selection.docx' });
-  await vi.advanceTimersByTimeAsync(0);
-  expect(openPath).not.toHaveBeenCalled();
-});
-
 it('does not open a stale template menu after navigation', async () => {
   const listed = pending(); vi.spyOn(P, 'listFolder').mockReturnValue(listed.promise);
   [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Templates').click();
@@ -97,11 +89,4 @@ it.each(['stale listing', 'listing error', 'earlier listing error', 'failed dele
   P.listFiles.mockResolvedValue([removed, kept, copy]);
   await view.reload();
   expect(view.el.querySelector('[aria-label="Options for Removed.docx"]')).not.toBeNull();
-});
-
-it('still opens a cloud selection while the document list is active', async () => {
-  vi.spyOn(P, 'pickFile').mockResolvedValue({ path: 'writedoc/Selected.docx' });
-  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
-  await vi.advanceTimersByTimeAsync(0);
-  expect(openPath).toHaveBeenCalledWith('writedoc/Selected.docx');
 });

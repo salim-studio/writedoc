@@ -127,8 +127,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
       el('div.home-actions', {},
         el('button.btn.btn-primary.btn-lg', { type: 'button', html: icon('plus', 18, 2.2), onclick: newDoc }, el('span', {}, 'New document')),
         el('button.btn.btn-outline.btn-lg', { type: 'button', 'aria-haspopup': 'menu', 'aria-expanded': 'false', html: icon('gridView', 18), onclick: (e) => openTemplateMenu(e.currentTarget) }, el('span', {}, 'Templates')),
-        el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('upload', 18), onclick: pickDevice, title: 'Import DOCX, Hanword (.hwp, .hwpx), Markdown, HTML, or text files' }, el('span', {}, 'Import')),
-        P.canPickFiles() && el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('folderOpen', 18), onclick: openFromPuter }, el('span', {}, 'Open from Puter'))),
+        el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('upload', 18), onclick: pickDevice, title: 'Import DOCX, Hanword (.hwp, .hwpx), Markdown, HTML, or text files' }, el('span', {}, 'Import'))),
       el('div.home-list-head', {},
         el('h2.home-h2', {}, 'Your documents'),
         el('div.home-list-tools', {}, sortBtn, search)),
@@ -223,12 +222,6 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     };
     render(templates);
     return modal;
-  }
-
-  async function openFromPuter() {
-    if (session.signedOut && (!await session.signIn() || destroyed)) return;
-    const picked = await P.pickFile();
-    if (!destroyed && picked) openPath(picked.path);
   }
 
   async function load() {
