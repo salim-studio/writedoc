@@ -1,5 +1,3 @@
-# writedoc
-
 <p align="center">
   <img src="public/hero.svg" alt="writedoc — a fast, private word processor with real .docx files in your own cloud" />
 </p>
@@ -10,125 +8,154 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" />
 </p>
 
-A fast, private word processor in the browser, with an original canvas editor and real `.docx` files stored in your own Puter cloud — an open-source alternative to Microsoft Word.
+> **Your words. Your files. Your cloud.**
+>
+> writedoc is a word processor that treats your writing like it is yours:
+> it opens fast, stays out of your way, and saves real `.docx` files into
+> storage you control. No accounts to feed, no formats to ransom, no
+> telemetry deciding what you meant.
 
-Live demo: **https://salim-studio.github.io/writedoc/**
+## Why writedoc exists
 
-**AGPL code and dependencies must not be introduced.** The dependency policy is recorded in [AGENTS.md](AGENTS.md) and checked by `npm run check:licenses` and before production builds.
+Most writing tools rent your words back to you — your files on their
+servers, your habits in their analytics, your documents in formats only
+they fully understand. writedoc starts from the opposite assumption:
+**the application is a guest, and your files are the home.**
 
-## Run
+- **Private by construction.** The canvas editor runs entirely in your
+  browser. The playground and mock pages work with no account at all,
+  and the cloud build talks only to your own Puter storage.
+- **Honest files.** What you write is saved as genuine
+  Office Open XML (`.docx`), byte-preserving the parts writedoc does
+  not touch — so Word, LibreOffice, and your future self can always
+  open it.
+- **An original engine, not a wrapper.** Layout, pagination, and
+  painting are built from scratch on canvas, with metric-compatible
+  fonts and a conformance record that says exactly which parts of
+  ECMA-376 are supported — and which are not yet.
+- **Calm software.** Flat surfaces, keyboard-first navigation, and
+  controls that explain themselves. Fewer surprises, more writing.
+
+## What it can do
+
+<details>
+<summary><strong>Write</strong> — the everyday act, taken seriously</summary>
+
+- Type, delete, split and merge paragraphs; bold, italic, underline,
+  strikethrough; font sizes in half-point steps; unlimited undo and redo
+- Left, center, right and justified alignment; custom line spacing,
+  exact and minimum heights, before/after spacing
+- Indents and tab stops with dot, dash and line leaders;
+  keep-with-next, keep-lines-together, widow and orphan control
+- Bullets and numbering, reusable paragraph and character styles,
+  outline levels with document navigation
+- Click, drag, Shift+click and full keyboard selection across
+  paragraphs and pages; native input methods and a plain-text mode
+</details>
+
+<details>
+<summary><strong>Review</strong> — think together, carefully</summary>
+
+- Comment threads in a margin column: reply, edit, resolve, delete
+- Track Changes with All, Simple, No Markup and Original views;
+  accept, reject, change bars and a Reviewing Pane
+- Read Aloud, spelling with personal dictionary, word count with goals
+</details>
+
+<details>
+<summary><strong>Structure</strong> — long documents stay navigable</summary>
+
+- Table of contents, footnotes at the foot of the page, captions (SEQ),
+  cross-references (REF/PAGEREF), Update Fields (F9)
+- Headers and footers with page numbers, Different First Page and
+  Different Odd & Even Pages
+- Single-section page setup: Letter, A4, Legal or custom sizes,
+  orientation, margins and gutter; manual and paragraph page breaks
+</details>
+
+<details>
+<summary><strong>Tables &amp; pictures</strong> — the unglamorous essentials</summary>
+
+- Fixed-width and AutoFit tables, merged cells, rows that flow across
+  pages, repeated headers, editable row heights
+- Inline PNG/JPEG with sizing, cropping, flips, rotation, alt text —
+  your original image bytes preserved untouched
+</details>
+
+<details>
+<summary><strong>Files</strong> — in and out, without friction</summary>
+
+- Open and download `.docx` locally; save and reopen from your Puter cloud
+- Export searchable PDF; start from Letter, Meeting notes, Report,
+  Résumé or Essay templates
+- Import plain text (one paragraph per line), Markdown and HTML with
+  headings, lists, emphasis and links
+- Real-time co-editing of shared files, version history, and one-click
+  publishing to the web
+</details>
+
+## What it cannot do yet
+
+writedoc is a prototype with strong opinions and known boundaries: one
+section per file, no nested tables or floating pictures, and files that
+lean on unsupported structures open read-only rather than risk your
+content. The [engine guide](docs/canvas-engine.md) and the
+[conformance record](docs/conformance.md) document every supported
+subset and every remaining gap — surprises are a bug, and documented
+limits are a feature.
+
+## Run it
+
+No installation. The live build is always here:
+
+**https://salim-studio.github.io/writedoc/**
+
+Or run it on your own machine:
 
 ```sh
 npm ci
 npm run dev
 ```
 
-- **`/`** — the app using Puter for cloud storage.
-- **`/playground.html`** — standalone local editor; no account or cloud SDK. Includes two-paragraph and two-page samples, local DOCX opening, and downloads.
-- **`/mock.html`** — the app with an in-memory Puter mock for testing save/reopen.
-- **`/mirror.html`** — a second-window preview of the open file.
+| Page | What it is |
+| ---- | ---------- |
+| `/` | The app, with Puter cloud storage |
+| `/playground.html` | The editor alone — no account, no cloud, just writing |
+| `/mock.html` | The full app against an in-memory Puter mock |
+| `/mirror.html` | The open file, mirrored in a second window |
 
-## Canvas editor features
-
-- Review: comment threads in a margin column (reply, edit, resolve, delete) and Track Changes (record, All/Simple/No Markup/Original, accept/reject, change bars, Reviewing Pane); Read Aloud.
-- References: table of contents, footnotes at the foot of the page, captions (SEQ), cross-references (REF/PAGEREF), Update Fields (F9).
-- Headers and footers: create when missing, page numbers, Different First Page, Different Odd & Even Pages, on-page editing cues.
-- Retained content that no longer forces read-only: SEQ/REF/DATE/AUTHOR/citation fields, hidden text, equations (shown linearly), tracked formatting changes.
-- Metric-compatible substitutes for Calibri, Cambria, Arial, Times New Roman and Courier New; File → Save as PDF with searchable text.
-- Single and double strikethrough with style inheritance, explicit removal and font-based canvas strokes.
-- Trailing ordinary spaces stay on their line, with preserved wrapping/underline compatibility flags and bounded caret/selection geometry.
-- Kerning thresholds with style inheritance and explicit control of Canvas letter-pair spacing.
-- Contextual spacing between paragraphs of the same style, with inheritance and the table compatibility setting.
-- Horizontal text scaling from 1–600%, with inheritance and preserved font height and character spacing.
-- Expanded/condensed character spacing with style inheritance, zero resets and shared measurement/painting.
-- Signed baseline shifts with style inheritance, zero resets and preserved font sizes.
-- Superscript/subscript editing and style inheritance, with preserved font sizes and shifted canvas text geometry.
-- Text highlighting with the OOXML palette, explicit removal, and inherited flat run shading.
-- RGB/automatic text color editing with inherited theme colors, tint/shade and colored single underlines.
-- Canvas text rendering with a bundled Noto Sans font.
-- Click to place the caret; drag, Shift+click, and keyboard selection across paragraphs and pages.
-- Text insertion/deletion, paragraph splitting/merging, bold, italic, single underline, font sizes in half-point steps, undo and redo.
-- Left, center, right and justified paragraph alignment; custom line-spacing multiples, exact/minimum point heights and before/after spacing, with inherited resets.
-- Single-section Letter/A4/Legal/custom page setup, orientation, margins and gutter; manual page/line breaks and paragraph page breaks.
-- Paragraph indents and tab stops with editable dot/dash/line leaders, keep-with-next/keep-lines, and widow/orphan control.
-- Bullets and numbering, reusable paragraph and character styles, and inherited formatting with the ECMA-376 toggle-property rules.
-- Fixed-width and AutoFit tables, horizontal/vertical cell merges, rows flowing across pages, and repeated headers.
-- Editable automatic/minimum row heights, including merged rows, undo/redo and page reflow.
-- Editable outline levels and document navigation, with style inheritance and built-in heading semantics.
-- Inline PNG/JPEG insertion, sizing, source cropping, horizontal/vertical flips, rotation, alt text and preserved original image bytes.
-- Native text input and composition bridge; copy, cut and paste that keep headings, lists, emphasis, color and links (plain text inside tables, fields and controls).
-- A native textarea mode for text editing.
-- Local DOCX open/download and Puter save/reopen.
-- Preservation of untouched DOCX package parts and original run/paragraph properties.
-
-This is a restricted editor prototype. The page preview uses saved single-section dimensions/margins and the bundled Noto Sans upright/italic fonts; it is not a full reproduction of native DOCX layout. Fields, comments, tracked changes, multiple sections, nested tables, floating pictures, automatic paragraph spacing, and other unsupported structures are rejected before editing. The engine guide and conformance record define each supported subset. The built-in templates (Letter, Meeting notes, Report, Résumé, Essay) open as new files laid out with the canvas engine's styles, lists and tables. Plain-text files import as one paragraph per line, and Markdown and HTML files with their headings, lists, emphasis and links. Advanced features from the previous editor are not yet connected.
-
-See [the engine guide](docs/canvas-engine.md) for architecture, supported scope, the manual acceptance scenario, and the next iterations.
-
-The editor separates the file title and save status, the File/Edit/View/Insert/Format/Table menus, and the everyday formatting toolbar. Less-used controls are available through the menus or **More formatting tools**. Mouse users get wrapping controls in narrow windows; touch users can swipe the toolbar. Keyboard users can move through menu titles and toolbar buttons with the arrow keys, and press Escape to return from the toolbar to the file.
-
-On phone-sized screens, bold, italic, underline, text color and highlight stay in the toolbar. Strikethrough, superscript and subscript move into **More formatting tools** and remain available through Format → Text. Resizing moves the existing controls and preserves their selection state.
-
-Find and Outline share labelled navigation controls at the left edge of the workspace, below formatting. On phones they form a horizontal row, leaving the file its full width. Find and replace and the outline use one left panel on desktop and a scrollable bottom panel on phones. The menus, formatting toolbar and File → Download .docx command remain available while searching. Phone layouts show one navigation/formatting/search panel at a time; Escape closes search and returns to the current match.
-
-In the font-size field, Enter applies a valid size and returns to writing. Escape cancels the draft, including invalid or mixed-selection values, without adding an undo step or closing the phone formatting inspector.
-
-## Checks
+## For developers
 
 ```sh
-npm run check:licenses
-npm test
-npm run test:browser
-# Requires Python test tools; see docs/conformance.md
-npm run check:conformance
-npm run build
+npm run check:licenses   # dependency policy: no AGPL, ever (see AGENTS.md)
+npm test                 # unit suite (vitest)
+npm run test:browser     # browser suite (Playwright; Chrome by default)
+npm run check:conformance  # independent DOCX schema checks (needs Python tools)
+npm run build            # production build into dist/
 ```
 
-Browser tests use installed Google Chrome by default. For Playwright Chromium, run `npx playwright install chromium` and set `PLAYWRIGHT_CHANNEL=chromium`.
-
-The tests cover file mutations, format preservation, rejection of unsupported files, pagination, native input events, browser downloads/reopening, and cloud save/reload using the mock.
-
-See [the conformance record](docs/conformance.md) for specification clauses, independent schema checks, rendering comparisons and remaining gaps.
-
-## Deploy
-
-Every push to `main` builds and publishes the site to GitHub Pages via `.github/workflows/deploy-pages.yml`:
-
-```sh
-npm ci
-npm run build   # writes dist/
-```
-
-## Source layout
+Every push to `main` is built and published to GitHub Pages by
+[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
 
 ```text
-src/engine/model.js          document model and editing transactions
-src/engine/docx.js           DOCX package preservation and serialization
-src/engine/page-settings.js  page measurements, validation and geometry
-src/engine/layout.js         wrapping, pagination and source-position geometry
-src/engine/font-metrics.js   metrics from the bundled Noto font tables
-src/engine/canvas-editor.js  canvas renderer and input adapter
-src/views/editor.js          editor controls and storage integration
-src/playground.js            standalone local harness
-src/lib/doc.js               existing save, conflict, version and lifecycle model
+src/engine/model.js          the document and its editing transactions
+src/engine/docx.js           DOCX preservation and serialization
+src/engine/page-settings.js  page measurements and geometry
+src/engine/layout.js         wrapping, pagination, on-page geometry
+src/engine/font-metrics.js   metrics from the bundled Noto tables
+src/engine/canvas-editor.js  the canvas renderer and input adapter
+src/views/editor.js          chrome, menus and storage integration
+src/playground.js            the standalone harness
+src/lib/doc.js               save, conflict, version and lifecycle model
 public/fixtures/             independently generated sample DOCX
-public/fonts/                Noto Sans, its license and provenance
+public/fonts/                Noto Sans, license and provenance
 ```
-
-Older app-authored import/export helpers remain for later migration. They do not imply current canvas-engine support for those features.
-
-## Licensing
-
-- Application and original canvas engine: [MIT](LICENSE).
-- ZIP codec `fflate`: MIT.
-- Real-time co-editing (CRDT) `yjs` and its `lib0` and `isomorphic.js` helpers: MIT.
-- Noto Sans: [OFL-1.1](public/fonts/OFL.txt), with [source provenance](public/fonts/PROVENANCE.md).
-- Other retained dependencies: [third-party notices](public/licenses/THIRD_PARTY.txt).
-
-`tools/check-licenses.mjs` checks all locked dependency license declarations, rejects unknown declarations and removed engine packages, and verifies the vendored font license. This is a dependency-policy check, not a claim that package metadata replaces a source audit. Run `node tools/generate-licenses.mjs` after changing runtime dependencies to refresh distributed notices.
 
 ## License
 
 © 2026 salim-slimani.
 
-This repository, including all its contents, sub-projects, modules, and components, is licensed under [MIT](LICENSE) unless explicitly stated otherwise. Third-party libraries included in this repository may be subject to their own licenses.
+writedoc is [MIT](LICENSE). Its engine is original work; `fflate` and
+`yjs` are MIT; Noto Sans is [OFL-1.1](public/fonts/OFL.txt) with
+[source provenance](public/fonts/PROVENANCE.md); everything else is
+listed in [third-party notices](public/licenses/THIRD_PARTY.txt).
