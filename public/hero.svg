@@ -34,8 +34,6 @@
     <text x="226" y="394">.docx</text>
     <rect x="292" y="366" width="176" height="42" rx="21" fill="#ffffff" stroke="#d9d7f5" stroke-width="2"/>
     <text x="380" y="394">Canvas editor</text>
-    <rect x="482" y="366" width="164" height="42" rx="21" fill="#ffffff" stroke="#d9d7f5" stroke-width="2"/>
-    <text x="564" y="394">Puter cloud</text>
   </g>
 
   <!-- Editor mockup -->
