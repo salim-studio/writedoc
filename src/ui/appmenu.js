@@ -126,6 +126,6 @@ export function openAbout() {
     content: el('div', {},
       el('p.modal-text', {}, 'writedoc is a private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
       el('p.modal-text', {}, 'This version supports text and paragraph formatting, selection, undo, and DOCX downloads. Advanced document features are not supported yet.'),
-      el('p.small.muted', {}, '© 2026 salim-slimani.'),
+      el('p.small.muted', {}, '© 2026 salim-slimani.')),
   });
 }
