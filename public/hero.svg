@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="writedoc — a fast, private word processor with real .docx files in your own cloud">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="writedoc — a fast, private word processor with real .docx files that stay yours">
   <defs>
     <linearGradient id="hero-bg" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#efefff"/>
@@ -24,7 +24,7 @@
   </g>
   <text x="232" y="200" font-family="system-ui,'Segoe UI',Roboto,Arial,sans-serif" font-size="72" font-weight="800" fill="#191740">writedoc</text>
   <text x="84" y="292" font-family="system-ui,'Segoe UI',Roboto,Arial,sans-serif" font-size="27" fill="#4c4a68">A fast, private word processor in the browser,</text>
-  <text x="84" y="330" font-family="system-ui,'Segoe UI',Roboto,Arial,sans-serif" font-size="27" fill="#4c4a68">with real .docx files in your own cloud.</text>
+  <text x="84" y="330" font-family="system-ui,'Segoe UI',Roboto,Arial,sans-serif" font-size="27" fill="#4c4a68">with real .docx files that stay yours.</text>
 
   <!-- Feature chips -->
   <g font-family="system-ui,'Segoe UI',Roboto,Arial,sans-serif" font-size="21" fill="#4338ca" text-anchor="middle">

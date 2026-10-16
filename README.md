@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/hero.svg" alt="writedoc — a fast, private word processor with real .docx files in your own cloud" />
+  <img src="public/hero.svg" alt="writedoc — a fast, private word processor with real .docx files that stay yours" />
 </p>
 
 <p align="center">
@@ -8,12 +8,12 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license" />
 </p>
 
-> **Your words. Your files. Your cloud.**
+> **Your words. Your files. Yours.**
 >
 > writedoc is a word processor that treats your writing like it is yours:
-> it opens fast, stays out of your way, and saves real `.docx` files into
-> storage you control. No accounts to feed, no formats to ransom, no
-> telemetry deciding what you meant.
+> it opens fast, stays out of your way, and keeps real `.docx` files in
+> your hands. No accounts to feed, no formats to ransom, no telemetry
+> deciding what you meant.
 
 ## Why writedoc exists
 
@@ -24,7 +24,7 @@ they fully understand. writedoc starts from the opposite assumption:
 
 - **Private by construction.** The canvas editor runs entirely in your
   browser. The playground and mock pages work with no account at all,
-  and the cloud build talks only to your own Puter storage.
+  and nothing you write ever leaves your machine unasked.
 - **Honest files.** What you write is saved as genuine
   Office Open XML (`.docx`), byte-preserving the parts writedoc does
   not touch — so Word, LibreOffice, and your future self can always
@@ -85,7 +85,7 @@ they fully understand. writedoc starts from the opposite assumption:
 <details>
 <summary><strong>Files</strong> — in and out, without friction</summary>
 
-- Open and download `.docx` locally; save and reopen from your Puter cloud
+- Open and download `.docx` locally; save and reopen your files online
 - Export searchable PDF; start from Letter, Meeting notes, Report,
   Résumé or Essay templates
 - Import plain text (one paragraph per line), Markdown and HTML with
@@ -119,8 +119,8 @@ npm run dev
 
 | Page | What it is |
 | ---- | ---------- |
-| `/` | The app, with Puter cloud storage |
-| `/playground.html` | The editor alone — no account, no cloud, just writing |
+| `/` | The app, with file saving |
+| `/playground.html` | The editor alone — no account, just writing |
 | `/mock.html` | The full app against an in-memory Puter mock |
 | `/mirror.html` | The open file, mirrored in a second window |
 
