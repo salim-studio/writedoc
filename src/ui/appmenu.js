@@ -34,7 +34,7 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
   const darkPageItem = { label: 'Dark page', icon: 'brand', checked: darkPage(), disabled: !isDark(), hint: 'Dark paper with the dark theme', onSelect: () => setDarkPage(!darkPage()) };
 
   const items = [
-    { header: session.signedOut ? 'Not signed in' : session.username },
+    { header: session.signedOut ? 'Not signed in' : 'Account' },
     { custom: themeRow },
     darkPageItem,
     { separator: true },

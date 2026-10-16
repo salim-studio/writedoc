@@ -44,7 +44,8 @@ it('offers the sign-in instead of sign-out while nobody is signed in', async () 
   await vi.waitFor(() => expect(session.signedIn).toBe(true));
 
   openAppMenu(anchor);
-  expect(header()).toContain('nariman');
+  expect(header()).toContain('Account');
+  expect(header()).not.toContain('nariman');
   expect(items().some((l) => l.startsWith('Sign out'))).toBe(true);
   expect(items().some((l) => l.startsWith('Sign in to Puter'))).toBe(false);
 });
