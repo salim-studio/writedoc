@@ -1,32 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { assistantPrompt, readReply, assistantError } from '../src/lib/assistant.js';
 import { sendMail, canEmail, EMAIL } from '../src/lib/mail-send.js';
 import { saveVersion, listVersions, readVersionMeta, writeVersionMeta, metaPath, MAX_VERSIONS } from '../src/lib/versions.js';
-
-describe('assistant prompts and replies', () => {
-  it('sends only the chosen text, fenced, with the request and recent turns', () => {
-    const prompt = assistantPrompt({ request: 'Make it friendlier', text: 'Dear sir.', scope: 'selection', history: [{ request: 'Shorten', reply: 'Hi.' }] });
-    expect(prompt).toContain('the passage the person selected');
-    expect(prompt).toContain('"""\nDear sir.\n"""');
-    expect(prompt).toContain('The person asks: Make it friendlier');
-    expect(prompt).toContain('Person: Shorten\nYou: Hi.');
-    expect(assistantPrompt({ request: 'Summarize', text: 'All of it', scope: 'document' })).toContain('the whole document');
-  });
-  it('fences text that itself contains quotation marks', () => {
-    const prompt = assistantPrompt({ request: 'x', text: 'He said """no"""', scope: 'selection' });
-    expect(prompt).toContain('""""\nHe said """no"""\n""""');
-  });
-  it('reads text and answers, splitting paragraphs and list items', () => {
-    expect(readReply({ message: { content: 'TEXT:\nFirst.\n\n- one\n- two' } })).toEqual({ kind: 'text', text: 'First.\n\n- one\n- two', paragraphs: ['First.', '• one', '• two'] });
-    expect(readReply('ANSWER: It is about planning.').kind).toBe('answer');
-    expect(readReply('No marker at all.').kind).toBe('answer');
-    expect(() => readReply('TEXT:')).toThrow(/nothing/);
-  });
-  it('explains failures in plain words', () => {
-    expect(assistantError(new Error('insufficient funds'))).toMatch(/allowance/);
-    expect(assistantError(new Error('Failed to fetch'))).toMatch(/connection/);
-  });
-});
 
 describe('sending mail', () => {
   afterEach(() => { delete globalThis.puter; });

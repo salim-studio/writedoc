@@ -162,7 +162,7 @@ test('keeps the sign-in action visible beside a narrow title and saves after sig
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   const status = page.locator('.canvas-save-status');
   await expect(status.locator('.save-label')).toBeVisible();
-  await expect(status).toHaveText('Sign in to save');
+  await expect(status).toHaveText('Not saved yet');
   await expect(status).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await text(page).fill('Save these local edits');

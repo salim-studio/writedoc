@@ -46,10 +46,8 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
     { label: 'Keyboard shortcuts', icon: 'keyboard', onSelect: openShortcuts },
     { label: 'About writedoc', icon: 'info', onSelect: openAbout },
   ];
-  if (!P.isApp()) {
-    items.push({ separator: true });
-    if (session.signedOut) items.push({ label: 'Sign in to Puter', icon: 'login', hint: 'Save documents to your own cloud', onSelect: () => session.signIn() });
-    else items.push({ label: 'Sign out', icon: 'logout', onSelect: confirmSignOut });
+  if (!P.isApp() && !session.signedOut) {
+    items.push({ separator: true }, { label: 'Sign out', icon: 'logout', onSelect: confirmSignOut });
   }
   opened = openMenu({ anchor, items: items.filter(Boolean), align: 'end', label: 'Account', minWidth: 250 });
 }

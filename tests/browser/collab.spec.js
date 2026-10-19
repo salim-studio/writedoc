@@ -141,27 +141,3 @@ test('restores a named version from Version History', async ({ page }) => {
   await page.getByRole('dialog', { name: 'Restore this version?' }).getByRole('button', { name: 'Restore' }).click();
   await expect.poll(() => editorText(page), { timeout: 15000 }).toBe('First version.');
 });
-
-test('the Assistant rewrites the selection as one undoable change', async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/mock.html#/new');
-  await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
-  await text(page).fill('This sentence is a little long winded.');
-  await text(page).evaluate(el => { el.focus(); el.setSelectionRange(0, el.value.length); el.dispatchEvent(new Event('select')); });
-  await page.locator('.as-title-button').click();
-  const pane = page.getByRole('complementary', { name: 'Assistant pane' });
-  await expect(pane).toBeVisible();
-  await expect(pane.getByText(/Sends the 7 words you selected/)).toBeVisible();
-  await pane.getByRole('button', { name: 'Make it shorter' }).click();
-  await expect(pane.getByText('Suggested replacement')).toBeVisible();
-  await shot(page, 'assistant');
-  await pane.getByRole('button', { name: 'Replace Selection' }).click();
-  await expect.poll(() => editorText(page)).toBe('This sentence is a little long winded. (revised)');
-  await pane.getByRole('button', { name: 'Undo' }).click();
-  await expect.poll(() => editorText(page)).toBe('This sentence is a little long winded.');
-  // A question about the whole document is answered, not inserted.
-  await pane.getByRole('radio', { name: 'Whole document' }).click();
-  await pane.getByRole('textbox', { name: 'Message the assistant' }).fill('What is this about?');
-  await pane.getByRole('textbox', { name: 'Message the assistant' }).press('Enter');
-  await expect(pane.getByText(/offline assistant read/)).toBeVisible();
-});

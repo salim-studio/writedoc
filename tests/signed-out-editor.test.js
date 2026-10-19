@@ -33,8 +33,7 @@ it('opens into a new document without a session, and saves once the status pill 
   expect(doc.path).toBeNull();
   expect(document.querySelector('.auth-view')).toBeNull();
   const pill = view.el.querySelector('.save-status');
-  expect(pill.classList.contains('signed-out')).toBe(true);
-  expect(pill.textContent).toContain('Sign in to save');
+  expect(pill.textContent).toBe('Not saved yet');
   expect(pill.disabled).toBe(false);
   const account = view.el.querySelector('.user-btn');
   expect(account.title).toBe('Not signed in');
@@ -50,7 +49,7 @@ it('opens into a new document without a session, and saves once the status pill 
   expect(write).not.toHaveBeenCalled();
   expect(sdk.auth.signIn).not.toHaveBeenCalled();
   expect(doc.dirty).toBe(true);
-  expect(pill.textContent).toContain('Sign in to save');
+  expect(pill.textContent).toBe('Unsaved changes');
 
   // The pill opens Puter's sign-in; the pending edit is written right after it.
   pill.click();
@@ -59,8 +58,7 @@ it('opens into a new document without a session, and saves once the status pill 
   await vi.waitFor(() => expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['writedoc/Untitled document.docx']));
   await vi.waitFor(() => expect(doc.dirty).toBe(false));
   expect(doc.path).toBe('writedoc/Untitled document.docx');
-  expect(pill.classList.contains('signed-out')).toBe(false);
-  expect(pill.textContent).toContain('Saved');
+  expect(pill.textContent).toBe('Saved to Puter');
   expect(account.title).toBe('nariman');
   expect(account.querySelector('.user-avatar svg')).not.toBeNull();
 

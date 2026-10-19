@@ -32,20 +32,17 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('offers the sign-in instead of sign-out while nobody is signed in', async () => {
+it('offers neither sign-in nor sign-out while nobody is signed in, and sign-out once signed in', async () => {
   await session.init();
   openAppMenu(anchor);
   expect(header()).toContain('Not signed in');
-  const labels = items();
-  expect(labels.some((l) => l.startsWith('Sign in to Puter'))).toBe(true);
-  expect(labels.some((l) => l.startsWith('Sign out'))).toBe(false);
-  [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.startsWith('Sign in to Puter')).click();
-  await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
-  await vi.waitFor(() => expect(session.signedIn).toBe(true));
+  expect(items().some((l) => l.startsWith('Sign in'))).toBe(false);
+  expect(items().some((l) => l.startsWith('Sign out'))).toBe(false);
 
+  await session.signIn();
   openAppMenu(anchor);
   expect(header()).toContain('Account');
   expect(header()).not.toContain('nariman');
   expect(items().some((l) => l.startsWith('Sign out'))).toBe(true);
-  expect(items().some((l) => l.startsWith('Sign in to Puter'))).toBe(false);
+  expect(items().some((l) => l.startsWith('Sign in'))).toBe(false);
 });
