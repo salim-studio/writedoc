@@ -290,7 +290,7 @@ test('copy and paste formatting, Repeat, and Customize Keyboard bindings', async
   await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts' })).toContainText('Underline');
 });
 
-test('a saved document keeps versions to restore and publishes a web page from the File view', async ({ page }) => {
+test('a saved document keeps versions to restore', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Version one');
   await text(page).press('ControlOrMeta+s');
@@ -310,12 +310,6 @@ test('a saved document keeps versions to restore and publishes a web page from t
   await versions.getByRole('button', { name: 'Restore' }).last().click();
   await page.getByRole('dialog', { name: 'Restore this version?' }).getByRole('button', { name: 'Restore' }).click();
   await expect(text(page)).toHaveValue('Version one');
-  // Share: publish a read-only page and get its link.
-  await page.getByRole('button', { name: 'File', exact: true }).click();
-  await view.getByRole('tab', { name: 'Share' }).click();
-  await view.getByRole('button', { name: 'Publish to the Web' }).click();
-  await expect(view.locator('.bs-share-status a')).toHaveAttribute('href', /^https:\/\/.+\.puter\.site/);
-  await expect(view.getByRole('button', { name: 'Stop Publishing' })).toBeVisible();
 });
 
 test('AutoSave off waits for Save; Comments opens the review pane; the page count opens Go To', async ({ page }) => {

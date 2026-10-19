@@ -177,7 +177,6 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
         ...customTemplateItems(mine, { onPick: (id) => newFromTemplate?.(id), onManage: () => manageTemplates(mine) }),
         (failed || !mine.length) && { separator: true },
         failed && { note: 'Could not load your templates. Check your connection and open this menu again' },
-        !failed && !mine.length && { note: 'Save any open document as a template from its File menu' },
       ],
     });
     if (focusedLabel && full.menu) {
@@ -190,7 +189,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   function manageTemplates(templates) {
     const pending = new Set();
     const list = el('div.version-list', { role: 'list', 'aria-label': 'My templates' });
-    const modal = openModal({ title: 'My templates', content: el('div', {}, el('p.modal-text', {}, `Saved in ${P.FOLDER}/Templates on your Puter drive. Open a document and choose "Save as template" in its File menu to add one.`), list) });
+    const modal = openModal({ title: 'My templates', content: el('div', {}, el('p.modal-text', {}, `These live in ${P.FOLDER}/Templates on your Puter drive.`), list) });
     const render = (items) => {
       list.replaceChildren(...(items.length ? items.map((t) => el('div.file-row', { role: 'listitem' },
         el('span.file-main', {}, el('span.file-icon', { html: icon('brand', 20, 1.7) }), el('span.file-text', {}, el('span.file-name', {}, t.name), el('span.file-meta', {}, relativeTime(t.modified)))),

@@ -42,8 +42,7 @@ import { openFontPicker } from './font-picker.js';
 import { openFontFiles } from './font-files.js';
 import { openMenu } from '../ui/menu.js';
 import { toast } from '../ui/toast.js';
-import { confirmDialog, promptDialog } from '../ui/modal.js';
-import { saveAsTemplate, templateExists, TEMPLATE_FOLDER } from '../lib/customtemplates.js';
+import { confirmDialog } from '../ui/modal.js';
 import { openAppMenu, renderAccountButton } from '../ui/appmenu.js';
 import { openShortcuts } from '../ui/shortcuts.js';
 import { loadEngine } from '../lib/engine.js';
@@ -81,9 +80,8 @@ import { MARKUP_VIEWS } from './review.js';
 import { documentHtml, documentMarkdown, documentPlainText } from '../lib/document-export.js';
 import { recentFiles } from '../lib/recent.js';
 import { listVersions } from '../lib/versions.js';
-import { publishPage, findSite, unpublishPage } from '../lib/publish.js';
 import { listCustomTemplates } from '../lib/customtemplates.js';
-import { Doc, versioning, publishing } from '../lib/doc.js';
+import { Doc, versioning } from '../lib/doc.js';
 import { currentTheme, isDark, darkPage, setDarkPage } from '../ui/theme.js';
 import { UNITS, recallUnit, rememberUnit } from '../lib/units.js';
 import { setAutocorrectEnabled, setCapitalizeSentencesEnabled } from '../lib/autocorrect.js';
@@ -277,24 +275,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       if (session.signedOut && !await session.signIn()) return;
       await doc.save();
     } catch (e) { error(e); }
-  };
-  // A copy of the document as it stands goes to the templates folder; the document itself is unchanged.
-  const saveTemplate = async () => {
-    try {
-      await ready;
-      if (!engine || failed || destroyed || pkg.readOnly) return;
-      engine.finishComposition();
-      if (session.signedOut && !await session.signIn()) return;
-      const name = await promptDialog({ title: 'Save as template', label: 'Template name', value: title.value.trim() || 'Untitled document',
-        confirmLabel: 'Save template', hint: `Saved in ${TEMPLATE_FOLDER}. Start a new document from it with Templates on the documents screen.` });
-      if (!name || destroyed || !engine) return;
-      const overwrite = await templateExists(name);
-      if (overwrite && !await confirmDialog({ title: 'Replace template?', message: `A template named "${name}" already exists. Replace it with this document?`, confirmLabel: 'Replace' })) return;
-      if (destroyed || !engine) return;
-      const saved = await saveAsTemplate(engine.export(pkg), name, { overwrite });
-      toast(`Saved as template "${saved.name}"`, { icon: 'check' });
-    } catch (e) { if (!destroyed) error(e); }
-    if (!destroyed) engine?.focus();
   };
   const undo = tool('Undo', 'undo', () => engine?.undo(), { disabled: true, shortcut: `${MOD_KEY}+Z` });
   // With nothing to redo, Redo becomes Repeat: it runs the last command again, as F4 does.
@@ -641,7 +621,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const exportButton = button('Download .docx', download, { disabled: true, className: 'btn btn-primary' });
   const printButton = button('Print / Save as PDF', printDocument, { disabled: true });
   const saveButton = button('Save to Puter', save, { disabled: true });
-  const templateButton = button('Save as template…', saveTemplate, { disabled: true });
   // Choosing any other zoom leaves View → Multiple Pages.
   const singlePages = () => engine?.pages.classList.remove('is-multipage');
   const zoom = el('select', { 'aria-label': 'Zoom', onchange: () => { singlePages(); if (zoom.value === 'fit') fitWidth(); else engine?.setZoom(Number(zoom.value)); syncZoom(); } },
@@ -802,7 +781,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     return fn();
   };
   const cloud = !local;
-  const canPublish = () => cloud && publishing.enabled && P.canHost() && !!doc.path;
   let statusBar = null, backstage = null, keymap = null;
   const STATUS_HIDDEN = 'writedoc:statusbar-hidden';
   Object.assign(editorCommands, {
@@ -843,9 +821,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     savePdf: () => savePdf(),
     renameDocument: cloud ? () => { title.focus(); title.select(); } : null,
     versionHistory: cloud && versioning.enabled ? () => backstage.open('info', { scrollTo: 'bs-versions' }) : null,
-    publishWeb: cloud && publishing.enabled && P.canHost() ? () => backstage.open('share') : null,
     shareItems: cloud ? () => [
-      ...(publishing.enabled && P.canHost() ? [{ label: 'Publish to the Web…', icon: 'share', disabled: !engine || failed, onSelect: () => backstage.open('share') }] : []),
       { label: 'Send a Copy (.docx)', icon: 'download', disabled: !engine || failed, onSelect: download },
       { label: 'Send as PDF', icon: 'pdf', disabled: !engine || failed, onSelect: () => savePdf() },
     ] : null,
@@ -1010,7 +986,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       bullets, numbers, restart, hyperlink, unlink, bookmarks, insertImage, imageProperties, insertTable, tableActions,
       tableProperties, cellAlignment, cellShading, cellBorders, cellMargins, rowHeight, keepRow, outdent, indent,
       paragraphGeometry, paragraphBorders, paragraphShading, insertTab, pageSetup, pageBreak, pageBreakBefore,
-      paginationTools: paginationTools.map(t => t.button), exportButton, printButton, saveButton, templateButton, zoom, textMode },
+      paginationTools: paginationTools.map(t => t.button), exportButton, printButton, saveButton, zoom, textMode },
     rulers: { get visible() { return rulers?.visible ?? true; }, toggle: () => rulers?.toggle(), get unit() { return rulers?.unit ?? 'in'; }, setUnit: unit => rulers?.setUnit(unit) },
     actions: { loadFontFiles: () => { if (engine) { const fontEditor = engine; fontPopover = openFontFiles({ anchor: document.activeElement, onFontsAvailable: () => refreshAvailableFonts(fontEditor) }); } }, closeFind: () => finder.close(), closeOutline: () => { outlinePanel.hide(); outline.setAttribute('aria-expanded', 'false'); }, openSearch, goHome: () => goHome?.(), newDocument: () => newDoc?.(), openDocument: () => openInput.click(),
       selectAll: () => { if (engine) { engine.finishComposition(); engine.model.select(0, engine.model.text.length); engine.focus(); update(); } },
@@ -1037,7 +1013,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     saveVersionNow: () => doc.saveVersionNow(),
     restoreVersion: version => restoreVersionFile(version),
     exportAs: kind => editorCommands.exportAs(kind),
-    save: () => save(), download, saveTemplate: cloud ? saveTemplate : null, savePdf: () => savePdf(), rename: cloud ? () => { title.focus(); title.select(); } : null,
+    save: () => save(), download, savePdf: () => savePdf(), rename: cloud ? () => { title.focus(); title.select(); } : null,
     saveStatus: () => status.getAttribute('aria-label'),
     saveAs: cloud ? async name => {
       try { await ready; if (!engine || failed) return 'The document is not open.'; engine.finishComposition(); if (session.signedOut && !await session.signIn()) return 'The copy was not saved.'; }
@@ -1063,15 +1039,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     shareAvailable: () => true,
     shareWithPeople: () => collab.share(),
     openVersionHistory: cloud && versioning.enabled ? () => versionHistory.open() : null,
-    publish: canPublish() || (cloud && publishing.enabled && P.canHost()) ? async () => {
-      await ready; if (!engine || failed) throw new Error('The document is not open.');
-      if (!doc.path) { await save(); if (!doc.path) throw new Error('Save the document first.'); }
-      engine.finishComposition();
-      const html = exportBody(() => documentHtml(engine.model, { title: title.value || 'Document' }));
-      return publishPage(doc.path, title.value || 'Document', html, { existing: await findSite(doc.path) });
-    } : null,
-    findSite: cloud ? () => (doc.path && P.canHost() ? findSite(doc.path) : Promise.resolve(null)) : null,
-    unpublish: site => unpublishPage(site),
     setEditingMode: mode => editorCommands.setEditingMode(mode), preferences: section => openPreferencesDialog(section),
     onOpen: () => { engine?.finishComposition(); },
   });
@@ -1572,7 +1539,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     // update() may already have run while the editor attached; the script-font notice it added was just replaced.
     scriptMetricSignature = undefined;
     showNotices();
-    exportButton.disabled = false; saveButton.disabled = false; printButton.disabled = false; templateButton.disabled = !!pkg.readOnly;
+    exportButton.disabled = false; saveButton.disabled = false; printButton.disabled = false;
     update(); updateStatus();
     // Take the keyboard, unless it is in a text field elsewhere on the page (the user is typing there).
     const active = document.activeElement;

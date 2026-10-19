@@ -2,7 +2,7 @@ import './styles/index.css';
 import { el } from './ui/dom.js';
 import { icon } from './ui/icons.js';
 import { announce, toast } from './ui/toast.js';
-import { closeAllModals, confirmDialog, openModal } from './ui/modal.js';
+import { closeAllModals, confirmDialog } from './ui/modal.js';
 import { closeMenu } from './ui/menu.js';
 import { session } from './lib/session.js';
 import * as P from './lib/puter.js';
@@ -79,11 +79,7 @@ async function unmount(stillWanted = () => true) {
       const moved = location.hash !== ownHash();
       if (choice === 'stay') { if (moved) history.replaceState(null, '', ownHash()); return false; }
       if (!moved) history.replaceState(null, '', destination);
-      if (choice === 'leave') break;
-      // 'sign-in': with a session the save can go through; then try again.
-      const signedIn = await session.signIn();
-      if (!stillWanted() || current !== leaving) return false;
-      if (!signedIn) { history.replaceState(null, '', ownHash()); return false; }
+      break;
     }
   }
   closeMenu();
@@ -93,35 +89,20 @@ async function unmount(stillWanted = () => true) {
   return true;
 }
 
-const LEAVE_TITLES = ['Leave without saving?', 'Save before leaving?'];
+const LEAVE_TITLES = ['Leave without saving?'];
 /** Whether the question about leaving an unsaved document is on screen, whichever navigation or import asked it. */
 const leaveQuestionOpen = () => [...document.querySelectorAll('.modal-root:not(.closing) [role="dialog"]')].some((dialog) => LEAVE_TITLES.includes(dialog.getAttribute('aria-label')));
 
-/**
- * What to do with edits that could not be written: 'stay', 'leave' (and lose
- * them), or, without a session, 'sign-in' so they can be saved after all.
- */
+/** What to do with edits that could not be written: 'stay', or 'leave' and lose them. */
 function leaveDialog(doc) {
-  // Signing in helps only a document that can be saved at all; one that never opened cannot be.
-  if (!session.signedOut || !doc.dirty || !doc.exporter) {
-    return confirmDialog({
-      title: LEAVE_TITLES[0],
-      // A document that never reached a file has no "latest changes" to speak of; the whole of it is at stake.
-      message: doc.path || doc.lastSaved
-        ? 'Your latest changes could not be saved. Keep editing to try again, or leave and discard those changes.'
-        : 'This document has not been saved yet. Keep editing to try again, or leave and discard it.',
-      confirmLabel: 'Leave without saving', cancelLabel: 'Keep editing',
-    }).then((leave) => (leave ? 'leave' : 'stay'));
-  }
-  return new Promise((resolve) => {
-    const content = el('div', {},
-      el('p.modal-text', {}, 'This document is not saved anywhere yet. Sign in to save it to your own cloud, or leave and discard it.'),
-      el('div.row.row-end', { style: { flexWrap: 'wrap' } },
-        el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
-        el('button.btn.btn-danger', { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, 'Leave without saving'),
-        el('button.btn.btn-primary', { type: 'button', onclick: () => { resolve('sign-in'); modal.close(); } }, 'Sign in and save')));
-    const modal = openModal({ title: LEAVE_TITLES[1], content, onClose: () => resolve('stay') });
-  });
+  return confirmDialog({
+    title: LEAVE_TITLES[0],
+    // A document that never reached a file has no "latest changes" to speak of; the whole of it is at stake.
+    message: doc.path || doc.lastSaved
+      ? 'Your latest changes could not be saved. Keep editing to try again, or leave and discard those changes.'
+      : 'This document has not been saved yet. Keep editing to try again, or leave and discard it.',
+    confirmLabel: 'Leave without saving', cancelLabel: 'Keep editing',
+  }).then((leave) => (leave ? 'leave' : 'stay'));
 }
 
 function mount(kind, view) {

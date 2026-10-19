@@ -9,7 +9,7 @@ vi.mock('../src/lib/engine.js', () => ({ loadEngine: () => new Promise(() => {})
 const buttons = () => [...document.querySelectorAll('.modal-panel .row button')];
 const dialogTitle = () => document.querySelector('[role="dialog"]')?.getAttribute('aria-label');
 
-it('offers keep editing, leave, or sign in and save when leaving unsaved work without a session', async () => {
+it('offers keep editing or leave when an unsaved document is left without a session', async () => {
   stubEditorBrowser();
   const write = vi.fn(async (path) => ({ path, name: path.split('/').pop() }));
   const sdk = {
@@ -34,8 +34,8 @@ it('offers keep editing, leave, or sign in and save when leaving unsaved work wi
 
   // Keep editing: the document, its edits, and its URL stay.
   view.el.querySelector('[aria-label="Home"]').click();
-  await vi.waitFor(() => expect(dialogTitle()).toBe('Save before leaving?'));
-  expect(buttons().map((b) => b.textContent)).toEqual(['Keep editing', 'Leave without saving', 'Sign in and save']);
+  await vi.waitFor(() => expect(dialogTitle()).toBe('Leave without saving?'));
+  expect(buttons().map((b) => b.textContent)).toEqual(['Keep editing', 'Leave without saving']);
   expect(document.querySelector('.toast')).toBeNull();
   buttons()[0].click();
   await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
@@ -44,17 +44,13 @@ it('offers keep editing, leave, or sign in and save when leaving unsaved work wi
   expect(location.hash).toBe('#/new');
   expect(sdk.auth.signIn).not.toHaveBeenCalled();
 
-  // Sign in and save: the edit is written, then the list opens.
+  // Leave without saving: the edit is discarded and the list opens.
   location.hash = '#/home';
-  await vi.waitFor(() => expect(dialogTitle()).toBe('Save before leaving?'));
-  buttons()[2].click();
+  await vi.waitFor(() => expect(dialogTitle()).toBe('Leave without saving?'));
+  buttons()[1].click();
   await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
-  expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);
-  expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['writedoc/Untitled document.docx']);
-  expect(doc.dirty).toBe(false);
+  expect(write).not.toHaveBeenCalled();
   expect(location.hash).toBe('#/home');
-  // The home screen lists the account, not the sign-in.
-  expect(document.querySelector('.user-btn').title).toBe('nariman');
 
   window.__writedoc.current.view.destroy();
   vi.unstubAllGlobals();

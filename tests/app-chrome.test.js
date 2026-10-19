@@ -114,7 +114,7 @@ describe('classic menus', () => {
   const button = (attrs = {}) => Object.assign(document.createElement('button'), attrs);
   const controls = () => {
     const c = {};
-    for (const name of ['undo', 'redo', 'find', 'saveButton', 'exportButton', 'templateButton', 'printButton', 'pageSetup', 'insertImage', 'hyperlink', 'bookmarks', 'pageBreak', 'paragraphGeometry',
+    for (const name of ['undo', 'redo', 'find', 'saveButton', 'exportButton', 'printButton', 'pageSetup', 'insertImage', 'hyperlink', 'bookmarks', 'pageBreak', 'paragraphGeometry',
       'bullets', 'numbers', 'restart', 'paragraphBorders', 'paragraphShading', 'lineSpacingOptions', 'editStyle', 'newStyle', 'imageProperties', 'outline', 'tableProperties', 'rowHeight',
       'cellAlignment', 'cellMargins', 'cellShading', 'cellBorders', 'insertTable']) c[name] = button();
     c.lineSpacing = document.createElement('select');

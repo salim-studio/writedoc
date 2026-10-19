@@ -193,7 +193,6 @@ export function createBackstage(api) {
       el('section.bs-section', {}, el('div.bs-tiles', {},
         tile('Save now', 'save', act(() => api.save()), { primary: true, hint: `${MOD_KEY}+S` }),
         api.download ? tile('Download a copy', 'download', act(() => api.download()), { hint: '.docx file' }) : null,
-        api.saveTemplate ? tile('Save as template', 'template', act(() => api.saveTemplate()), { disabled: !!api.readOnly?.() }) : null,
         api.rename ? tile('Rename', 'rename', act(() => api.rename())) : null)),
       api.saveAs ? el('section.bs-section.bs-card', {}, el('h2', {}, 'Save As'), saveAs, message) : null];
   }
@@ -236,24 +235,11 @@ export function createBackstage(api) {
   }
 
   /* ---- Share ---- */
-  function sharePage(request) {
-    const status = el('div.bs-share-status', {}, el('p.bs-muted', {}, 'Checking…'));
-    const render = site => {
-      if (!stillShowing(request)) return;
-      const url = site?.url;
-      status.replaceChildren(
-        url ? el('p', {}, 'Published at ', el('a', { href: url, target: '_blank', rel: 'noopener' }, url)) : el('p.bs-muted', {}, 'Publish a read-only web page of this document. Anyone with the link can read it.'),
-        el('div.bs-actions', {},
-          el('button.btn.btn-primary', { type: 'button', onclick: async e => { e.target.disabled = true; status.querySelector('.bs-share-note')?.remove(); try { render(await api.publish()); } catch (err) { status.append(el('p.field-error.bs-share-note', {}, err?.message || String(err))); e.target.disabled = false; } } }, url ? 'Update Page' : 'Publish to the Web'),
-          url ? el('button.btn.btn-outline', { type: 'button', onclick: () => { navigator.clipboard?.writeText(url); status.querySelector('.bs-share-note')?.remove(); status.append(el('p.bs-muted.bs-share-note', { role: 'status' }, 'Link copied.')); } }, 'Copy Link') : null,
-          url ? el('button.btn.btn-ghost', { type: 'button', onclick: async () => { try { await api.unpublish(site); render(null); } catch (err) { status.append(el('p.field-error', {}, err?.message || String(err))); } } }, 'Stop Publishing') : null));
-    };
-    if (api.findSite) api.findSite().then(render).catch(() => render(null)); else render(null);
+  function sharePage() {
     return [...heading('Share'),
       api.shareWithPeople ? el('section.bs-section.bs-card', {}, el('h2', {}, 'Share with people'),
         el('p.bs-muted', {}, 'Invite people to edit, comment on or view this document with you, at the same time.'),
         el('div.bs-actions', {}, el('button.btn.btn-primary', { type: 'button', onclick: act(() => api.shareWithPeople()) }, 'Share with People…'))) : null,
-      api.publish ? el('section.bs-section.bs-card', {}, el('h2', {}, 'Publish to the web'), status) : null,
       el('section.bs-section', {}, el('h2', {}, 'Send a copy'), el('div.bs-tiles', {},
         tile('Word document', 'download', act(() => api.download()), { hint: '.docx' }),
         api.savePdf ? tile('PDF', 'pdf', act(() => api.savePdf()), { hint: '.pdf' }) : null))];

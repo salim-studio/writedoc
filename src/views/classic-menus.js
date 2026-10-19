@@ -52,13 +52,11 @@ export function classicMenus(ctx) {
     !local ? control(c.saveButton, 'Save', { icon: 'save', shortcut: `${MOD_KEY}+S` }) : control(c.exportButton, 'Download .docx', { icon: 'download' }),
     !local && opt(w.saveAs, 'Save As…', { shortcut: sc('file.saveAs', `${MOD_KEY}+Shift+S`), disabled: !ready() }),
     opt(w.saveCopy, 'Download a Copy', { icon: 'download', disabled: !ready() }),
-    !local ? control(c.templateButton, 'Save as Template…', { icon: 'template' }) : null,
     !local && opt(w.renameDocument, 'Rename…', { icon: 'rename' }),
     sep,
     opt(w.versionHistory, 'Browse Version History', { icon: 'history' }),
     sub('Share', [
       opt(w.share, 'Invite People…', { icon: 'invitePeople', disabled: !ready() }),
-      opt(w.publishWeb, 'Publish to the Web…', { icon: 'share', disabled: !ready() }),
       opt(w.sendCopy, 'Send a Copy (.docx)', { disabled: !ready() }),
       opt(w.savePdf, 'Send as PDF', { icon: 'pdf', disabled: !ready() }),
     ]),
