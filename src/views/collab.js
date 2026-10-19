@@ -139,7 +139,7 @@ export function createCollaboration({ editor, pkg, doc, local, error, onChange =
       if (readOnly()) throw new Error('This document is open read-only, so it cannot be edited together. Save a copy first.');
       engine.finishComposition();
       if (!local) {
-        if (!await signIn()) throw new Error('Sign in to Puter to share this document.');
+        if (!await signIn()) throw new Error('Sign in to share this document.');
         if (!doc.path) { progress('Saving the document first…'); await saveFirst(); }
         if (!doc.path) throw new Error('Save the document before sharing it.');
       }

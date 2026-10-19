@@ -115,7 +115,7 @@ function leaveDialog(doc) {
   }
   return new Promise((resolve) => {
     const content = el('div', {},
-      el('p.modal-text', {}, 'This document is not saved anywhere yet. Sign in to Puter to save it to your own cloud, or leave and discard it.'),
+      el('p.modal-text', {}, 'This document is not saved anywhere yet. Sign in to save it to your own cloud, or leave and discard it.'),
       el('div.row.row-end', { style: { flexWrap: 'wrap' } },
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
         el('button.btn.btn-danger', { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, 'Leave without saving'),

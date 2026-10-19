@@ -58,7 +58,7 @@ it('opens into a new document without a session, and saves once the status pill 
   await vi.waitFor(() => expect(write.mock.calls.map(([path]) => path).filter((path) => !path.includes('/.versions/'))).toEqual(['writedoc/Untitled document.docx']));
   await vi.waitFor(() => expect(doc.dirty).toBe(false));
   expect(doc.path).toBe('writedoc/Untitled document.docx');
-  expect(pill.textContent).toBe('Saved to Puter');
+  expect(pill.textContent).toBe('Saved');
   expect(account.title).toBe('nariman');
   expect(account.querySelector('.user-avatar svg')).not.toBeNull();
 

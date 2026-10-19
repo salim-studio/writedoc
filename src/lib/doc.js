@@ -25,7 +25,7 @@ export const AUTOSAVE_MS = 1500;
 export const MAX_AUTOSAVE_MS = 30000;
 export const RETRY_MS = 8000;
 export const UNTITLED = 'Untitled document';
-export const SIGN_IN_TO_SAVE = 'Sign in to Puter to save this document';
+export const SIGN_IN_TO_SAVE = 'This document is not saved yet';
 /** Markdown, HTML, and plain text are read and converted on the main thread; a novel is about a megabyte. */
 export const MAX_TEXT_IMPORT_BYTES = 20 * 1024 * 1024;
 /** Version snapshots after saves; tests switch them off. */

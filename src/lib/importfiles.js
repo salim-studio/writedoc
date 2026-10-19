@@ -52,7 +52,7 @@ export async function importFiles(fileList, {
   const words = picked.filter((f) => P.OPENABLE.test(f.name || ''));
   const texts = picked.filter((f) => !P.OPENABLE.test(f.name || ''));
   // Only the files written to the cloud directly need a session; text files open like a single one does.
-  if (words.length && session.signedOut && !await session.signIn()) { if (stillHere()) toast('Sign in to Puter to import several files at once', { icon: 'info' }); return; }
+  if (words.length && session.signedOut && !await session.signIn()) { if (stillHere()) toast('Sign in to import several files at once', { icon: 'info' }); return; }
   if (!stillHere()) return;
   let saved = 0;
   const issues = [];

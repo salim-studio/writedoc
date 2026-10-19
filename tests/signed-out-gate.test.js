@@ -42,7 +42,7 @@ it('asks for the sign-in before reading a cloud document from the URL, then open
   // Back at the document's URL, signing in opens it.
   location.hash = '#/edit/writedoc%2FA.docx';
   await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('gate'));
-  [...document.getElementById('app').querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
+  [...document.getElementById('app').querySelectorAll('button')].find((b) => b.textContent === 'Sign in').click();
   await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
   await vi.waitFor(() => expect(window.__writedoc.current?.view.doc?.path).toBe('writedoc/A.docx'));
   expect(read).toHaveBeenCalledWith('writedoc/A.docx');

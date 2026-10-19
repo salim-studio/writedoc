@@ -57,7 +57,7 @@ it('opens the first of several text files without asking a signed-out user to si
     signIn.mockResolvedValue(false);
     await importFiles([docx('Good.docx'), text('c.md')], { openFile });
     expect(signIn).toHaveBeenCalled();
-    expect(calls.toasts.map(([message]) => message)).toContain('Sign in to Puter to import several files at once');
+    expect(calls.toasts.map(([message]) => message)).toContain('Sign in to import several files at once');
   } finally { session.signedOut = false; signIn.mockRestore(); }
 });
 

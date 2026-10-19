@@ -1362,7 +1362,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   }
   function renderStatus(label, name, state = '') {
     status.className = `canvas-save-status save-status ${state}`;
-    status.replaceChildren(iconEl(name, 14), el('span.save-label', {}, label));
+    status.replaceChildren(...(name ? [iconEl(name, 14)] : []), el('span.save-label', {}, label));
     status.title = doc.error ? `${label}: ${doc.error}` : doc.path ? `${label} · ${doc.path}` : label;
     status.setAttribute('aria-label', label);
   }
@@ -1378,10 +1378,10 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       : doc.status === 'error' ? ['Not saved', 'alert', 'error']
       : doc.status === 'offline' ? ['Offline', 'wifiOff', 'offline']
       // A shared document's other tabs leave saving to the owner's (see collab/live.js).
-      : doc.writes === false ? (local ? ['Shared in this browser', 'monitor', 'local'] : ['Shared · saved by the owner', 'cloud', 'saved'])
-      : doc.dirty ? ['Unsaved changes', 'cloudOff', 'unsaved']
+      : doc.writes === false ? (local ? ['Shared in this browser', 'monitor', 'local'] : ['Shared · saved by the owner', null, 'saved'])
+      : doc.dirty ? ['Unsaved changes', null, 'unsaved']
       : local ? ['On this device', 'monitor', 'local']
-      : doc.path ? ['Saved to Puter', 'cloud', 'saved'] : ['Not saved yet', 'cloud', 'unsaved'];
+      : doc.path ? ['Saved', null, 'saved'] : ['Not saved yet', null, 'unsaved'];
     renderStatus(label, name, state);
     status.disabled = !signedOut && (!doc.exporter || doc.status === 'saving');
     if (doc.exporter) saveButton.disabled = false;
