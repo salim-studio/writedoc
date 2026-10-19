@@ -404,13 +404,6 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     list.setAttribute('role', 'region');
     if (session.signedOut) {
       listStatus.textContent = '';
-      list.append(el('div.empty', {},
-        el('div.empty-icon', { html: icon('cloud', 28) }),
-        el('h3.empty-title', {}, 'Sign in to see your documents'),
-        el('p.empty-sub', {}, 'writedoc saves your work as .docx files in your own Puter cloud. Sign in to open them here, or start writing without an account.'),
-        el('div.row', { style: { justifyContent: 'center', marginTop: '6px' } },
-          el('button.btn.btn-primary', { type: 'button', html: icon('login', 16, 2.2), onclick: () => session.signIn() }, el('span', {}, 'Sign in to Puter')),
-          el('button.btn.btn-outline', { type: 'button', html: icon('plus', 16, 2.2), onclick: newDoc }, el('span', {}, 'New document')))));
       return;
     }
     if (loading) {

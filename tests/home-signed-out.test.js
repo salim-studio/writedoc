@@ -31,28 +31,22 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-it('offers the sign-in in place of the list, then lists the documents once signed in', async () => {
+it('leaves the list empty while signed out, then lists the documents once signed in', async () => {
   await session.init();
-  const newDoc = vi.fn();
-  view = homeView({ openPath: vi.fn(), newDoc, newFromTemplate: vi.fn(), importFile: vi.fn() });
+  view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), newFromTemplate: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el);
   await Promise.resolve();
 
   const list = view.el.querySelector('.file-list');
-  expect(list.textContent).toContain('Sign in to see your documents');
-  expect(sdk.fs.readdir).not.toHaveBeenCalled();
+  expect(list.textContent).toBe('');
   expect(list.querySelector('.file-row')).toBeNull();
+  expect(sdk.fs.readdir).not.toHaveBeenCalled();
   const account = view.el.querySelector('.user-btn');
   expect(account.title).toBe('Not signed in');
 
-  // Writing needs no account at all.
-  [...list.querySelectorAll('button')].find((b) => b.textContent === 'New document').click();
-  expect(newDoc).toHaveBeenCalledTimes(1);
-
-  [...list.querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
-  await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
+  // Signing in fills the list.
+  await session.signIn();
   await vi.waitFor(() => expect(list.querySelector('.file-row .file-name')?.textContent).toBe('Report'));
-  expect(list.textContent).not.toContain('Sign in to see your documents');
   expect(account.title).toBe('nariman');
   expect(account.querySelector('.user-avatar svg')).not.toBeNull();
 });
