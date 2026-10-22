@@ -1,7 +1,7 @@
 {
   "name": "writedoc",
   "short_name": "writedoc",
-  "description": "writedoc — a fast, private word processor. Real .docx files, saved to your own Puter cloud.",
+  "description": "writedoc — a fast, private word processor. Real .docx files, kept in your browser.",
   "id": "writedoc",
   "start_url": "./",
   "scope": "./",

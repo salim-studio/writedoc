@@ -1,18 +1,16 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from 'vitest';
 import { stubEditorBrowser } from './helpers/editor-browser.js';
+import * as D from '../src/lib/drive.js';
 // Booting the whole app shell can exceed the default timeout on a loaded machine.
 vi.setConfig({ testTimeout: 60000 });
 
 // Exercise the actual router, document model, and editor shell without loading the canvas.
 vi.mock('../src/lib/engine.js', () => ({ loadEngine: () => new Promise(() => {}) }));
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 it('keeps the editor and its unsaved content when saving before navigation fails', async () => {
   stubEditorBrowser();
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { readdir: async () => [], mkdir: async () => {}, stat: async () => null, write: vi.fn() },
-  });
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -23,7 +21,7 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   const destroy = vi.spyOn(view, 'destroy');
   doc.attach(async () => new Blob(['unsaved work']));
   doc.changed();
-  puter.fs.write.mockRejectedValueOnce(new Error('offline'));
+  D.writeFile.mockRejectedValueOnce(new Error('offline'));
 
   location.hash = '#/home';
   await vi.waitFor(() => expect(doc.status).toBe('error'));
@@ -37,7 +35,7 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   // Retrying after the connection recovers saves and navigates normally.
-  puter.fs.write.mockResolvedValue({});
+  D.writeFile.mockResolvedValue({ path: 'writedoc/Untitled document.docx' });
   location.hash = '#/home';
   await vi.waitFor(() => expect(window.__writedoc.current?.kind).toBe('home'));
   expect(doc.dirty).toBe(false);

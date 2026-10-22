@@ -13,7 +13,7 @@ export const LANGUAGES = ['en-US', 'en-GB', 'en-CA', 'en-AU', 'fr-FR', 'fr-CA', 
 /** "English (United States)" for "en-US", in the user's language. */
 export function languageName(tag, locale) {
   if (!tag) return 'No language';
-  try { return new Intl.DisplayNames(locale ? [locale] : undefined, { type: 'language', languageDisplay: 'standard' }).of(tag) || tag; } catch { return tag; }
+  try { return new Intl.DisplayNames([locale || 'en'], { type: 'language', languageDisplay: 'standard' }).of(tag) || tag; } catch { return tag; }
 }
 
 export const STATUS_ITEMS = [

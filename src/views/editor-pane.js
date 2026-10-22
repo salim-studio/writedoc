@@ -1,10 +1,10 @@
 /**
- * The Editor pane: spelling (local dictionary), optional grammar and style suggestions from Puter's
+ * The Editor pane: spelling (local dictionary), optional grammar and style suggestions from the
  * AI (off until the reader turns it on, and marked as AI), and document statistics with readability
  * scores computed on this device. Corrections are ordinary edits, one undo step each.
  */
 import { el } from '../ui/dom.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { engineApi } from '../lib/engine-api.js';
 import { textStatistics, easeLabel } from '../lib/readability.js';
 import { checkGrammar, SUGGESTION_KINDS } from '../lib/proofing-ai.js';
@@ -72,13 +72,13 @@ export function createEditorPane({ editor, pkg, proofing, error, onState = () =>
   const aiList = el('div.rv-list', { role: 'list', 'aria-label': 'Grammar and style suggestions' });
   const aiRun = button('Check with AI', () => runAi(), { primary: true });
   const aiBody = el('div.rv-ai-body', {}, el('div.rv-checks', {}, ...kindBoxes.map(b => b.node)), el('div.rv-actions', {}, aiRun), aiStatus, aiList);
-  const ai = section('Grammar and refinements', el('label.rv-check.rv-ai-toggle', {}, aiToggle, el('span', {}, 'Suggest with ', el('span.rv-ai-badge', { title: 'Uses Puter AI' }, 'AI'))),
-    hint('When you run a check, the text being checked is sent to Puter AI. Nothing is sent until you choose Check with AI.'), aiBody);
+  const ai = section('Grammar and refinements', el('label.rv-check.rv-ai-toggle', {}, aiToggle, el('span', {}, 'Suggest with ', el('span.rv-ai-badge', { title: 'Needs an AI service' }, 'AI'))),
+    hint('When you run a check, the text being checked is sent to the AI service. Nothing is sent until you choose Check with AI.'), aiBody);
   function renderAi() {
     aiBody.hidden = !aiToggle.checked;
-    const available = P.canUseAi();
+    const available = D.canUseAi();
     aiRun.disabled = !available || !!aiBusy;
-    if (!available) aiStatus.textContent = 'AI suggestions need Puter. Open this document in Puter to use them.';
+    if (!available) aiStatus.textContent = 'AI suggestions need an AI service, and none is connected.';
     const visible = aiSuggestions.filter(s => !ignoredSuggestions.has(key(s)) && !(pkg()?.reviewSettings?.hideGrammaticalErrors));
     aiList.replaceChildren(...visible.map(s => el('div.rv-item.rv-ai-item', { role: 'listitem' },
       el('button.rv-ai-target', { type: 'button', onclick: () => reveal(editor(), s.start, s.end) }, el('span.rv-ai-kind', {}, SUGGESTION_KINDS[s.kind]), el('span.rv-ai-change', {}, el('del', {}, s.original), ' → ', el('ins', {}, s.suggestion))),
@@ -99,7 +99,7 @@ export function createEditorPane({ editor, pkg, proofing, error, onState = () =>
     }
   }
   async function runAi() {
-    const engine = editor(); if (!engine || !P.canUseAi()) return;
+    const engine = editor(); if (!engine || !D.canUseAi()) return;
     aiBusy?.abort(); aiBusy = new AbortController();
     const signal = aiBusy.signal, revision = engine.session.body.revision;
     const [a, b] = engine.session.path === null ? engine.model.range : [0, 0];
@@ -113,7 +113,7 @@ export function createEditorPane({ editor, pkg, proofing, error, onState = () =>
     aiStatus.textContent = 'Checking…'; aiRun.disabled = true; aiList.replaceChildren();
     try {
       const kinds = kindBoxes.filter(k => k.input.checked).map(k => k.kind);
-      const found = await checkGrammar(paragraphs, { chat: prompt => P.aiChat(prompt), kinds: kinds.length ? kinds : ['grammar'], signal });
+      const found = await checkGrammar(paragraphs, { chat: prompt => D.aiChat(prompt), kinds: kinds.length ? kinds : ['grammar'], signal });
       if (signal.aborted) return;
       if (editor()?.session.body.revision !== revision) { aiStatus.textContent = 'The document changed during the check. Check again.'; return; }
       aiSuggestions = found; ignoredSuggestions = new Set();
@@ -140,7 +140,7 @@ export function createEditorPane({ editor, pkg, proofing, error, onState = () =>
     score.replaceChildren(el('strong', {}, total ? `${total} ${total === 1 ? 'suggestion' : 'suggestions'}` : 'No suggestions'), el('span', {}, ` · ${s.words.toLocaleString()} words`));
   }
 
-  pane.body.append(score, scope, spelling, ai, readability);
+  pane.body.append(score, scope, spelling, readability);
 
   let pending = null, statsPending = null;
   // Checks run after a pause in typing; statistics follow the selection a moment later.

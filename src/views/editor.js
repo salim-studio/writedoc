@@ -47,7 +47,7 @@ import { openAppMenu, renderAccountButton } from '../ui/appmenu.js';
 import { openShortcuts } from '../ui/shortcuts.js';
 import { loadEngine } from '../lib/engine.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { printPages } from '../lib/print.js';
 import { templateById } from '../lib/templates.js';
 import { autocorrectEnabled, capitalizeSentencesEnabled, correction, sentenceCapital } from '../lib/autocorrect.js';
@@ -57,7 +57,6 @@ import { createWordCommands, documentStatistics as documentStatisticsOf } from '
 import { createReview } from './review.js';
 import { createReviewTools } from './review-tools.js';
 import { createReferences } from './references.js';
-import { createMailings } from './mailings.js';
 import { createDocumentViews } from './document-views.js';
 import { createInsert } from './insert-tab.js';
 import { createDraw } from './draw-tab.js';
@@ -80,7 +79,6 @@ import { MARKUP_VIEWS } from './review.js';
 import { documentHtml, documentMarkdown, documentPlainText } from '../lib/document-export.js';
 import { recentFiles } from '../lib/recent.js';
 import { listVersions } from '../lib/versions.js';
-import { listCustomTemplates } from '../lib/customtemplates.js';
 import { Doc, versioning } from '../lib/doc.js';
 import { currentTheme, isDark, darkPage, setDarkPage } from '../ui/theme.js';
 import { UNITS, recallUnit, rememberUnit } from '../lib/units.js';
@@ -94,7 +92,6 @@ import { createLayoutTab } from './layout-tab.js';
 import { createLineNumbers } from './line-numbers.js';
 import { createHyphenation } from './hyphenation.js';
 import { defaultPageSettings } from '../lib/page-defaults.js';
-import { createCollaboration, localGuest } from './collab.js';
 import { createVersionHistory } from './version-history.js';
 import { openCompareDialog } from './compare-dialog.js';
 
@@ -223,8 +220,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const title = el('input.canvas-title', { value: doc.name, 'aria-label': 'Document name', title: `${doc.name} — Rename`, dir: 'auto', maxLength: 120 });
   const status = el('button.canvas-save-status.save-status', { type: 'button', 'aria-live': 'polite', onclick: () => {
     if (pkg?.readOnly) return;
-    if (!failed && session.signedOut) session.signIn();
-    else if (doc.exporter) save();
+    if (!failed && doc.exporter) save();
   } }, 'Opening…');
   const account = el('button.user-btn', { type: 'button', 'aria-label': 'Account', 'aria-haspopup': 'menu', onclick: () => openAppMenu(account) });
   if (!local) renderAccountButton(account);
@@ -259,9 +255,9 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     try {
       await ready;
       if (!engine || failed || destroyed) return;
-      if (pkg.readOnly) { P.downloadBlob(doc.blob, P.ensureDocx(doc.name)); return; }
+      if (pkg.readOnly) { D.downloadBlob(doc.blob, D.ensureDocx(doc.name)); return; }
       engine.finishComposition();
-      P.downloadBlob(engine.export(pkg), P.ensureDocx(title.value || 'Untitled document'));
+      D.downloadBlob(engine.export(pkg), D.ensureDocx(title.value || 'Untitled document'));
       renderStatus('Downloaded', 'download');
     } catch (e) { error(e); }
   };
@@ -272,7 +268,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       await ready;
       if (!engine || destroyed) return;
       engine.finishComposition();
-      if (session.signedOut && !await session.signIn()) return;
       await doc.save();
     } catch (e) { error(e); }
   };
@@ -620,7 +615,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const insertTab = tool('Insert tab', 'tab', () => engine?.insertTab(), { title: 'Insert tab (Tab)' });
   const exportButton = button('Download .docx', download, { disabled: true, className: 'btn btn-primary' });
   const printButton = button('Print / Save as PDF', printDocument, { disabled: true });
-  const saveButton = button('Save to Puter', save, { disabled: true });
+  const saveButton = button('Save', save, { disabled: true });
   // Choosing any other zoom leaves View → Multiple Pages.
   const singlePages = () => engine?.pages.classList.remove('is-multipage');
   const zoom = el('select', { 'aria-label': 'Zoom', onchange: () => { singlePages(); if (zoom.value === 'fit') fitWidth(); else engine?.setZoom(Number(zoom.value)); syncZoom(); } },
@@ -727,8 +722,8 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     try {
       editor.finishComposition();
       const { exportPdf } = await import('../lib/pdf-export.js');
-      const name = P.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, '.pdf');
-      P.downloadBlob(await exportPdf(editor, { title: title.value || 'Untitled document' }), name);
+      const name = D.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, '.pdf');
+      D.downloadBlob(await exportPdf(editor, { title: title.value || 'Untitled document' }), name);
     } catch (e) { if (!destroyed) error(e); }
   }
   const reviewHooks = {};
@@ -769,7 +764,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     lastTextLength = length;
   }
   const reviewCommands = review.commands;
-  const fileName = ext => P.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, ext);
+  const fileName = ext => D.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, ext);
   const exporters = {
     html: ['.html', 'text/html', () => documentHtml(engine.model, { title: title.value || 'Document' })],
     markdown: ['.md', 'text/markdown', () => documentMarkdown(engine.model)],
@@ -827,15 +822,14 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     ] : null,
     exportAs(kind) {
       const exporter = exporters[kind]; if (!exporter || !engine || failed) return;
-      try { engine.finishComposition(); const [ext, type, make] = exporter; P.downloadBlob(new Blob([exportBody(make)], { type: `${type};charset=utf-8` }), fileName(ext)); }
+      try { engine.finishComposition(); const [ext, type, make] = exporter; D.downloadBlob(new Blob([exportBody(make)], { type: `${type};charset=utf-8` }), fileName(ext)); }
       catch (e) { error(e); }
     },
     recentDocuments: cloud ? async () => {
-      if (session.signedOut) return [];
-      return recentFiles(await P.listFiles(), { exclude: doc.path }).map(f => ({ name: Doc.nameFor(f.path), path: f.path, when: relativeTime(f.modified) }));
+      return recentFiles(await D.listFiles(), { exclude: doc.path }).map(f => ({ name: Doc.nameFor(f.path), path: f.path, when: relativeTime(f.modified) }));
     } : null,
     openRecent: path => openPath?.(path),
-    documentLocation: () => ({ location: local ? 'This device' : doc.path ? `Puter › ${doc.path.replace(/^\/[^/]+\//, '')}` : 'Puter (not saved yet)' }),
+    documentLocation: () => ({ location: local ? 'This device' : doc.path ? `This browser › ${doc.path}` : 'Not saved yet' }),
     autosaveEnabled: () => doc.autosave !== false,
     setAutosave: cloud ? on => { doc.setAutosave?.(on); updateStatus(); } : null,
     preferences: section => openPreferencesDialog(section),
@@ -870,7 +864,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
         { type: 'button', label: 'Language of the selection', hint: 'Mark text as another language, or exclude it from spelling.', action: 'Language…', run: () => statusBar?.openLanguageDialog() },
       ] },
       { id: 'saving', label: 'Save', controls: [
-        cloud ? { type: 'toggle', label: 'AutoSave', hint: 'Save every change to Puter as you work. When off, use Save (' + MOD_KEY + '+S).', get: () => doc.autosave !== false, set: on => { doc.setAutosave?.(on); updateStatus(); chrome.refresh(); } }
+        cloud ? { type: 'toggle', label: 'AutoSave', hint: 'Save every change as you work. When off, use Save (' + MOD_KEY + '+S).', get: () => doc.autosave !== false, set: on => { doc.setAutosave?.(on); updateStatus(); chrome.refresh(); } }
           : { type: 'button', label: 'Files on this device', hint: 'Changes stay in this tab until you download the file.', action: 'Download', run: download },
       ] },
       { id: 'view', label: 'View', controls: [
@@ -887,13 +881,6 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     ];
     return openPreferences({ sections, section, onClose: () => queueMicrotask(() => engine?.focus()) });
   }
-  const mailings = createMailings({ editor: () => (failed ? null : engine), pkg: () => pkg, error, onChange: () => update(), markDirty: () => doc.changed(), importFile,
-    print: capture => printPages({ host, signal: printAbort.signal, capture }), documentTitle: () => title?.value?.trim(), layoutChanged: () => { fitWidth(); rulers?.update(); } });
-  Object.assign(editorCommands, mailings.commands);
-  const baseExtraTabs = editorCommands.extraTabs;
-  editorCommands.extraTabs = kit => [...(baseExtraTabs?.(kit) || []), ...mailings.extraTabs(kit)];
-  const referencesExtendMenu = editorCommands.extendMenu;
-  editorCommands.extendMenu = (id, kit) => [...(referencesExtendMenu?.(id, kit) || []), ...mailings.extendMenu(id, kit)];
   // Review tools: Editor pane, Thesaurus, Accessibility, Language, Compare, Restrict Editing (review-tools.js).
   const reviewTools = createReviewTools({ editor: () => engine, pkg: () => pkg, error, author: () => session.username, review, proofing, commands: editorCommands, documentName: () => title.value, openDocument: file => importFile?.(file),
     currentBytes: async () => new Uint8Array(await (pkg.readOnly ? doc.blob : engine.export(pkg)).arrayBuffer()), onChange: () => update() });
@@ -943,14 +930,13 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const picturesExtendMenu = editorCommands.extendMenu, picturesContextMenuItems = editorCommands.contextMenuItems;
   editorCommands.extendMenu = (id, kit) => [...(picturesExtendMenu?.(id, kit) || []), ...pictures.extendMenu(id, kit)];
   editorCommands.contextMenuItems = (context, kit) => [...(picturesContextMenuItems?.(context, kit) || []), ...pictures.contextMenuItems(context, kit)];
-  // Live co-editing and version history (collab.js, version-history.js).
+  // The version history (version-history.js).
   let versionZoom = null;
-  const collabUser = () => (local ? localGuest() : { id: session.user?.uuid || session.username, name: session.username });
   const exportDocxBlob = async (andDownload = false) => {
     await ready; if (!engine || failed) throw new Error('The document is not open.');
     engine.finishComposition();
     const blob = pkg.readOnly ? doc.blob : engine.export(pkg);
-    if (andDownload) P.downloadBlob(blob, P.ensureDocx(title.value || 'Untitled document'));
+    if (andDownload) D.downloadBlob(blob, D.ensureDocx(title.value || 'Untitled document'));
     return blob;
   };
   const exportPdfBlob = async (andDownload = false) => {
@@ -958,26 +944,18 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     engine.finishComposition();
     const { exportPdf } = await import('../lib/pdf-export.js');
     const blob = await exportPdf(engine, { title: title.value || 'Untitled document' });
-    if (andDownload) P.downloadBlob(blob, P.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, '.pdf'));
+    if (andDownload) D.downloadBlob(blob, D.ensureDocx(title.value || 'Untitled document').replace(/\.docx$/i, '.pdf'));
     return blob;
   };
-  const collab = createCollaboration({ editor: () => (failed ? null : engine), pkg: () => pkg, doc, local, error, onChange: () => update(), documentName: () => title.value, user: collabUser,
-    saveFirst: () => save(), exportDocx: exportDocxBlob, exportPdf: exportPdfBlob, signIn: async () => !session.signedOut || await session.signIn(), readOnly: () => !!pkg?.readOnly });
-  const versionHistory = createVersionHistory({ editor: () => (failed ? null : engine), pkg: () => pkg, doc, error, author: () => session.username, live: () => collab.live,
+  const versionHistory = createVersionHistory({ editor: () => (failed ? null : engine), pkg: () => pkg, doc, error, author: () => session.username,
     restoreFile: version => restoreVersionFile(version, { confirm: false }), onChange: () => fitWidth(),
     // Side by side, both documents fit their width; the zoom comes back when the version closes.
     onPreview: open => { if (open) { versionZoom ??= zoom.value === 'custom' ? customZoom.value : zoom.value; zoomControl.set('fit'); } else if (versionZoom !== null) { zoomControl.set(versionZoom); versionZoom = null; } },
     compare: original => openCompareDialog({ mode: 'compare', editor: () => engine, pkg: () => pkg, documentName: () => title.value, author: () => session.username, openDocument: file => importFile?.(file),
       currentBytes: async () => new Uint8Array(await exportDocxBlob().then(b => b.arrayBuffer())), error, original }) });
   if (!local) doc.versionMeta = () => ({ author: session.username });
-  Object.assign(editorCommands, collab.commands, { autoSave: ({ enabled } = {}) => editorCommands.setAutosave?.(!!enabled) });
+  Object.assign(editorCommands, { autoSave: ({ enabled } = {}) => editorCommands.setAutosave?.(!!enabled) });
   if (cloud && versioning.enabled) editorCommands.versionHistory = () => versionHistory.open();
-  const collabShareItems = editorCommands.shareItems;
-  editorCommands.shareItems = () => [...collab.shareItems(), ...(collabShareItems?.() || [{ label: 'Download a Copy (.docx)', icon: 'download', disabled: !engine || failed, onSelect: download }])];
-  const collabExtendTab = editorCommands.extendTab;
-  editorCommands.extendTab = (id, kit) => [...(collabExtendTab?.(id, kit) || []), ...collab.extendTab(id, kit)];
-  const collabExtendMenu = editorCommands.extendMenu;
-  editorCommands.extendMenu = (id, kit) => [...(collabExtendMenu?.(id, kit) || []), ...collab.extendMenu(id, kit)];
   const chrome = createCanvasChrome({ title, status, account, local, focusEditor: () => engine?.focus(), commands: editorCommands,
     controls: { undo, redo, find, paragraphStyle, editStyle, newStyle, clearParagraphFormatting, outline, outlineLevel,
       characterStyle, editCharacterStyle, newCharacterStyle, clearTextFormatting, fontFamily, fontSize, fontSizeMenu, bold, italic, underline,
@@ -1001,7 +979,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     help: el('span.visually-hidden', { id: 'canvas-input-help' }, `Tab moves between table cells · Escape then Tab to leave · ${MOD_KEY}+Enter page break · Shift+Enter line break`) });
   try { if (localStore()?.getItem(STATUS_HIDDEN) === '1') statusBar.el.hidden = true; } catch { /* storage unavailable */ }
   backstage = createBackstage({ local, title: () => title.value, focusEditor: () => engine?.focus(),
-    newDocument: () => newDoc?.(), newFromTemplate: newFromTemplate ? id => newFromTemplate(id) : null, customTemplates: cloud ? () => listCustomTemplates() : null,
+    newDocument: () => newDoc?.(), newFromTemplate: newFromTemplate ? id => newFromTemplate(id) : null,
     openDocument: () => openInput.click(), openPath: path => openPath?.(path), goHome: () => goHome?.(), recentDocuments: editorCommands.recentDocuments,
     readOnly: () => !engine || failed || !!pkg?.readOnly,
     properties: () => (pkg ? pkg.coreProperties : {}),
@@ -1016,7 +994,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     save: () => save(), download, savePdf: () => savePdf(), rename: cloud ? () => { title.focus(); title.select(); } : null,
     saveStatus: () => status.getAttribute('aria-label'),
     saveAs: cloud ? async name => {
-      try { await ready; if (!engine || failed) return 'The document is not open.'; engine.finishComposition(); if (session.signedOut && !await session.signIn()) return 'The copy was not saved.'; }
+      try { await ready; if (!engine || failed) return 'The document is not open.'; engine.finishComposition(); }
       catch (e) { return e?.message || String(e); }
       const failure = await doc.saveAs(name, { stillWanted: () => !destroyed });
       if (!failure) { title.value = doc.name; refreshTitle(); document.title = `${doc.name} — writedoc`; }
@@ -1036,8 +1014,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
         return el('figure.bs-page', {}, thumb, el('figcaption', {}, `Page ${i + 1}`));
       }), ...(sheets.length > max ? [el('p.bs-muted', {}, `and ${sheets.length - max} more`)] : []));
     },
-    shareAvailable: () => true,
-    shareWithPeople: () => collab.share(),
+    shareAvailable: () => false,
     openVersionHistory: cloud && versioning.enabled ? () => versionHistory.open() : null,
     setEditingMode: mode => editorCommands.setEditingMode(mode), preferences: section => openPreferencesDialog(section),
     onOpen: () => { engine?.finishComposition(); },
@@ -1056,14 +1033,11 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     } catch (e) { error(e); }
   }
   root = el('section.canvas-workspace.ed-workspace', {}, chrome.header, chrome.toolbar,
-    message, collab.banner, el('div.canvas-editor-body', {}, chrome.navigation,
-      el('div.canvas-editor-content', {}, outlinePanel.node, finder.node, surface, versionHistory.previewNode, review.pane, formatArea.pane.node, proofing.pane, mailings.pane, references.lookupPane, ...reviewTools.panes, pictures.pane, versionHistory.pane.node, chrome.inspector)),
+    message, el('div.canvas-editor-body', {}, chrome.navigation,
+      el('div.canvas-editor-content', {}, outlinePanel.node, finder.node, surface, versionHistory.previewNode, review.pane, formatArea.pane.node, proofing.pane, references.lookupPane, ...reviewTools.panes, pictures.pane, versionHistory.pane.node, chrome.inspector)),
     statusBar.el, backstage.el,
     openInput, imageInput, ...pictures.inputs, ...insert.inputs);
   chrome.attach(root);
-  // Who is here, beside Share in the title bar.
-  const titleActions = chrome.header.querySelector('.canvas-title-actions');
-  titleActions?.insertBefore(collab.avatars, titleActions.querySelector('.ed-share'));
   // The chrome's own shortcuts and the user's bindings from Customize Keyboard; they run before the
   // document's built-in chords, so a binding of your own takes precedence.
   const builtInChords = {
@@ -1193,7 +1167,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     if (editingArea.value !== selectedArea) editingArea.value = selectedArea;
     outline.disabled = false; outlinePanel.refresh(engine.outline, engine.model.range[0]);
     chrome.setContext(pictures.drawingContext(engine) || (engineApi()?.selectedShape(engine) ? 'shape' : engine.model.selectedImage ? 'image' : engine.model.tableContext ? 'table' : 'paragraph'), [...(['header', 'footer'].includes(references.activeStoryKind()) ? ['headerFooter'] : []), ...(editorCommands.extraContexts?.() || [])]);
-    mailings.refresh(); pictures.refresh();
+    pictures.refresh();
     views.refresh();
     draw.update();
     if (pkg.readOnly || engine.viewOnly) {
@@ -1203,7 +1177,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       find.disabled = false; finder.refresh();
       stats.textContent = `Page ${Math.min(engine.layout.pageCount, (engine.caretPageIndex ?? 0) + 1)} of ${engine.layout.pageCount}`;
       if (pkg.readOnly) words.textContent = 'Read only'; else updateWordCount();
-      chrome.refresh(); review.refresh(); statusBar?.refresh(); collab.refresh(); tables.refresh();
+      chrome.refresh(); review.refresh(); statusBar?.refresh(); tables.refresh();
       return;
     }
     undo.disabled = !engine.session.history.length && !designVersions.undo.length;
@@ -1316,7 +1290,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     lineSpacing.value = format.lineRule === 'auto' && [1, 1.15, 1.5, 2, 2.5, 3].includes(format.lineSpacing) ? String(format.lineSpacing) : '';
     if (document.activeElement !== spaceBefore) spaceBefore.value = format.spaceBefore ?? '';
     if (document.activeElement !== spaceAfter) spaceAfter.value = format.spaceAfter ?? '';
-    chrome.refresh(); review.refresh(); reviewTools.refresh(); formatArea.refresh(); versionHistory.refresh(); collab.refresh(); tables.refresh();
+    chrome.refresh(); review.refresh(); reviewTools.refresh(); formatArea.refresh(); versionHistory.refresh(); tables.refresh();
     stats.textContent = `Page ${Math.min(engine.layout.pageCount, (engine.caretPageIndex ?? 0) + 1)} of ${engine.layout.pageCount}`;
     updateWordCount();
     statusBar?.refresh();
@@ -1340,17 +1314,15 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   function updateStatus() {
     if (destroyed || failed) return;
     if (pkg?.readOnly) { renderStatus('Read only', 'monitor'); status.disabled = true; saveButton.disabled = true; return; }
-    const signedOut = !local && session.signedOut;
     const [label, name, state] = doc.status === 'saving' ? ['Saving…', 'spinner', 'saving']
       : doc.status === 'error' ? ['Not saved', 'alert', 'error']
       : doc.status === 'offline' ? ['Offline', 'wifiOff', 'offline']
-      // A shared document's other tabs leave saving to the owner's (see collab/live.js).
       : doc.writes === false ? (local ? ['Shared in this browser', 'monitor', 'local'] : ['Shared · saved by the owner', null, 'saved'])
       : doc.dirty ? ['Unsaved changes', null, 'unsaved']
       : local ? ['On this device', 'monitor', 'local']
       : doc.path ? ['Saved', null, 'saved'] : ['Not saved yet', null, 'unsaved'];
     renderStatus(label, name, state);
-    status.disabled = !signedOut && (!doc.exporter || doc.status === 'saving');
+    status.disabled = !doc.exporter || doc.status === 'saving';
     if (doc.exporter) saveButton.disabled = false;
     refreshTitle();
   }
@@ -1544,8 +1516,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     // Take the keyboard, unless it is in a text field elsewhere on the page (the user is typing there).
     const active = document.activeElement;
     const typing = active && !root.contains(active) && (active.isContentEditable || /^(TEXTAREA|SELECT)$/.test(active.tagName) || active.tagName === 'INPUT' && !/^(button|checkbox|radio|file|submit|reset|image|color|range)$/.test(active.type));
-    if (!typing) engine.focus();
-    collab.attach();
+    if (!typing) engine.focus();
     document.title = `${doc.name} — writedoc`;
   })().catch(e => {
     releasePictures();
@@ -1563,7 +1534,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     status.disabled = true;
     // A failed imported copy still has bytes/text worth recovering. No save handler is attached.
     if (doc.template && !doc.blob && !doc.pendingImport) doc.discardEdits();
-    if (doc.blob) actions.append(button('Download original', () => P.downloadBlob(doc.blob, P.ensureDocx(doc.name)), { className: 'btn btn-outline' }));
+    if (doc.blob) actions.append(button('Download original', () => D.downloadBlob(doc.blob, D.ensureDocx(doc.name)), { className: 'btn btn-outline' }));
     throw e;
   });
   ready.catch(() => {});
@@ -1577,14 +1548,14 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       if (!doc.dirty && doc.status !== 'saving') return true;
       if (!doc.exporter) return false;
       try { return await doc.flush(); }
-      catch (e) { if (!session.signedOut) error(e); return false; }
+      catch (e) { error(e); return false; }
     },
     destroy() {
       drawingTextModal?.close();
       printAbort.abort();
       destroyed = true; tables.destroy(); paragraphBorderModal?.close(); paragraphShadingModal?.close(); bookmarkModal?.close(); hyperlinkModal?.close(); pageSetupModal?.close(); paragraphModal?.close(); styleModal?.close(); tableModal?.close(); imageModal?.close(); fontPopover?.close(); colorPalette?.close(); highlightPalette?.close(); baselineModal?.close(); characterSpacingModal?.close(); textWidthModal?.close(); kerningModal?.close(); underlineModal?.close();
       backstage?.close({ focus: false });
-      fitObserver?.disconnect(); rulers?.destroy(); views.destroy(); chrome.destroy(); formatArea.destroy(); review.destroy(); reviewTools.destroy(); collab.destroy(); versionHistory.destroy(); references.destroy(); insert.destroy(); draw.destroy(); pictures.destroy(); editingCommands.destroy(); proofing.destroy(); for (const module of pageModules) module.destroy();
+      fitObserver?.disconnect(); rulers?.destroy(); views.destroy(); chrome.destroy(); formatArea.destroy(); review.destroy(); reviewTools.destroy(); versionHistory.destroy(); references.destroy(); insert.destroy(); draw.destroy(); pictures.destroy(); editingCommands.destroy(); proofing.destroy(); for (const module of pageModules) module.destroy();
       releasePictures();
       doc.removeEventListener('status', updateStatus);
       session.removeEventListener('change', onSession);

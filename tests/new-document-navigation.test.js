@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { expect, it, vi } from 'vitest';
 import { versioning } from '../src/lib/doc.js';
+import * as D from '../src/lib/drive.js';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 vi.mock('../src/views/editor.js', () => ({ editorView: vi.fn(({ doc }) => ({
   el: document.createElement('div'), doc,
@@ -11,11 +14,7 @@ vi.mock('../src/views/editor.js', () => ({ editorView: vi.fn(({ doc }) => ({
 it('saves an unsaved document before creating another document on the same route', async () => {
   versioning.enabled = false;
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  const write = vi.fn(async () => ({}));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { readdir: async () => [], mkdir: async () => {}, stat: async () => null, write },
-  });
+  const write = D.writeFile;
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
@@ -37,7 +36,7 @@ it('saves an unsaved document before creating another document on the same route
 
     editorView.mock.lastCall[0].newDoc();
     await vi.waitFor(() => expect(window.__writedoc.current.view).not.toBe(first));
-    expect(write).toHaveBeenCalledWith('writedoc/Untitled document.docx', bytes, expect.anything());
+    expect(write).toHaveBeenCalledWith('writedoc/Untitled document.docx', bytes);
     expect(first.doc.dirty).toBe(false);
     expect(first.destroy).toHaveBeenCalledOnce();
     expect(window.__writedoc.current.view.doc.path).toBeNull();

@@ -5,7 +5,7 @@ import { DocxPackage, createDocx, WRITING_STYLES } from '../src/engine/docx.js';
 import { TextDocument, paragraph } from '../src/engine/model.js';
 import { readDrawingFragment } from '../src/engine/inserted-drawings.js';
 import { recognizedShapeXml, triangleGeometry } from '../src/engine/ink-shapes.js';
-import { inkDrawingXml, inkStrokeXml, readInkDrawing, isInkImage, INK_EXTENSION_URI, readInkExtension } from '../src/engine/docx-ink.js';
+import { inkDrawingXml, inkStrokeXml, readInkDrawing, isInkImage, INK_EXTENSION_URI, INK_NS, readInkExtension } from '../src/engine/docx-ink.js';
 
 let dom;
 beforeAll(() => { dom = new JSDOM(); globalThis.DOMParser = dom.window.DOMParser; globalThis.XMLSerializer = dom.window.XMLSerializer; });
@@ -51,7 +51,7 @@ describe('ink serialization', () => {
   });
   it('rejects malformed ink data', () => {
     const ext = data => new DOMParser().parseFromString(`<a:ext xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" uri="${INK_EXTENSION_URI}">${data}</a:ext>`, 'application/xml').documentElement;
-    const ns = 'xmlns:pdi="http://schemas.puter.com/documents/2026/ink"';
+    const ns = `xmlns:pdi="${INK_NS}"`;
     expect(readInkExtension(ext(`<pdi:stroke ${ns} tool="pen" color="000000" width="1" points="1 2 50"/>`)).stroke.points).toHaveLength(1);
     expect(() => readInkExtension(ext(`<pdi:stroke ${ns} tool="brush" color="000000" width="1" points="1 2 50"/>`))).toThrow(/ink extensions/);
     expect(() => readInkExtension(ext(`<pdi:stroke ${ns} tool="pen" color="000000" width="1" points="1 2"/>`))).toThrow(/ink extensions/);

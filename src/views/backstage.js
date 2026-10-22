@@ -85,19 +85,11 @@ export function createBackstage(api) {
   const act = fn => () => { close({ focus: false }); fn(); };
 
   /* ---- New ---- */
-  function newPage(request) {
-    const mine = el('div.bs-tiles');
-    const mineSection = el('section.bs-section', { hidden: true }, el('h2', {}, 'My templates'), mine);
-    if (!local && api.customTemplates) api.customTemplates().then(list => {
-      if (!stillShowing(request) || !list?.length) return;
-      mine.replaceChildren(...list.map(t => tile(t.name, 'template', act(() => api.newFromTemplate(t.id)))));
-      mineSection.hidden = false;
-    }).catch(() => {});
+  function newPage() {
     return [...heading('New', 'Start from a blank page or a template.'),
       el('section.bs-section', {}, el('div.bs-tiles', {},
         tile('Blank document', 'blankPage', act(() => api.newDocument()), { primary: true }),
-        ...(api.newFromTemplate ? TEMPLATES.map(t => tile(t.name, 'template', act(() => api.newFromTemplate(t.id)), { hint: t.description })) : []))),
-      mineSection];
+        ...(api.newFromTemplate ? TEMPLATES.map(t => tile(t.name, 'template', act(() => api.newFromTemplate(t.id)), { hint: t.description })) : [])))];
   }
 
   /* ---- Open ---- */
@@ -111,7 +103,7 @@ export function createBackstage(api) {
     return [...heading('Open'),
       el('section.bs-section', {}, el('div.bs-tiles', {},
         tile('Browse this device…', 'folderOpen', act(() => api.openDocument()), { hint: '.docx, .hwp, Markdown, HTML or text', primary: true }),
-        api.goHome ? tile('All documents', 'home', act(() => api.goHome()), { hint: local ? 'The documents screen' : 'Your documents on Puter' }) : null)),
+        api.goHome ? tile('All documents', 'home', act(() => api.goHome()), { hint: 'The documents screen' }) : null)),
       api.recentDocuments ? el('section.bs-section', {}, el('h2', {}, 'Recent'), list) : null];
   }
 
@@ -138,7 +130,7 @@ export function createBackstage(api) {
       ...fact('Created', props.created ? new Date(props.created).toLocaleString() : '—'),
       ...fact('Last modified', props.modified ? new Date(props.modified).toLocaleString() : '—'),
       ...fact('Last modified by', props.lastModifiedBy || '—'),
-      ...fact('Location', api.location?.() || (local ? 'This device' : 'Puter')),
+      ...fact('Location', api.location?.() || 'This browser'),
       ...fact('Size', api.size?.() ? formatBytes(api.size()) : '—'));
     const stats = api.statistics?.();
     const statsList = stats ? el('dl.bs-facts', {}, ...fact('Pages', stats.pages), ...fact('Words', stats.words), ...fact('Characters (no spaces)', stats.noSpaces),

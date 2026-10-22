@@ -9,33 +9,33 @@
  * never fails the save.
  */
 
-import * as P from './puter.js';
+import * as D from './drive.js';
 import { documentRoot } from './document-paths.js';
 
 export const VERSION_INTERVAL_MS = 10 * 60 * 1000;
 export const MAX_VERSIONS = 30;
-export const VERSIONS_DIR = `${P.FOLDER}/.versions`;
+export const VERSIONS_DIR = `${D.FOLDER}/.versions`;
 
 /** A single DOCX history folder, or null for paths that cannot own one safely. */
 export function versionsFolder(path) {
-  const prefix = `${P.FOLDER}/`;
+  const prefix = `${D.FOLDER}/`;
   if (!path || !path.startsWith(prefix)) return null;
   const rest = path.slice(prefix.length);
   if (!/\.docx$/i.test(rest) || rest.includes('/')) return null;
-  const stem = P.stripExtension(rest);
+  const stem = D.stripExtension(rest);
   // These names would resolve to all histories (or writedoc itself), including
   // when deleteVersions recursively removes a document's snapshot folder.
   if (!stem || stem === '.' || stem === '..') return null;
   return `${VERSIONS_DIR}/${stem}`;
 }
 
-/** Puter listings return absolute paths; verify their app folder before sharing a history. */
+/** The listings return absolute paths; verify their app folder before sharing a history. */
 export async function resolveVersionsFolder(path) {
   if (!path?.startsWith('/')) return versionsFolder(path);
   // The app folder's absolute path is learned when a document opens; ask the cloud only when it is not known yet.
-  const root = documentRoot() || (await P.statFile(P.FOLDER))?.path;
+  const root = documentRoot() || (await D.statFile(D.FOLDER))?.path;
   if (!root?.startsWith('/') || !path.startsWith(`${root}/`)) return null;
-  return versionsFolder(`${P.FOLDER}/${path.slice(root.length + 1)}`);
+  return versionsFolder(`${D.FOLDER}/${path.slice(root.length + 1)}`);
 }
 
 /** The file name of a snapshot taken at `time` (ms): sortable, safe for any file system. */
@@ -63,7 +63,7 @@ export async function listVersions(path) {
 }
 
 async function listSnapshots(folder) {
-  const items = await P.listFolder(folder);
+  const items = await D.listFolder(folder);
   return items
     .filter((it) => !it.isDir && parseVersionTime(it.name) != null)
     .map((it) => ({ path: it.path, name: it.name, time: parseVersionTime(it.name), size: it.size }))
@@ -84,14 +84,14 @@ export async function saveVersion(path, blob, { now = Date.now(), keep = MAX_VER
 export const metaPath = versionPath => versionPath.replace(/\.docx$/i, '.json');
 export async function readVersionMeta(version) {
   try {
-    const blob = await P.readFile(metaPath(version.path));
+    const blob = await D.readFile(metaPath(version.path));
     const meta = JSON.parse(await blob.text());
     return meta && typeof meta === 'object' ? { author: typeof meta.author === 'string' ? meta.author.slice(0, 120) : '', label: typeof meta.label === 'string' ? meta.label.slice(0, 120) : '' } : {};
   } catch { return {}; }
 }
 export async function writeVersionMeta(version, meta) {
   const clean = { author: String(meta.author || '').slice(0, 120), label: String(meta.label || '').slice(0, 120) };
-  await P.writeFile(metaPath(version.path), new Blob([JSON.stringify(clean)], { type: 'application/json' }));
+  await D.writeFile(metaPath(version.path), new Blob([JSON.stringify(clean)], { type: 'application/json' }));
   return clean;
 }
 
@@ -105,11 +105,11 @@ async function writeSnapshot(folder, blob, now, keep, meta = null) {
     name = versionName(time);
     try {
       // Snapshots are immutable, even when two tabs share a timestamp.
-      await P.writeFile(`${folder}/${name}`, blob, { overwrite: false });
+      await D.writeFile(`${folder}/${name}`, blob, { overwrite: false });
       break;
     } catch (error) {
       // Only retry a verified collision. Other write failures still surface.
-      if (!await P.fileExists(`${folder}/${name}`)) throw error;
+      if (!await D.fileExists(`${folder}/${name}`)) throw error;
       time += 1;
     }
   }
@@ -119,8 +119,8 @@ async function writeSnapshot(folder, blob, now, keep, meta = null) {
   }
   const versions = await listSnapshots(folder);
   for (const v of versions.slice(keep)) {
-    try { await P.deleteFile(v.path); } catch (e) { console.warn('[documents] could not trim a version', e); }
-    try { await P.deleteFile(metaPath(v.path)); } catch { /* no details were kept */ }
+    try { await D.deleteFile(v.path); } catch (e) { console.warn('[documents] could not trim a version', e); }
+    try { await D.deleteFile(metaPath(v.path)); } catch { /* no details were kept */ }
   }
   return written;
 }
@@ -150,12 +150,12 @@ export async function renameVersions(oldPath, newPath) {
     // rename made sure no file has the name): left there, even empty, the
     // rename fails and this document shows no history, or that document's.
     let leftover = [];
-    try { leftover = await P.listFolder(to); } catch (e) { if (!P.isNotFound(e)) throw e; leftover = null; }
+    try { leftover = await D.listFolder(to); } catch (e) { if (!D.isNotFound(e)) throw e; leftover = null; }
     // An empty listing may also mean no folder at all: removing nothing is no failure.
-    if (leftover) { try { await P.deleteFolder(to); } catch (e) { if (leftover.length) throw e; } }
-    await P.renameFile(from, P.displayName(to));
+    if (leftover) { try { await D.deleteFolder(to); } catch (e) { if (leftover.length) throw e; } }
+    await D.renameFile(from, D.displayName(to));
   } catch (e) {
-    if (!P.isNotFound(e)) console.warn('[documents] could not move the version history', e);
+    if (!D.isNotFound(e)) console.warn('[documents] could not move the version history', e);
   }
 }
 
@@ -164,8 +164,8 @@ export async function deleteVersions(path) {
   try {
     const folder = await resolveVersionsFolder(path);
     if (!folder) return;
-    await P.deleteFolder(folder);
+    await D.deleteFolder(folder);
   } catch (e) {
-    if (!P.isNotFound(e)) console.warn('[documents] could not remove the version history', e);
+    if (!D.isNotFound(e)) console.warn('[documents] could not remove the version history', e);
   }
 }

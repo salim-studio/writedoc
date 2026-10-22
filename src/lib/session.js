@@ -1,26 +1,20 @@
 /**
- * Per-session state that is not part of any document: whether anyone is
- * signed in to Puter, who, and the theme preference. Views subscribe to
- * 'change' to re-render the pieces that show these. The theme lives in
- * localStorage so the pre-paint script in index.html can apply it before the
- * first frame.
+ * The state of the app that is not about a document: the theme, and the
+ * person using it. There is no account and no sign-in: the documents are in
+ * this browser, and the person is whoever is sitting in front of it.
  *
- * Nobody has to sign in to write. The editor runs in the browser; Puter is
- * where documents are saved, so a sign-in is asked for at the first action
- * that needs the cloud (saving, opening a file, listing the documents). Until
- * init() has asked the SDK, the state is 'unknown' and nothing is gated.
+ * Views subscribe to 'change' to re-render the pieces that show these. The
+ * theme lives in localStorage so the pre-paint script in index.html can apply
+ * it before the first frame.
  */
 
 import { applyTheme, currentTheme } from '../ui/theme.js';
-import * as P from './puter.js';
 
 class Session extends EventTarget {
   constructor() {
     super();
-    this.user = null;
-    /** 'unknown' before the SDK was asked; then 'in' or 'out'. */
-    this.state = 'unknown';
-    this._signingIn = null;
+    this.user = { username: 'You', uuid: 'local' };
+    this.state = 'in';
     this._pictureCache = null;
   }
 
@@ -29,11 +23,9 @@ class Session extends EventTarget {
     await this.refresh();
   }
 
-  /** Ask the SDK who is signed in (nobody, possibly) and tell the views. */
+  /** There is nobody to ask about: the app is always ready to be used. */
   async refresh() {
-    const signedIn = await P.isSignedIn();
-    this.user = signedIn ? await P.getUser() : null;
-    this.state = signedIn ? 'in' : 'out';
+    this.state = 'in';
     this._emit();
   }
 
@@ -48,62 +40,31 @@ class Session extends EventTarget {
     return this.state === 'in';
   }
 
-  /** Known to have no Puter session: cloud actions ask for a sign-in first. */
+  /** Nobody is ever signed out: there is no account to lose. */
   get signedOut() {
-    return this.state === 'out';
+    return false;
   }
 
-  /**
-   * Open Puter's sign-in dialog. Resolves true once signed in, false when the
-   * dialog was dismissed. Concurrent callers share one dialog.
-   */
+  /** There is no sign-in to open. */
   signIn() {
-    if (this.state === 'in') return Promise.resolve(true);
-    if (!this._signingIn) {
-      this._signingIn = (async () => {
-        try { await P.signIn(); } catch { return false; }
-        await this.refresh();
-        return this.state === 'in';
-      })().finally(() => { this._signingIn = null; });
-    }
-    return this._signingIn;
+    return Promise.resolve(true);
   }
 
-  /** The name to show and to sign comments with. */
+  /** The name to show and to sign changes with. */
   get username() {
-    return this.user?.username || (this.state === 'out' ? 'Guest' : 'Puter user');
+    return this.user?.username || 'You';
   }
 
   get accountId() {
-    return this.signedIn ? this.user?.uuid || this.user?.username || null : null;
+    return this.user?.uuid || 'local';
   }
 
   /**
    * One memory-only entry for the current account, shared by home and editor.
-   * Refresh on the next render after five minutes; retry missing/failed pictures
-   * after one minute. No base64 in browser storage, polling, or startup wait.
+   * There is no picture: the person is whoever is using the browser.
    */
   async getProfilePicture() {
-    const id = this._syncPictureCache();
-    if (!id) return null;
-    let entry = this._pictureCache;
-    if (!entry || (!entry.pending && Date.now() >= entry.expires)) {
-      entry = { id, picture: null, expires: 0, pending: null };
-      this._pictureCache = entry;
-      entry.pending = P.getProfilePicture().then((picture) => {
-        entry.picture = picture;
-        entry.expires = Date.now() + (picture ? 5 * 60_000 : 60_000);
-        // A response from before sign-out or an account switch belongs to nobody.
-        return this._pictureCache === entry ? picture : null;
-      }).finally(() => { entry.pending = null; });
-    }
-    return entry.pending || entry.picture;
-  }
-
-  _syncPictureCache() {
-    const id = this.accountId;
-    if (!id || this._pictureCache?.id !== id) this._pictureCache = null;
-    return id;
+    return null;
   }
 
   get theme() {
@@ -119,6 +80,8 @@ class Session extends EventTarget {
     this._syncPictureCache();
     this.dispatchEvent(new CustomEvent('change'));
   }
+
+  _syncPictureCache() {}
 }
 
 export const session = new Session();

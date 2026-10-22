@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from 'vitest';
+import * as D from '../src/lib/drive.js';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 vi.mock('../src/views/editor.js', () => ({
   editorView: vi.fn(({ doc }) => ({
@@ -12,11 +15,8 @@ it('honors the latest navigation while another document is still loading', async
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
   let finishFirst;
   const first = new Promise((resolve) => { finishFirst = resolve; });
-  const read = vi.fn((path) => path === 'writedoc/A.docx' ? first : Promise.resolve(new Blob(['B'])));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { readdir: async () => [], read, mkdir: async () => {}, stat: async () => null, write: async () => ({}) },
-  });
+  const read = D.readFile;
+  read.mockImplementation((path) => path === 'writedoc/A.docx' ? first : Promise.resolve(new Blob(['B'])));
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/home');
   await import('../src/main.js');

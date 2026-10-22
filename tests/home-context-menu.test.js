@@ -2,24 +2,21 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
 import { closeMenu } from '../src/ui/menu.js';
+import { installFakeStore } from './helpers/fake-store.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
-let view;
+let view, store;
 beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.stubGlobal('puter', { fs: {
-    mkdir: async () => {},
-    readdir: async () => [{ path: 'writedoc/Report.docx', name: 'Report.docx', size: 1200, modified: 1 }],
-    stat: async () => { throw new Error('missing'); },
-  } });
+  store = installFakeStore(new Map([['writedoc/Report.docx', { blob: new Blob(['report']), modified: 1 }]]));
   Object.defineProperty(document.documentElement, 'clientWidth', { value: 1000, configurable: true });
   Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true, writable: true });
 });
 afterEach(() => {
   view?.destroy(); closeMenu(); document.body.replaceChildren();
-  vi.unstubAllGlobals(); vi.restoreAllMocks();
+  store.restore(); vi.unstubAllGlobals(); vi.restoreAllMocks();
 });
 
 async function setup() {

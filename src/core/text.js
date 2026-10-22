@@ -74,12 +74,12 @@ export function textStats(text, known = null) {
 }
 
 export function formatCount(n, singular, plural = `${singular}s`) {
-  return `${n.toLocaleString()} ${n === 1 ? singular : plural}`;
+  return `${n.toLocaleString('en-US')} ${n === 1 ? singular : plural}`;
 }
 
 /** "12 of 340 words" for a selection inside a larger document. */
 export function formatSelectionCount(selected, total, singular, plural = `${singular}s`) {
-  return `${selected.toLocaleString()} of ${total.toLocaleString()} ${total === 1 ? singular : plural}`;
+  return `${selected.toLocaleString('en-US')} of ${total.toLocaleString('en-US')} ${total === 1 ? singular : plural}`;
 }
 
 /**

@@ -1,8 +1,6 @@
 /**
- * A picture from a description, through Puter AI (`puter.ai.txt2img`). The
- * SDK answers with an <img> element; its source (a data URL, or a web
- * address) becomes a File so the picture goes onto the page the same way
- * an uploaded one does, and is stored in the document.
+ * Pictures that arrive as data URLs or as a web address: the picture inside
+ * the document, and the name it gets when it is written out.
  */
 
 import { MAX_IMAGE_BYTES, readImageBlob } from './images.js';

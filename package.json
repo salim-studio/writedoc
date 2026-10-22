@@ -1,14 +1,13 @@
 {
   "name": "writedoc",
   "version": "1.0.0",
-  "description": "writedoc: a fast, private word processor. Real .docx files in your own cloud.",
+  "description": "writedoc: a fast, private word processor. Real .docx files, kept in your browser.",
   "author": "salim-slimani",
   "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "npm run build:worker && vite build",
-    "build:worker": "vite build --config vite.worker.config.js",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

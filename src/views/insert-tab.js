@@ -11,10 +11,9 @@ import { toast } from '../ui/toast.js';
 import { promptDialog, confirmDialog } from '../ui/modal.js';
 import { drawShapeThumbnail } from '../ui/shape-controls.js';
 import { small } from '../ui/ribbon.js';
-import * as P from '../lib/puter.js';
-import { imageFileFromSource } from '../lib/imagegen.js';
+import * as D from '../lib/drive.js';
 import { galleryItems, pagePreview, textPreview } from './insert-gallery.js';
-import { openDateTime, openFieldDialog, openFormatPageNumbers, openSymbolDialog, openEquationDialog, openIconsDialog, openDiagramDialog, openSignatureDialog, openDropCapDialog, openGenerateDialog, recentSymbols, rememberSymbol, diagramSketch } from './insert-dialogs.js';
+import { openDateTime, openFieldDialog, openFormatPageNumbers, openSymbolDialog, openEquationDialog, openIconsDialog, openDiagramDialog, openSignatureDialog, openDropCapDialog, recentSymbols, rememberSymbol, diagramSketch } from './insert-dialogs.js';
 import { COVER_DESIGNS, insertCoverPage, removeCoverPage, coverPageRange } from '../engine/cover-pages.js';
 import { HEADER_DESIGNS, PAGE_NUMBER_DESIGNS, writeStoryLines, removePageNumberParagraphs, storyPageField } from '../engine/header-footer-designs.js';
 import { TEXT_BOX_DESIGNS, WORDART_STYLES, textBoxParams, wordArtParams, signatureLineParams, textShapeXml } from '../engine/text-designs.js';
@@ -113,7 +112,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const engine = ready(); if (!engine || !file) return;
     try {
       engine.finishComposition(); afterSelectedDrawing(engine);
-      const name = file.name || 'picture', type = file.type || P.mimeFor?.(name) || '';
+      const name = file.name || 'picture', type = file.type || D.mimeFor?.(name) || '';
       if (/^image\/(png|jpeg|tiff)$/.test(type) || /\.(png|jpe?g|tiff?)$/i.test(name) && !type) { await engine.insertImageFile(file); onChange(); return; }
       if (type === 'image/svg+xml' || /\.svg$/i.test(name)) {
         const svg = await file.text(), { png, width, height } = await rasterize(new Blob([svg], { type: 'image/svg+xml' }));
@@ -132,9 +131,6 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const engine = ready();
     return [
       { label: 'This Device…', icon: 'folderOpen', disabled: !engine, onSelect: () => pictureInput.click() },
-      ...(P.canPickFiles() ? [{ label: 'From Puter…', icon: 'pictures', disabled: !engine, onSelect: async () => { try { const file = await P.pickImage(); if (file) await insertPictureFile(file); } catch (e) { fail(e); } } }] : []),
-      ...(P.canMakeImages() ? [{ label: 'Generate with AI…', icon: 'pictures', disabled: !engine, onSelect: () => openGenerateDialog({ onClose: () => queueMicrotask(() => editor()?.focus()),
-        generate: async prompt => imageFileFromSource(await P.makeImage(prompt), prompt), onInsert: file => insertPictureFile(file) }) }] : []),
       ...(canCapture() ? [{ separator: true }, { label: 'Screenshot…', icon: 'screenshot', disabled: !engine, onSelect: screenshot }] : []),
     ];
   }

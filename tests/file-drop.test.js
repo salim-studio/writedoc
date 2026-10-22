@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from 'vitest';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
+
 import { Doc } from '../src/lib/doc.js';
+import * as D from '../src/lib/drive.js';
 
 // The whole app boots; only the canvas is left out.
 vi.mock('../src/views/editor.js', () => ({
@@ -9,8 +13,6 @@ vi.mock('../src/views/editor.js', () => ({
     flush: () => doc.flush(), destroy: vi.fn(() => doc.destroy()),
   })),
 }));
-
-const writes = [];
 
 /** A file drag over the app, ending in a drop unless `stop` holds it at the dragover. */
 function dragFiles(files, { stop = false, handled = false } = {}) {
@@ -28,13 +30,6 @@ function dragFiles(files, { stop = false, handled = false } = {}) {
 
 it('opens files dropped anywhere the screen underneath does not take them itself', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: {
-      readdir: async () => [], read: async () => new Blob(['document']), mkdir: async () => {},
-      stat: async () => null, write: async (path) => { writes.push(path); return { path }; },
-    },
-  });
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
@@ -66,7 +61,7 @@ it('opens files dropped anywhere the screen underneath does not take them itself
 
   // Several at once: they are written into the folder, behind the open document.
   dragFiles([new File(['word bytes'], 'First.docx'), new File(['word bytes'], 'Second.docx')]);
-  await vi.waitFor(() => expect(writes).toEqual(['writedoc/First.docx', 'writedoc/Second.docx']));
+  await vi.waitFor(() => expect(D.writeFile.mock.calls.map(([path]) => path)).toEqual(['writedoc/First.docx', 'writedoc/Second.docx']));
   expect(window.__writedoc.current.view).toBe(opened);
 
   // Nothing reports the drag leaving the window, so the hint goes when the dragover repeats stop.

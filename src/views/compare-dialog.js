@@ -1,11 +1,11 @@
 /**
  * Compare files and Combine files. The reader picks an original and a revised document
- * (this one, a file from the device, or one from Puter); the result is a new document whose
+ * (this one, a file from the device, or one from this browser); the result is a new document whose
  * differences are tracked changes, shown first beside both sources and then opened or downloaded.
  */
 import { el } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { engineApi } from '../lib/engine-api.js';
 import { hint, preference } from './review-ui.js';
 
@@ -40,15 +40,10 @@ export function openCompareDialog({ mode = 'compare', editor, pkg, documentName,
     const current = () => {
       choose(key, { name: `${documentName() || 'This document'} (open now)`, current: true, read: currentBytes });
     };
-    const fromPuter = async () => {
-      const picked = await P.pickFile({ accept: ['.docx'] });
-      if (picked) choose(key, { name: picked.name, read: async () => new Uint8Array(await (await P.readFile(picked.path)).arrayBuffer()) });
-    };
     return { fileInput, current, set: source => choose(key, source), node: el('fieldset.rv-fieldset.rv-source', {}, el('legend', {}, label), name,
       el('div.rv-actions', {},
         el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: current }, 'This document'),
-        el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: () => fileInput.click() }, 'From device…'),
-        P.canPickFiles() ? el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: fromPuter }, 'From Puter…') : null), fileInput) };
+        el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: () => fileInput.click() }, 'From device…')), fileInput) };
   };
   const original = slot('original', 'Original document'), revised = slot('revised', 'Revised document');
   const label = el('input.input', { value: '', placeholder: combine ? 'Author of the revised copy' : 'Author of the revised document', 'aria-label': 'Label changes with' });
@@ -112,8 +107,8 @@ export function openCompareDialog({ mode = 'compare', editor, pkg, documentName,
     const view = openModal({ title: combine ? 'Combined Document' : 'Compared Document', wide: true, content: el('div.ed-dialog-body.rv-compare-result', {},
       summary, el('div.rv-compare-columns', {}, ...columns),
       el('div.modal-actions', {},
-        el('button.btn.btn-ghost', { type: 'button', onclick: () => P.downloadBlob(blob, name) }, 'Download'),
-        el('button.btn.btn-primary', { type: 'button', onclick: async () => { view.close(); try { await openDocument(new File([blob], name, { type: P.DOCX_MIME })); } catch (e) { error(e); } } }, 'Open Document'))) });
+        el('button.btn.btn-ghost', { type: 'button', onclick: () => D.downloadBlob(blob, name) }, 'Download'),
+        el('button.btn.btn-primary', { type: 'button', onclick: async () => { view.close(); try { await openDocument(new File([blob], name, { type: D.DOCX_MIME })); } catch (e) { error(e); } } }, 'Open Document'))) });
   }
   return modal;
 }

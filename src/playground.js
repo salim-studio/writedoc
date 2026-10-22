@@ -4,8 +4,6 @@ import { el } from './ui/dom.js';
 import { editorView } from './views/editor.js';
 import { createDocx } from './engine/docx.js';
 import { paragraph } from './engine/model.js';
-import { parseLink } from './collab/protocol.js';
-import { localGuest } from './views/collab.js';
 
 /** The local harness uses no cloud SDK or account. All files stay in this tab. */
 class LocalDocument extends EventTarget {
@@ -111,16 +109,5 @@ document.getElementById('app').append(el('main.playground-shell', {},
     )), el('a', { href: './index.html' }, 'Open app')),
   el('p', { id: 'playground-error', role: 'alert' }), host));
 window.addEventListener('beforeunload', e => { if (current?.doc.dirty) { e.preventDefault(); e.returnValue = ''; } });
-// A link from Share in another tab of this browser (#collab-local=…) joins that tab's document.
-async function joinFromLink() {
-  let link = null;
-  try { link = parseLink(location.href); } catch (e) { document.getElementById('playground-error').textContent = e.message; }
-  if (!link?.local) return false;
-  try {
-    const { joinRoom } = await import('./collab/live.js');
-    const joined = await joinRoom(link, localGuest());
-    await open(joined.name, new Blob([joined.base]), { initial: true, collab: { client: joined.client, link } });
-    return true;
-  } catch (e) { document.getElementById('playground-error').textContent = e.message; return false; }
-}
-joinFromLink().then(joined => { if (!joined) sample(false, true); });
+sample(false, true);
+

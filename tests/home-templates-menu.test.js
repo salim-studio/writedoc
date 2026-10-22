@@ -1,25 +1,20 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
-import { closeAllModals, openModal } from '../src/ui/modal.js';
+import * as D from '../src/lib/drive.js';
+import { closeAllModals } from '../src/ui/modal.js';
 import { closeMenu } from '../src/ui/menu.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
-let view, listings;
+let view, newFromTemplate;
 
-/** Every listing of the templates folder waits until the test releases it. */
 beforeEach(async () => {
   vi.useFakeTimers(); localStorage.clear();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.spyOn(P, 'listFiles').mockResolvedValue([]);
-  listings = [];
-  vi.spyOn(P, 'listFolder').mockImplementation(() => new Promise((resolve, reject) => listings.push({ resolve, reject })));
-  view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
+  vi.spyOn(D, 'listFiles').mockResolvedValue([]);
+  newFromTemplate = vi.fn();
+  view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), newFromTemplate, importFile: vi.fn() });
   document.body.append(view.el);
-  await vi.advanceTimersByTimeAsync(0);
-  // The gallery's own listing at mount.
-  for (const listing of listings.splice(0)) listing.resolve([]);
   await vi.advanceTimersByTimeAsync(0);
 });
 afterEach(() => {
@@ -30,53 +25,44 @@ afterEach(() => {
 const templates = () => [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Templates');
 const menuItems = () => [...document.querySelectorAll('.menu .menu-item, .menu .menu-note')].map((b) => b.textContent.trim());
 
-it('opens at once with the built-in templates, then fills in the user\'s own', async () => {
+it('opens with the built-in templates', async () => {
   templates().click();
   await vi.advanceTimersByTimeAsync(0);
-  const menu = document.querySelector('.menu[aria-label="Templates"]');
-  expect(menu.getAttribute('aria-busy')).toBe('true');
-  expect(menuItems()).toContain('Loading your templates…');
+  expect(document.querySelector('.menu[aria-label="Templates"]')).not.toBeNull();
   // Item text carries the template's hint after its name.
   expect(menuItems().some((t) => t.startsWith('Letter'))).toBe(true);
-  expect(listings).toHaveLength(1);
-  listings[0].resolve([{ name: 'Mine.docx', path: 'writedoc/Templates/Mine.docx', size: 1, modified: 1 }]);
-  await vi.advanceTimersByTimeAsync(0);
-  expect(menuItems().some((t) => t.startsWith('Mine'))).toBe(true);
-  expect(menuItems()).not.toContain('Loading your templates…');
-  expect(document.querySelector('.menu[aria-busy="true"]')).toBeNull();
+  expect(menuItems().some((t) => t.startsWith('Report'))).toBe(true);
 });
 
-it('does not come back over a dialog opened while the listing was slow', async () => {
+it('starts a document from the chosen template', async () => {
   templates().click();
   await vi.advanceTimersByTimeAsync(0);
-  const modal = openModal({ title: 'Something else', content: document.createElement('div') });
-  listings[0].resolve([]);
+  [...document.querySelectorAll('.menu .menu-item')].find((item) => item.textContent.startsWith('Letter')).click();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(newFromTemplate).toHaveBeenCalledWith('letter');
+});
+
+it('closes the menu on a second click instead of reopening it', async () => {
+  const button = templates();
+  button.click();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(document.querySelector('.menu[aria-label="Templates"]')).not.toBeNull();
+  // The click that closes it: the pointer goes down outside the menu, then the button's click fires.
+  button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  expect(document.querySelector('.menu[aria-label="Templates"]')).toBeNull();
+  button.click();
   await vi.advanceTimersByTimeAsync(0);
   expect(document.querySelector('.menu[aria-label="Templates"]')).toBeNull();
-  modal.close();
 });
 
-it('says when the user\'s templates could not be listed', async () => {
-  templates().click();
-  await vi.advanceTimersByTimeAsync(0);
-  listings[0].reject(new Error('offline'));
-  await vi.advanceTimersByTimeAsync(0);
-  expect(document.querySelector('.menu .menu-note')?.textContent).toContain('Could not load your templates');
-  expect(menuItems().some((t) => t.startsWith('Letter'))).toBe(true);
-});
-
-it('keeps the keyboard on the template the user had moved to when the listing lands', async () => {
+it('keeps the keyboard on the template the user had moved to', async () => {
   templates().click();
   await vi.advanceTimersByTimeAsync(0);
   const label = () => document.activeElement?.querySelector('.menu-label')?.firstChild?.textContent;
   expect(label()).toBe('Letter');
-  // The placeholder is a note, not a command that could be chosen.
-  expect(document.querySelector('.menu .menu-note')?.textContent).toBe('Loading your templates…');
-  for (let i = 0; i < 2; i++) document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+  document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
   const moved = label();
   expect(moved).not.toBe('Letter');
-  listings[0].resolve([{ name: 'Mine.docx', path: 'writedoc/Templates/Mine.docx', size: 1, modified: 1 }]);
   await vi.advanceTimersByTimeAsync(0);
-  expect(menuItems().some((t) => t.startsWith('Mine'))).toBe(true);
   expect(label()).toBe(moved);
 });

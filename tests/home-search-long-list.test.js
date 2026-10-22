@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as D from '../src/lib/drive.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 let view;
@@ -12,12 +12,12 @@ const type = (value) => { const search = view.el.querySelector('.home-search'); 
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.spyOn(P, 'listFolder').mockResolvedValue([]);
+  vi.spyOn(D, 'listFolder').mockResolvedValue([]);
 });
 afterEach(() => { view.destroy(); vi.runAllTimers(); document.body.replaceChildren(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 async function open(count) {
-  vi.spyOn(P, 'listFiles').mockResolvedValue(files(count));
+  vi.spyOn(D, 'listFiles').mockResolvedValue(files(count));
   view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el);
   await vi.advanceTimersByTimeAsync(0);

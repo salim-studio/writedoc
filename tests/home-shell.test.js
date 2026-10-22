@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as D from '../src/lib/drive.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { closeMenu, isMenuOpen } from '../src/ui/menu.js';
 
@@ -11,11 +11,11 @@ let view;
 beforeEach(async () => {
   vi.useFakeTimers();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.spyOn(P, 'listFiles').mockResolvedValue([
+  vi.spyOn(D, 'listFiles').mockResolvedValue([
     { name: 'Report.docx', path: 'writedoc/Report.docx', size: 10, modified: 2 },
     { name: 'Notes.docx', path: 'writedoc/Notes.docx', size: 10, modified: 1 },
   ]);
-  vi.spyOn(P, 'listFolder').mockResolvedValue([]);
+  vi.spyOn(D, 'listFolder').mockResolvedValue([]);
   view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el);
   await vi.advanceTimersByTimeAsync(0);
@@ -85,7 +85,7 @@ it('leaves the ? shortcut to an open dialog or menu', async () => {
 
 it('does not open the Templates menu over a menu the user opened while the templates were being listed', async () => {
   let resolveTemplates;
-  P.listFolder.mockReturnValueOnce(new Promise((resolve) => { resolveTemplates = resolve; }));
+  D.listFolder.mockReturnValueOnce(new Promise((resolve) => { resolveTemplates = resolve; }));
   templates().click();
   await vi.advanceTimersByTimeAsync(0);
   // The menu opens at once with the built-in templates while the user's own are listed.

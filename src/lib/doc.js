@@ -1,5 +1,5 @@
 /**
- * The open document: where it lives on Puter, its display name, and whether
+ * The open document: where it lives, its display name, and whether
  * what is on screen matches what is on disk. The editing engine owns the
  * content; it hands us an `exporter` (async () => Blob) once it is ready, and
  * tells us about every edit through `changed()`.
@@ -7,31 +7,24 @@
  * Edits autosave after a short pause. A document that has never been saved
  * gets a file in the app folder the first time it changes, so nothing typed
  * is ever only in memory for long. Files opened from outside the app folder
- * (the Puter file picker, "Open with") save back to where they came from.
- *
- * Without a Puter session there is nowhere to write: autosaves wait, and an
- * explicit save fails with SIGN_IN_TO_SAVE so the view can ask for a sign-in.
+ * (the file picker, "Open with") save back to where they came from.
  *
  * status: 'saved' | 'unsaved' | 'saving' | 'error' | 'offline'
  */
 
-import * as P from './puter.js';
+import * as D from './drive.js';
 import { session } from './session.js';
 import { snapshotIfDue, saveVersion, renameVersions, deleteVersions } from './versions.js';
-import { movePublication, unpublishAt } from './publish.js';
 import { HANWORD_IMPORTABLE, decodeTextFile, importHanword, importKind, toInsertPayload } from './importers.js';
 
 export const AUTOSAVE_MS = 1500;
 export const MAX_AUTOSAVE_MS = 30000;
 export const RETRY_MS = 8000;
 export const UNTITLED = 'Untitled document';
-export const SIGN_IN_TO_SAVE = 'This document is not saved yet';
 /** Markdown, HTML, and plain text are read and converted on the main thread; a novel is about a megabyte. */
 export const MAX_TEXT_IMPORT_BYTES = 20 * 1024 * 1024;
 /** Version snapshots after saves; tests switch them off. */
 export const versioning = { enabled: true };
-/** A published page following renames and deletions; tests switch it off. */
-export const publishing = { enabled: true };
 
 /**
  * Whether leaving the page now could lose work: edits not yet written, or a
@@ -86,7 +79,7 @@ export class Doc extends EventTarget {
 
   /** "Report" for writedoc/Report.docx; the file name for others. */
   static nameFor(path) {
-    return P.stripExtension(P.displayName(path));
+    return D.stripExtension(D.displayName(path));
   }
 
   get dirty() {
@@ -94,7 +87,7 @@ export class Doc extends EventTarget {
   }
 
   get fileName() {
-    return P.ensureDocx(this.name);
+    return D.ensureDocx(this.name);
   }
 
   /** Editable .docx target; other extensions are saved as a fresh .docx. */
@@ -143,7 +136,7 @@ export class Doc extends EventTarget {
 
   _schedule(ms) {
     // Signing in later saves the pending edits; the view asks for it.
-    if (this._closed || session.signedOut) return;
+    if (this._closed) return;
     clearTimeout(this._timer);
     this._timer = setTimeout(() => this.save({ auto: true }).catch(() => {}), ms);
   }
@@ -225,10 +218,6 @@ export class Doc extends EventTarget {
     // Nothing to write, a clean template included: saving one again would only make a copy of it.
     if (!this.dirty && this.path) { this._settled(); return true; }
     if (!this.exporter) return false;
-    if (session.signedOut) {
-      if (auto) return false;
-      throw new Error(SIGN_IN_TO_SAVE);
-    }
     this._lockHolder = 'save';
     this._saving = this._doSave(auto).finally(() => { this._saving = null; });
     return this._saving;
@@ -247,18 +236,18 @@ export class Doc extends EventTarget {
       if (!this.path || !this.isDocxPath) {
         // First save, or a non-docx source: pick a fresh name in the folder, the document's own (a rename before this save counts).
         const base = this.name;
-        const fileName = await P.uniqueName(P.ensureDocx(base));
-        target = `${P.FOLDER}/${fileName}`;
+        const fileName = await D.uniqueName(D.ensureDocx(base));
+        target = `${D.FOLDER}/${fileName}`;
       }
       // The check for another window's hand on the file runs while the export does.
       const [blob, conflict] = await Promise.all([this.exporter(), target === this.path ? this._conflictWith(target) : null]);
       if (conflict) throw conflict;
       if (target !== this.path) {
-        const created = await P.createFileWithMetadata(target, blob);
+        const created = await D.createFileWithMetadata(target, blob);
         target = created.path;
         this._remoteModified = created.modified;
       }
-      else this._remoteModified = (await P.writeFile(target, blob))?.modified ?? null;
+      else this._remoteModified = (await D.writeFile(target, blob))?.modified ?? null;
       // A failed export or write must not advertise a file that does not exist,
       // or make a clean document's next save short-circuit as already saved.
       if (target !== this.path) {
@@ -302,7 +291,7 @@ export class Doc extends EventTarget {
   async _conflictWith(path) {
     if (this._remoteModified == null) return null;
     let stat;
-    try { stat = await P.statFile(path); } catch { return null; }
+    try { stat = await D.statFile(path); } catch { return null; }
     const conflict = (message) => Object.assign(new Error(message), { conflict: true });
     if (stat === null) return conflict('This file was moved or deleted in another window. Use Save a copy to keep your changes');
     if (stat.modified != null && String(stat.modified) !== String(this._remoteModified)) return conflict('This document was changed in another window. Use Save a copy to keep your changes, or reopen it to see theirs');
@@ -345,7 +334,7 @@ export class Doc extends EventTarget {
       try {
         checkCurrent();
         // Read before the recovery snapshot can trim the selected history entry.
-        const restored = await P.readFile(versionPath);
+        const restored = await D.readFile(versionPath);
         // Another window's newer save must not be written over, as autosave and rename refuse to.
         const conflict = await this._conflictWith(path);
         if (conflict) throw conflict;
@@ -360,7 +349,7 @@ export class Doc extends EventTarget {
         wrote = true;
         // This is our own write. Edits made while it is in flight must compare
         // against its new timestamp when autosave resumes.
-        this._remoteModified = (await P.writeFile(path, restored))?.modified ?? null;
+        this._remoteModified = (await D.writeFile(path, restored))?.modified ?? null;
         // Edits made during the write stay dirty and autosave over the restored
         // bytes. Never reload over them or advertise them as already saved.
         if (this.version !== version) checkCurrent();
@@ -404,17 +393,15 @@ export class Doc extends EventTarget {
     const cancelled = () => this._closed || !stillWanted();
     if (cancelled()) return 'Renaming cancelled';
     if (this._deleted) return 'This document has been deleted';
-    const clean = P.documentStem(newName);
+    const clean = D.documentStem(newName);
     if (!clean) return 'Enter a name';
     if (clean === this.name) return null;
     // A template being edited becomes a .docx copy at its first save: the name goes to that copy, not to the template file.
     if (!this.path || (!this.isDocxPath && this.dirty)) {
       // The first save would quietly become "Taken 2" if that name is in use;
-      // say so now instead. Without a session there is nothing to check yet.
-      if (!session.signedOut) {
-        try { if (await P.fileExists(`${P.FOLDER}/${clean}.docx`)) return 'A file with that name already exists'; }
-        catch { /* the save will pick a free name if the folder cannot be read */ }
-      }
+      // say so now instead.
+      try { if (await D.fileExists(`${D.FOLDER}/${clean}.docx`)) return 'A file with that name already exists'; }
+      catch { /* the save will pick a free name if the folder cannot be read */ }
       if (cancelled()) return 'Renaming cancelled';
       this.name = clean;
       // Naming a blank document is an edit too: autosave it and protect the
@@ -431,21 +418,18 @@ export class Doc extends EventTarget {
     const ext = this.isDocxPath ? '.docx' : dot > slash ? this.path.slice(dot) : '';
     const target = `${dir}${clean}${ext}`;
     try {
-      const [exists, conflict] = await Promise.all([P.fileExists(target), this._conflictWith(this.path)]);
+      const [exists, conflict] = await Promise.all([D.fileExists(target), this._conflictWith(this.path)]);
       if (exists) return 'A file with that name already exists';
       // A fresh rename timestamp must not bless content changed by another
       // window as the version currently open in this editor.
       if (conflict) return conflict.message;
       if (this._snapshotting) await this._snapshotting;
       if (cancelled()) return 'Renaming cancelled';
-      this._remoteModified = (await P.renameFile(this.path, `${clean}${ext}`))?.modified ?? null;
+      this._remoteModified = (await D.renameFile(this.path, `${clean}${ext}`))?.modified ?? null;
     } catch (e) {
-      return P.isNotFound(e) ? 'That file no longer exists' : (e?.message || 'Could not rename the file');
+      return D.isNotFound(e) ? 'That file no longer exists' : (e?.message || 'Could not rename the file');
     }
     if (versioning.enabled) await renameVersions(this.path, target);
-    // A published page stays up under its address; its record follows the
-    // file in the background, since the rename itself is already done.
-    if (publishing.enabled) movePublication(this.path, target).catch((e) => console.warn('[documents] the published page could not follow the rename', e));
     this.path = target;
     this.name = clean;
     this._emitPath();
@@ -461,11 +445,11 @@ export class Doc extends EventTarget {
     const cancelled = () => this._closed || !stillWanted();
     if (cancelled()) return 'Saving a copy cancelled';
     if (this._deleted) return 'This document has been deleted';
-    const clean = P.documentStem(newName);
+    const clean = D.documentStem(newName);
     if (!clean) return 'Enter a name';
-    const target = `${P.FOLDER}/${clean}.docx`;
+    const target = `${D.FOLDER}/${clean}.docx`;
     try {
-      if (await P.fileExists(target)) return 'A file with that name already exists';
+      if (await D.fileExists(target)) return 'A file with that name already exists';
       if (this._snapshotting) await this._snapshotting;
       if (cancelled()) return 'Saving a copy cancelled';
       clearTimeout(this._timer);
@@ -479,7 +463,7 @@ export class Doc extends EventTarget {
         this._setStatus(this.dirty ? 'unsaved' : 'saved');
         return 'Saving a copy cancelled';
       }
-      this._remoteModified = (await P.writeFile(target, blob, { overwrite: false }))?.modified ?? null;
+      this._remoteModified = (await D.writeFile(target, blob, { overwrite: false }))?.modified ?? null;
       this.size = blob?.size ?? this.size;
       this.path = target;
       this.name = clean;
@@ -519,15 +503,13 @@ export class Doc extends EventTarget {
       try {
         if (this._snapshotting) await this._snapshotting;
         // A file another window already removed is as deleted as this one wants it; the next edit must not recreate it.
-        try { await P.deleteFile(path); } catch (e) { if (!P.isNotFound(e)) throw e; }
+        try { await D.deleteFile(path); } catch (e) { if (!D.isNotFound(e)) throw e; }
         this._deleted = true;
         this.exporter = null;
         this.path = null;
         this.savedVersion = this.version;
         this._setStatus('saved');
         if (versioning.enabled) await deleteVersions(path);
-        // Nothing is left to update the page from; a page nobody can take down must not stay online.
-        if (publishing.enabled) unpublishAt(path).catch((e) => console.warn('[documents] the published page could not be taken down', e));
       } finally {
         if (!this._deleted && this.dirty && this.exporter) this._schedule(AUTOSAVE_MS);
       }
@@ -541,10 +523,10 @@ export class Doc extends EventTarget {
     // after opening. Metadata and bytes load together; a storage that cannot
     // stat must still allow reading the document.
     const [stat, blob] = await Promise.all([
-      /\.docx$/i.test(path) ? P.statFile(path).catch(() => null) : null,
-      P.readFile(path), P.prepareDocumentPaths(),
+      /\.docx$/i.test(path) ? D.statFile(path).catch(() => null) : null,
+      D.readFile(path), D.prepareDocumentPaths(),
     ]);
-    if (HANWORD_IMPORTABLE.test(path)) return Doc.fromImportFile(new File([blob], P.displayName(path)));
+    if (HANWORD_IMPORTABLE.test(path)) return Doc.fromImportFile(new File([blob], D.displayName(path)));
     return new Doc({ name: Doc.nameFor(path), path, blob, modified: stat?.modified });
   }
 
@@ -552,32 +534,32 @@ export class Doc extends EventTarget {
   static async fromImportFile(file) {
     if (HANWORD_IMPORTABLE.test(file.name)) {
       const { blob, format, warnings } = await importHanword(file);
-      return new Doc({ name: P.stripExtension(file.name) || UNTITLED, blob, dirty: true,
+      return new Doc({ name: D.stripExtension(file.name) || UNTITLED, blob, dirty: true,
         importInfo: { format, sourceName: file.name, warnings } });
     }
     const kind = importKind(file.name, file.type);
     if (kind) {
       if (file.size > MAX_TEXT_IMPORT_BYTES) throw new Error('This file is too large to import as text. Files up to 20 MB can be imported');
-      return Doc.fromTextImport(P.stripExtension(file.name), toInsertPayload(decodeTextFile(await file.arrayBuffer(), kind), kind));
+      return Doc.fromTextImport(D.stripExtension(file.name), toInsertPayload(decodeTextFile(await file.arrayBuffer(), kind), kind));
     }
     return Doc.fromBrowserFile(file);
   }
 
   /** From a browser File (device import). Saved as a new file once the engine is ready. */
   static fromBrowserFile(file) {
-    return new Doc({ name: P.stripExtension(file.name) || UNTITLED, path: null, blob: file, dirty: true });
+    return new Doc({ name: D.stripExtension(file.name) || UNTITLED, path: null, blob: file, dirty: true });
   }
 
   /** A new document that starts as a copy of a template file of the user's own. */
   static async fromTemplateFile(path) {
-    const blob = await P.readFile(path);
-    if (HANWORD_IMPORTABLE.test(path)) return Doc.fromImportFile(new File([blob], P.displayName(path)));
+    const blob = await D.readFile(path);
+    if (HANWORD_IMPORTABLE.test(path)) return Doc.fromImportFile(new File([blob], D.displayName(path)));
     return new Doc({ name: Doc.nameFor(path), path: null, blob, dirty: true });
   }
 
   /** A new document whose content comes from an imported text file (Markdown, HTML, plain text). */
   static fromTextImport(name, payload) {
-    return new Doc({ name: P.sanitizeName(name) || UNTITLED, pendingImport: payload });
+    return new Doc({ name: D.sanitizeName(name) || UNTITLED, pendingImport: payload });
   }
 
   /** A new document, optionally from a template (which also names it). */

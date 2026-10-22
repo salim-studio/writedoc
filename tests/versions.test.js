@@ -1,40 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as P from '../src/lib/puter.js';
-import { rememberDocumentRoot } from '../src/lib/document-paths.js';
-import { versionsFolder, versionName, parseVersionTime, shouldSnapshot, listVersions, saveVersion, snapshotIfDue, renameVersions, deleteVersions, VERSION_INTERVAL_MS, MAX_VERSIONS } from '../src/lib/versions.js';
 
-/** An in-memory Puter file system with folders. */
-const fakePuter = () => {
-  const files = new Map();
-  const dirs = new Set();
-  const notFound = () => Object.assign(new Error('does not exist'), { code: 'subject_does_not_exist' });
-  return {
-    files, dirs,
-    env: 'web',
-    fs: {
-      async mkdir(p) { dirs.add(p); },
-      async readdir(p) {
-        if (!dirs.has(p) && ![...files.keys()].some((k) => k.startsWith(`${p}/`))) throw notFound();
-        return [...files.entries()].filter(([k]) => k.startsWith(`${p}/`) && !k.slice(p.length + 1).includes('/')).map(([k, v]) => ({ name: k.split('/').pop(), path: k, size: v.size, modified: 1 }));
-      },
-      async write(p, blob, { overwrite = true, dedupeName = false } = {}) {
-        const requested = p;
-        let n = 1;
-        while (files.has(p) && dedupeName) p = requested.replace(/\.docx$/, ` (${n++}).docx`);
-        if (files.has(p) && !overwrite) throw new Error('Already exists');
-        files.set(p, blob); dirs.add(p.split('/').slice(0, -1).join('/')); return { path: p, name: p.split('/').pop() };
-      },
-      async delete(p, { recursive } = {}) { if (!files.has(p) && !dirs.has(p) && ![...files.keys()].some((k) => k.startsWith(`${p}/`))) throw notFound(); files.delete(p); if (recursive) for (const k of [...files.keys()]) if (k.startsWith(`${p}/`)) files.delete(k); dirs.delete(p); },
-      async rename(p, newName) {
-        if (!dirs.has(p) && !files.has(p) && ![...files.keys()].some((k) => k.startsWith(`${p}/`))) throw notFound();
-        const target = `${p.split('/').slice(0, -1).join('/')}/${newName}`;
-        for (const k of [...files.keys()]) if (k.startsWith(`${p}/`)) { files.set(`${target}${k.slice(p.length)}`, files.get(k)); files.delete(k); }
-        dirs.delete(p); dirs.add(target);
-      },
-      async stat(p) { if (files.has(p) || dirs.has(p)) return { path: p }; throw notFound(); },
-    },
-  };
-};
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
+
+import * as D from '../src/lib/drive.js';
+import { versionsFolder, versionName, parseVersionTime, shouldSnapshot, listVersions, saveVersion, snapshotIfDue, renameVersions, deleteVersions, VERSION_INTERVAL_MS, MAX_VERSIONS } from '../src/lib/versions.js';
 
 describe('version naming', () => {
   it('maps document paths to a snapshot folder inside the app folder only', () => {
@@ -69,10 +38,9 @@ describe('version naming', () => {
   });
 });
 
-describe('snapshots on Puter', () => {
-  let pf;
-  beforeEach(() => { pf = fakePuter(); globalThis.puter = pf; });
-  afterEach(() => { delete globalThis.puter; });
+describe('snapshots', () => {
+  beforeEach(() => { D.__fs.clear(); D.__meta.clear(); D.__reset(); });
+  afterEach(() => { vi.restoreAllMocks(); });
   const blob = (s) => new Blob([s]);
   const T0 = Date.UTC(2026, 7, 28, 9, 0, 0, 0);
 
@@ -99,7 +67,7 @@ describe('snapshots on Puter', () => {
       saveVersion('writedoc/A.docx', blob(`revision ${i}`), { now: T0 })));
     expect(new Set(versions.map((v) => v.path)).size).toBe(12);
     for (const [i, version] of versions.entries()) {
-      expect(await pf.files.get(version.path).text()).toBe(`revision ${i}`);
+      expect(await D.__fs.get(version.path).text()).toBe(`revision ${i}`);
     }
     const list = await listVersions('writedoc/A.docx');
     expect(list.map((v) => v.path)).toEqual(versions.map((v) => v.path).reverse());
@@ -110,15 +78,16 @@ describe('snapshots on Puter', () => {
     const versions = [];
     for (let i = 0; i < 8; i++) versions.push(await saveVersion('writedoc/A.docx', blob(`revision ${i}`), { now: T0, keep: 3 }));
     expect((await listVersions('writedoc/A.docx')).map((v) => v.path)).toEqual(versions.slice(-3).map((v) => v.path).reverse());
-    expect(await pf.files.get(versions.at(-1).path).text()).toBe('revision 7');
+    expect(await D.__fs.get(versions.at(-1).path).text()).toBe('revision 7');
   });
 
   it('reports write failures without discarding an existing snapshot', async () => {
     const first = await saveVersion('writedoc/A.docx', blob('keep'), { now: T0 });
-    const write = vi.spyOn(pf.fs, 'write').mockRejectedValue(new Error('Permission denied'));
+    D.writeFile.mockClear();
+    D.writeFile.mockRejectedValue(new Error('Permission denied'));
     await expect(saveVersion('writedoc/A.docx', blob('new'), { now: T0 })).rejects.toThrow('Permission denied');
-    expect(write).toHaveBeenCalledOnce();
-    expect(await pf.files.get(first.path).text()).toBe('keep');
+    expect(D.writeFile).toHaveBeenCalledOnce();
+    expect(await D.__fs.get(first.path).text()).toBe('keep');
   });
 
   it('snapshots after a save only when due, reading the folder once', async () => {
@@ -134,21 +103,6 @@ describe('snapshots on Puter', () => {
     expect(await snapshotIfDue('Desktop/x.docx', blob('x'), undefined, { now: T0 })).toBeNull();
   });
 
-  it('does not resolve the cloud folder on every autosave between snapshots', async () => {
-    const stat = vi.spyOn(pf.fs, 'stat');
-    expect(await snapshotIfDue('/demo/AppData/writedoc-app/writedoc/A.docx', blob('edit'), T0, { now: T0 + 1000 })).toBe(T0);
-    expect(stat).not.toHaveBeenCalled();
-  });
-
-  it('uses the app folder\'s known location instead of asking the cloud for a document opened by its absolute path', async () => {
-    const stat = vi.spyOn(pf.fs, 'stat');
-    rememberDocumentRoot('/demo/AppData/writedoc-app/writedoc', pf);
-    expect(await snapshotIfDue('/demo/AppData/writedoc-app/writedoc/A.docx', blob('edit'), undefined, { now: T0 })).toBe(T0);
-    expect(await snapshotIfDue('/elsewhere/x.docx', blob('edit'), null, { now: T0 })).toBeNull();
-    expect(await snapshotIfDue('/elsewhere/x.docx', blob('edit'), null, { now: T0 + 1000 })).toBeNull();
-    expect(stat).not.toHaveBeenCalled();
-  });
-
   it('follows a rename and goes with a delete', async () => {
     await saveVersion('writedoc/A.docx', blob('one'), { now: T0 });
     await renameVersions('writedoc/A.docx', 'writedoc/B.docx');
@@ -157,7 +111,7 @@ describe('snapshots on Puter', () => {
     await renameVersions('writedoc/Nope.docx', 'writedoc/C.docx');
     await deleteVersions('writedoc/B.docx');
     expect(await listVersions('writedoc/B.docx')).toEqual([]);
-    expect([...pf.files.keys()].some((k) => k.startsWith('writedoc/.versions/B/'))).toBe(false);
+    expect([...D.__fs.keys()].some((k) => k.startsWith('writedoc/.versions/B/'))).toBe(false);
   });
 
   it('replaces a history left behind at the new name instead of adopting it', async () => {
@@ -172,55 +126,17 @@ describe('snapshots on Puter', () => {
   it('replaces an empty folder left behind at the new name', async () => {
     // B's snapshots were removed one by one, leaving its empty folder; A is renamed to B.
     await saveVersion('writedoc/B.docx', blob('stale'), { now: T0 - 1000 });
-    for (const key of [...pf.files.keys()]) if (key.startsWith('writedoc/.versions/B/')) pf.files.delete(key);
-    await pf.fs.mkdir?.('writedoc/.versions/B');
+    for (const key of [...D.__fs.keys()]) if (key.startsWith('writedoc/.versions/B/')) D.__fs.delete(key);
     await saveVersion('writedoc/A.docx', blob('mine'), { now: T0 });
     await renameVersions('writedoc/A.docx', 'writedoc/B.docx');
     expect((await listVersions('writedoc/B.docx')).map((v) => v.time)).toEqual([T0]);
     expect(await listVersions('writedoc/A.docx')).toEqual([]);
   });
 
-  it('keeps the same history after reopening an absolute path returned by Puter', async () => {
-    const root = '/demo/AppData/writedoc-app';
-    await P.writeFile('writedoc/A.docx', blob('document'));
-    await saveVersion('writedoc/A.docx', blob('one'), { now: T0 });
-    // The real SDK resolves relative requests but returns absolute FSItem paths.
-    for (const method of ['stat', 'readdir', 'write', 'rename', 'delete']) {
-      const original = pf.fs[method];
-      pf.fs[method] = async (path, ...args) => {
-        const result = await original(path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path, ...args);
-        const absolute = (item) => ({ ...item, path: `${root}/${item.path}` });
-        return Array.isArray(result) ? result.map(absolute) : result?.path ? absolute(result) : result;
-      };
-    }
-    const [{ path }] = await P.listFiles();
-    expect(path).toBe(`${root}/writedoc/A.docx`);
-    expect((await listVersions(path)).map((v) => v.time)).toEqual([T0]);
-    expect(await snapshotIfDue(path, blob('two'), undefined, { now: T0 + VERSION_INTERVAL_MS })).toBe(T0 + VERSION_INTERVAL_MS);
-    await saveVersion(path, blob('manual'), { now: T0 + VERSION_INTERVAL_MS + 1 });
-    expect(await listVersions(path)).toHaveLength(3);
-    await renameVersions(path, `${root}/writedoc/B.docx`);
-    expect(await listVersions('writedoc/B.docx')).toHaveLength(3);
-    await deleteVersions(`${root}/writedoc/B.docx`);
-    expect(await listVersions('writedoc/B.docx')).toEqual([]);
-  });
-
-  it('never assigns an outside absolute document the history of an app document', async () => {
-    await saveVersion('writedoc/A.docx', blob('keep'), { now: T0 });
-    pf.fs.stat = async () => ({ path: '/demo/AppData/this-app/writedoc' });
-    for (const path of ['/demo/writedoc/A.docx', '/other/AppData/this-app/writedoc/A.docx', '/demo/AppData/other-app/writedoc/A.docx', '/demo/AppData/this-app/writedoc/sub/A.docx', '/demo/AppData/this-app/writedoc/../A.docx']) {
-      expect(await listVersions(path)).toEqual([]);
-      expect(await saveVersion(path, blob('outside'))).toBeNull();
-      await renameVersions(path, 'writedoc/B.docx');
-      await deleteVersions(path);
-    }
-    expect(await listVersions('writedoc/A.docx')).toHaveLength(1);
-  });
-
   it('does not delete or move unrelated history for dot-only names or non-DOCX sources', async () => {
     await saveVersion('writedoc/Report.docx', blob('saved work'), { now: T0 });
-    const remove = vi.spyOn(pf.fs, 'delete');
-    const rename = vi.spyOn(pf.fs, 'rename');
+    const remove = vi.spyOn(D, 'deleteFile');
+    const rename = vi.spyOn(D, 'renameFile');
     for (const name of ['.docx', '..docx', '...docx', 'Report.hwp']) {
       await deleteVersions(`writedoc/${name}`);
       await renameVersions(`writedoc/${name}`, 'writedoc/Other.docx');

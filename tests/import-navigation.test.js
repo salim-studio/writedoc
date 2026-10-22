@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
+import * as D from '../src/lib/drive.js';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 vi.mock('../src/views/editor.js', () => ({
   editorView: vi.fn(({ doc }) => ({
@@ -11,10 +14,8 @@ vi.mock('../src/views/editor.js', () => ({
 
 it('does not let a delayed import replace a newer navigation or import', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { readdir: async () => [], read: async () => new Blob(['document']), mkdir: async () => {}, stat: async () => null, write: async () => ({}) },
-  });
+  D.readFile.mockImplementation(async () => new Blob(['document']));
+  D.statFile.mockImplementation(async () => null);
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');

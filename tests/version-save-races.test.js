@@ -1,30 +1,19 @@
 import { afterEach, expect, it, vi } from 'vitest';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
+
 import { Doc, versioning } from '../src/lib/doc.js';
+import * as D from '../src/lib/drive.js';
 import { listVersions } from '../src/lib/versions.js';
 
 let doc;
 afterEach(() => { doc?.destroy(); vi.unstubAllGlobals(); versioning.enabled = true; });
 
 it.each(['rename', 'remove'])('serializes manual version creation with %s', async (action) => {
-  const files = new Map([['writedoc/A.docx', new Blob(['original'])]]);
-  const missing = () => Object.assign(new Error('Not found'), { code: 'ENOENT' });
+  D.__fs.clear(); D.__meta.clear(); D.__reset();
+  const files = D.__fs;
+  files.set('writedoc/A.docx', new Blob(['original'])); D.__meta.set('writedoc/A.docx', 1);
   versioning.enabled = true;
-  vi.stubGlobal('puter', { fs: {
-    mkdir: async () => {},
-    stat: async (path) => { if (!files.has(path)) throw missing(); return { path }; },
-    readdir: async (dir) => [...files].filter(([path]) => path.startsWith(`${dir}/`))
-      .map(([path, blob]) => ({ path, name: path.slice(dir.length + 1), size: blob.size })),
-    write: async (path, blob) => { files.set(path, blob); return { path }; },
-    rename: async (path, name) => {
-      const target = path.slice(0, path.lastIndexOf('/') + 1) + name;
-      const matches = [...files].filter(([key]) => key === path || key.startsWith(`${path}/`));
-      if (!matches.length) throw missing();
-      for (const [key, blob] of matches) { files.set(target + key.slice(path.length), blob); files.delete(key); }
-    },
-    delete: async (path, { recursive = false } = {}) => {
-      for (const key of files.keys()) if (key === path || recursive && key.startsWith(`${path}/`)) files.delete(key);
-    },
-  } });
   doc = new Doc({ name: 'A', path: 'writedoc/A.docx', blob: files.get('writedoc/A.docx') });
   let release;
   doc.attach(() => new Promise((resolve) => { release = resolve; }));

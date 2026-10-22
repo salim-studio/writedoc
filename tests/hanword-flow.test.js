@@ -4,13 +4,17 @@ import { hwp, paragraph } from './helpers/hwp-fixtures.js';
 import { homeView } from '../src/views/home.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { toast } from '../src/ui/toast.js';
+import * as D from '../src/lib/drive.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 describe('home Hanword import flow', () => {
   let fs, writes, view, finished, importing;
   beforeEach(() => {
-    fs = new Map(); writes = []; importing = false;
+    D.__fs.clear(); D.__meta.clear(); D.__reset();
+    fs = D.__fs; writes = []; importing = false;
     let complete;
     finished = new Promise((resolve) => { complete = resolve; });
     toast.mockImplementation((message) => {
@@ -18,19 +22,8 @@ describe('home Hanword import flow', () => {
       return { dismiss() {} };
     });
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
-    vi.stubGlobal('puter', { fs: {
-      mkdir: async () => {},
-      readdir: async () => [],
-      stat: async (p) => fs.has(p) ? { path: p } : null,
-      write: async (p, b, options = {}) => {
-        if (options.dedupeName) {
-          const stem = p.replace(/\.docx$/i, '');
-          let n = 1;
-          while (fs.has(p)) p = `${stem} (${n++}).docx`;
-        }
-        fs.set(p, b); writes.push({ path: p, blob: b }); return { path: p };
-      },
-    } });
+    const base = D.writeFile.getMockImplementation();
+    D.writeFile.mockImplementation(async (...args) => { const written = await base(...args); writes.push({ path: written.path, blob: args[1] }); return written; });
   });
   afterEach(async () => {
     // Do not replace the filesystem mocks while an earlier batch is writing.
@@ -59,7 +52,7 @@ describe('home Hanword import flow', () => {
     pick([slowFile, new File([hwp({ compressed: false, sections: [paragraph('두 번째')] })], '같은.HWP'), new File(['word bytes'], 'native.docx')]);
     await finished;
     expect(writes).toHaveLength(3);
-    expect(writes.map((w) => w.path)).toEqual(['writedoc/같은.docx', 'writedoc/같은 2.docx', 'writedoc/native.docx']);
+    expect(writes.map((w) => w.path)).toEqual(['writedoc/같은.docx', 'writedoc/같은 (1).docx', 'writedoc/native.docx']);
     expect(writes[0].blob.type).toContain('wordprocessingml.document');
     expect(writes[1].blob.type).toContain('wordprocessingml.document');
     expect(writes[0].blob.size).toBeGreaterThan(500);
@@ -75,8 +68,8 @@ describe('home Hanword import flow', () => {
     setup();
     const existing = new Blob(['Work saved in another tab']);
     // Another tab writes the file after uniqueName has checked the destination and before this write lands.
-    const write = puter.fs.write;
-    puter.fs.write = async (...args) => { if (!fs.has('writedoc/collision.docx')) fs.set('writedoc/collision.docx', existing); return write(...args); };
+    const write = D.writeFile.getMockImplementation();
+    D.writeFile.mockImplementation(async (...args) => { if (!fs.has('writedoc/collision.docx')) fs.set('writedoc/collision.docx', existing); return write(...args); });
     pick([new File([hwp()], 'collision.hwp'), new File(['word bytes'], 'other.docx')]);
     await finished;
     expect(writes).toHaveLength(2);

@@ -121,7 +121,7 @@ npm run dev
 | ---- | ---------- |
 | `/` | The app, with file saving |
 | `/playground.html` | The editor alone — no account, just writing |
-| `/mock.html` | The full app against an in-memory Puter mock |
+| `/mock.html` | The full app against an in-memory store |
 | `/mirror.html` | The open file, mirrored in a second window |
 
 ## For developers

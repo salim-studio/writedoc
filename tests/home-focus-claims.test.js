@@ -3,32 +3,23 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { closeMenu } from '../src/ui/menu.js';
+import { installFakeStore } from './helpers/fake-store.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
-let view, files, listing;
+let view, store, listing;
 
 beforeEach(async () => {
   localStorage.clear();
-  files = new Map([['writedoc/Report.docx', new Blob(['r'])], ['writedoc/Notes.docx', new Blob(['n'])]]);
-  listing = null; // when set, readdir waits for it
+  listing = null; // when set, the listing waits for it
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.stubGlobal('puter', { fs: {
-    mkdir: async () => {},
-    read: async (path) => files.get(path),
-    write: vi.fn(async (path, blob) => { files.set(path, blob); return { path, name: path.split('/').pop() }; }),
-    readdir: async (dir) => {
-      if (listing) await listing;
-      return [...files].filter(([path]) => path.startsWith(`${dir}/`) && !path.slice(dir.length + 1).includes('/')).map(([path, blob]) => ({ path, name: path.split('/').pop(), size: blob.size }));
-    },
-    delete: vi.fn(async (path) => { files.delete(path); }),
-  } });
+  store = installFakeStore(new Map([['writedoc/Report.docx', { blob: new Blob(['r']), modified: 2 }], ['writedoc/Notes.docx', { blob: new Blob(['n']), modified: 1 }]]));
   view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el);
   await vi.waitFor(() => expect(view.el.querySelector('.file-row')).not.toBeNull());
 });
 afterEach(() => {
   view.destroy(); closeMenu(); closeAllModals(); document.body.replaceChildren();
-  vi.restoreAllMocks(); vi.unstubAllGlobals();
+  store.restore(); vi.restoreAllMocks(); vi.unstubAllGlobals();
 });
 
 async function remove(path) {
@@ -43,9 +34,10 @@ async function remove(path) {
 it('does not take the focus from the search field when a remembered row lands late', async () => {
   let release;
   listing = new Promise((resolve) => { release = resolve; });
+  store.gate = listing;
   view.el.querySelector('[data-path="writedoc/Report.docx"] .file-menu-btn').click();
   [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
-  await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
+  await vi.waitFor(() => expect(store.writes.length).toBeGreaterThan(0));
   // Meanwhile the user is typing a search.
   const search = view.el.querySelector('.home-search');
   search.focus();

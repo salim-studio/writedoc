@@ -1,12 +1,12 @@
 /**
  * Language: mark text's proofing language (§17.3.2.20 lang) or exclude it from proofing
  * (§17.3.2.21 noProof), set the document's default language, and translate the selection or the
- * whole document with Puter's AI into a pane (with Insert) or a new document.
+ * whole document with the AI service into a pane (with Insert) or a new document.
  */
 import { el } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { translateParagraphs } from '../lib/proofing-ai.js';
 import { LANGUAGES, languageName, englishLanguageName, sidePane, button, hint, preference } from './review-ui.js';
 
@@ -65,7 +65,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
   pane.body.append(
     el('label.field', {}, el('span.field-label', {}, 'Translate into'), target),
     source, el('div.rv-actions', {}, translate, wholeDocument), status, output, el('div.rv-actions', {}, insert, copy),
-    hint('Translation uses Puter AI: the selected text, or the whole document, is sent when you choose Translate.'));
+    hint('Translation needs an AI service: the selected text, or the whole document, is sent when you choose Translate.'));
 
   const selection = () => {
     const engine = editor(); if (!engine) return null;
@@ -75,9 +75,9 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
   function describe() {
     const chosen = selection();
     source.textContent = chosen ? `Selection: “${chosen.text.slice(0, 120)}${chosen.text.length > 120 ? '…' : ''}”` : 'Select text to translate it here, or translate the whole document into a new one.';
-    translate.disabled = !chosen || !P.canUseAi() || !!busy;
-    wholeDocument.disabled = !P.canUseAi() || !!busy;
-    if (!P.canUseAi()) status.textContent = 'Translation needs Puter AI. Open this document in Puter to translate.';
+    translate.disabled = !chosen || !D.canUseAi() || !!busy;
+    wholeDocument.disabled = !D.canUseAi() || !!busy;
+    if (!D.canUseAi()) status.textContent = 'Translation needs an AI service, and none is connected.';
   }
   async function run() {
     const chosen = selection(); if (!chosen) return;
@@ -85,7 +85,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
     const signal = busy.signal;
     status.textContent = 'Translating…'; output.replaceChildren(); insert.disabled = copy.disabled = true; describe();
     try {
-      const paragraphs = await translateParagraphs(chosen.text.split('\n'), englishLanguageName(target.value), { chat: prompt => P.aiChat(prompt), signal });
+      const paragraphs = await translateParagraphs(chosen.text.split('\n'), englishLanguageName(target.value), { chat: prompt => D.aiChat(prompt), signal });
       if (signal.aborted) return;
       result = { ...chosen, original: chosen.text, text: paragraphs.join('\n') };
       output.replaceChildren(...paragraphs.map(text => el('p', {}, text)));
@@ -117,7 +117,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
     const signal = busy.signal;
     status.textContent = 'Translating the document…'; describe();
     try {
-      const translated = await translateParagraphs(texts, englishLanguageName(target.value), { chat: prompt => P.aiChat(prompt), signal, onProgress: share => { status.textContent = `Translating the document… ${Math.round(share * 100)}%`; } });
+      const translated = await translateParagraphs(texts, englishLanguageName(target.value), { chat: prompt => D.aiChat(prompt), signal, onProgress: share => { status.textContent = `Translating the document… ${Math.round(share * 100)}%`; } });
       if (signal.aborted) return;
       const paragraphs = body.paragraphs.map((p, i) => {
         if (!texts[i].trim()) return p;
@@ -133,7 +133,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
       const blob = pkg().export(paragraphs, body.pageSettings, body.numbering, body.styles, body.tables, body.assets, undefined, body.comments);
       const name = `${(documentName() || 'Document').replace(/\.docx$/i, '')} (${languageName(target.value)}).docx`;
       status.textContent = 'Translated. Opening the new document…';
-      await openDocument(new File([blob], name, { type: P.DOCX_MIME }));
+      await openDocument(new File([blob], name, { type: D.DOCX_MIME }));
     } catch (e) { if (!signal.aborted) { status.textContent = e.message; error(e); } }
     finally { if (busy?.signal === signal) busy = null; describe(); }
   }

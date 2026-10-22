@@ -1,12 +1,11 @@
 /**
  * The master list of bibliography sources: the sources a person has created in any document, kept
- * for reuse. It lives in this device's storage per account and, when Puter's key-value store is
- * available, follows the account to other devices. Sources are plain objects in the shape the
+ * for reuse. It lives in this device's storage. Sources are plain objects in the shape the
  * bibliography engine reads and writes (tag, type, names, fields).
  */
 import { accountKey } from './account-key.js';
 import { localStore } from './storage.js';
-import { kvGet, kvSet } from './puter.js';
+import { kvGet, kvSet } from './drive.js';
 
 const KEY = 'writedoc.bibliography.master';
 const STYLE_KEY = 'writedoc.bibliography.style';
@@ -24,7 +23,7 @@ export function saveMasterSources(list) {
   return clean;
 }
 
-/** Merge the account's copy from Puter into this device's list (newer device edits win by tag). */
+/** Merge the stored copy into this device's list (newer device edits win by tag). */
 export async function syncMasterSources() {
   let remote = [];
   try { remote = JSON.parse((await kvGet(KEY)) || '[]'); } catch { return loadMasterSources(); }

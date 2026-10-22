@@ -4,8 +4,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 const calls = vi.hoisted(() => ({ toasts: [], modals: [], written: [], here: true }));
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn((message, options) => { calls.toasts.push([message, options]); return { dismiss() {} }; }) }));
 vi.mock('../src/ui/modal.js', () => ({ openModal: vi.fn((options) => { calls.modals.push(options); return { close() {} }; }) }));
-vi.mock('../src/lib/session.js', () => ({ session: { signedOut: false, signIn: async () => true } }));
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/drive.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -16,7 +15,6 @@ vi.mock('../src/lib/puter.js', async (importOriginal) => {
 });
 
 import { importFiles, nothingImportable } from '../src/lib/importfiles.js';
-import { session } from '../src/lib/session.js';
 
 beforeEach(() => { calls.toasts.length = 0; calls.modals.length = 0; calls.written.length = 0; calls.here = true; });
 afterEach(() => { vi.clearAllMocks(); });
@@ -41,25 +39,6 @@ it('reports the same details when the user stayed', async () => {
   expect(onImported).toHaveBeenCalled();
 });
 
-it('opens the first of several text files without asking a signed-out user to sign in', async () => {
-  session.signedOut = true;
-  const signIn = vi.spyOn(session, 'signIn');
-  try {
-    const openFile = vi.fn();
-    const text = (name) => new File(['# Hi'], name, { type: 'text/markdown' });
-    await importFiles([text('a.md'), text('b.md')], { openFile });
-    // Nothing is written to the cloud for text files, so no session is needed.
-    expect(signIn).not.toHaveBeenCalled();
-    expect(openFile).toHaveBeenCalledWith(expect.objectContaining({ name: 'a.md' }));
-    expect(calls.toasts.map(([message]) => message).join(' ')).not.toContain('Sign in');
-    // DOCX files still need the session.
-    openFile.mockClear();
-    signIn.mockResolvedValue(false);
-    await importFiles([docx('Good.docx'), text('c.md')], { openFile });
-    expect(signIn).toHaveBeenCalled();
-    expect(calls.toasts.map(([message]) => message)).toContain('Sign in to import several files at once');
-  } finally { session.signedOut = false; signIn.mockRestore(); }
-});
 
 it('words the "nothing importable" message for a drop or for the file dialog', async () => {
   const log = new File(['x'], 'photo.png', { type: 'image/png' });

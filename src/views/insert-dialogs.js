@@ -370,29 +370,3 @@ export function openDropCapDialog({ state, fonts = [], onApply, onClose }) {
   sync();
   return dialog.modal;
 }
-
-/* ---- Generated picture ---- */
-export function openGenerateDialog({ generate, onInsert, onClose }) {
-  const prompt = el('textarea.input', { rows: 3, 'aria-label': 'Describe the picture', placeholder: 'A watercolor of a lighthouse at dawn' });
-  const preview = el('div.insert-generate-preview', { 'aria-live': 'polite' });
-  let file = null, busy = false;
-  const dialog = formDialog({ title: 'Generate a Picture', submit: 'Generate', onClose, content: [field('Describe the picture', prompt), preview,
-    el('p.field-hint', {}, 'The description is sent to Puter AI to make the picture. Review it before inserting.')],
-  onSubmit: async () => {
-    if (file) { await onInsert(file); return true; }
-    if (busy) return false;
-    if (!prompt.value.trim()) throw new Error('Describe the picture first.');
-    busy = true; dialog.primary.disabled = true; preview.replaceChildren(el('span.field-hint', {}, 'Generating…'));
-    try {
-      file = await generate(prompt.value.trim());
-      const url = URL.createObjectURL(file);
-      preview.replaceChildren(el('img', { src: url, alt: prompt.value.trim(), onload: () => URL.revokeObjectURL(url) }));
-      dialog.primary.textContent = 'Insert';
-    } finally { busy = false; dialog.primary.disabled = false; }
-    return false;
-  } });
-  prompt.addEventListener('input', () => { if (file) { file = null; dialog.primary.textContent = 'Generate'; preview.replaceChildren(); } });
-  prompt.focus();
-  return dialog.modal;
-}
-export { fieldId };

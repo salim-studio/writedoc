@@ -33,11 +33,11 @@ export function whenText(ts, now = Date.now()) {
   const ms = toMillis(ts);
   if (!ms) return '';
   const date = new Date(ms);
-  const absolute = date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+  const absolute = date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   const rel = relativeTime(ms, now);
   // Older dates come back from relativeTime as a date rather than "3 days
   // ago"; compared as the same formatted string so every locale is handled.
-  const isDate = rel === date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const isDate = rel === date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   return rel && !isDate ? `${absolute} (${rel.charAt(0).toLowerCase()}${rel.slice(1)})` : absolute;
 }
 
@@ -53,15 +53,15 @@ export function detailRows({ name, path, size, created, modified, lastSaved, pag
   // with nowhere to live yet is named for the file it is about to become.
   rows.push({ label: 'Name', value: fileNameOf(path) || `${name || 'Untitled document'}.docx` });
   const folder = folderOf(path);
-  rows.push({ label: 'Location', value: path ? (folder ? `${folder}/ on your Puter drive` : 'The root of your Puter drive') : 'Not saved yet' });
+  rows.push({ label: 'Location', value: path ? (folder ? `${folder}/ in this browser` : 'The root of this browser') : 'Not saved yet' });
   if (path && size != null) rows.push({ label: 'Size', value: formatBytes(size) });
   if (path && created) rows.push({ label: 'Created', value: whenText(created, now) });
   if (path && modified) rows.push({ label: 'Modified', value: whenText(modified, now) });
   if (path) rows.push({ label: 'Last saved here', value: lastSaved ? whenText(lastSaved, now) : (saved ? 'Unchanged since it was opened' : 'Not yet, this session') });
   if (pages != null || words != null) {
     const parts = [];
-    if (pages != null) parts.push(`${pages.toLocaleString()} ${pages === 1 ? 'page' : 'pages'}`);
-    if (words != null) parts.push(`${words.toLocaleString()} ${words === 1 ? 'word' : 'words'}`);
+    if (pages != null) parts.push(`${pages.toLocaleString('en-US')} ${pages === 1 ? 'page' : 'pages'}`);
+    if (words != null) parts.push(`${words.toLocaleString('en-US')} ${words === 1 ? 'word' : 'words'}`);
     rows.push({ label: 'Length', value: parts.join(', ') });
   }
   if (publishedUrl !== undefined) rows.push({ label: 'Published', value: publishedUrl || 'Not published' });

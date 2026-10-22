@@ -1,11 +1,11 @@
 /**
- * Smart Lookup: a side pane that explains the selected word or phrase through Puter's AI
- * (puter.ai.chat), with a short definition and related topics to look up next. Only the chosen
+ * Smart Lookup: a side pane that explains the selected word or phrase through the AI
+ * service, with a short definition and related topics to look up next. Only the chosen
  * text and the sentence around it are sent. The command is hidden when AI is unavailable.
  */
 import { el, isComposing } from '../ui/dom.js';
 import { iconEl } from '../ui/icons.js';
-import { canUseAi, aiChat } from '../lib/puter.js';
+import { canUseAi, aiChat } from '../lib/drive.js';
 import { responseText, textFence } from '../lib/ai.js';
 
 /** The phrase to look up and its sentence, from a document text and selection. */
@@ -48,7 +48,7 @@ export function createSmartLookup({ editor, error }) {
     el('div.canvas-panel-scroll', {},
       el('div.ref-lookup-search', {}, query, el('button.btn.btn-outline', { type: 'button', onclick: () => run({ phrase: query.value.trim(), sentence: query.value.trim() }) }, 'Look up')),
       status, result,
-      el('p.field-hint.ref-lookup-note', {}, 'Looks up the selected text and its sentence with Puter AI. Answers can be wrong; check important facts.')));
+      el('p.field-hint.ref-lookup-note', {}, 'Looks up the selected text and its sentence with an AI service. Answers can be wrong; check important facts.')));
   pane.addEventListener('keydown', e => { if (e.key === 'Escape' && !isComposing(e)) { e.preventDefault(); close(); } });
   let request = 0;
   function close() { pane.hidden = true; request++; editor()?.focus(); }
@@ -71,7 +71,7 @@ export function createSmartLookup({ editor, error }) {
         el('a.ref-lookup-web', { href: `https://duckduckgo.com/?q=${encodeURIComponent(target.phrase)}`, target: '_blank', rel: 'noopener noreferrer' }, 'Search the web'));
     } catch (e) {
       if (id !== request) return;
-      status.textContent = 'Smart Lookup could not reach Puter AI. Try again in a moment.';
+      status.textContent = 'Smart Lookup could not reach an AI service. Try again in a moment.';
       result.replaceChildren();
       error?.(e);
     }

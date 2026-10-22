@@ -1,14 +1,12 @@
 /**
- * The account menu shared by the home screen and the editor: theme,
- * shortcuts, about, and (outside the Puter desktop) sign in or out. Inside a
- * Puter app window the desktop owns the session, so neither is offered there.
+ * The settings menu shared by the home screen and the editor: theme,
+ * shortcuts, about, and the preferences that apply everywhere.
  */
 
 import { el } from './dom.js';
 import { icon } from './icons.js';
 import { openMenu } from './menu.js';
-import { openModal, confirmDialog } from './modal.js';
-import { toast } from './toast.js';
+import { openModal } from './modal.js';
 import { openShortcuts } from './shortcuts.js';
 import { segmented } from './segmented.js';
 import { currentTheme, isDark, darkPage, setDarkPage } from './theme.js';
@@ -16,7 +14,6 @@ import { UNITS, recallUnit, rememberUnit, unitLabel } from '../lib/units.js';
 import { autocorrectEnabled, setAutocorrectEnabled, capitalizeSentencesEnabled, setCapitalizeSentencesEnabled } from '../lib/autocorrect.js';
 import { autolinkEnabled, setAutolinkEnabled } from '../lib/linkify.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
 
 export function openAppMenu(anchor, { extraItems = [] } = {}) {
   let opened = null;
@@ -34,7 +31,7 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
   const darkPageItem = { label: 'Dark page', icon: 'brand', checked: darkPage(), disabled: !isDark(), hint: 'Dark paper with the dark theme', onSelect: () => setDarkPage(!darkPage()) };
 
   const items = [
-    { header: session.signedOut ? 'Not signed in' : 'Account' },
+    { header: 'Settings' },
     { custom: themeRow },
     darkPageItem,
     { separator: true },
@@ -46,41 +43,18 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
     { label: 'Keyboard shortcuts', icon: 'keyboard', onSelect: openShortcuts },
     { label: 'About writedoc', icon: 'info', onSelect: openAbout },
   ];
-  if (!P.isApp() && !session.signedOut) {
-    items.push({ separator: true }, { label: 'Sign out', icon: 'logout', onSelect: confirmSignOut });
-  }
-  opened = openMenu({ anchor, items: items.filter(Boolean), align: 'end', label: 'Account', minWidth: 250 });
+  opened = openMenu({ anchor, items: items.filter(Boolean), align: 'end', label: 'Settings', minWidth: 250 });
 }
 
 const accountFaces = new WeakMap();
-const ACCOUNT_ICON = icon('user', 17, 2);
+const ACCOUNT_ICON = icon('settings', 17, 2);
 
-/** The account button always shows a neutral person icon (never a letter). */
+/** The settings button always shows the same gear. */
 export function renderAccountButton(button) {
-  const signedOut = session.signedOut;
-  button.title = signedOut ? 'Not signed in' : session.username;
-  button.setAttribute('aria-label', signedOut ? 'Account menu. Not signed in' : `Account menu for ${session.username}`);
-  const id = session.accountId;
-  const key = `${session.state}:${id}:${session.username}`;
-  let face = accountFaces.get(button);
-  if (face?.key !== key || button.firstElementChild !== face.avatar) {
-    face = { key, avatar: el('span.user-avatar', { html: ACCOUNT_ICON, 'aria-hidden': 'true' }) };
-    accountFaces.set(button, face);
-    button.replaceChildren(face.avatar);
-  }
-  const showIcon = () => { face.avatar.innerHTML = ACCOUNT_ICON; };
-  if (!id) return;
-  const current = () => accountFaces.get(button) === face && button.firstElementChild === face.avatar && session.accountId === id && button.isConnected;
-  session.getProfilePicture().then((picture) => {
-    if (!current() || face.picture === picture) return;
-    face.picture = picture;
-    if (!picture) { showIcon(); return; }
-    const image = el('img', { alt: '', width: 32, height: 32, decoding: 'async', draggable: false,
-      onload: () => { if (current() && face.picture === picture) face.avatar.replaceChildren(image); },
-      onerror: () => { if (current() && face.picture === picture) showIcon(); },
-    });
-    image.src = picture;
-  });
+  button.title = 'Settings';
+  button.setAttribute('aria-label', 'Settings');
+  if (button.firstElementChild?.classList.contains('user-avatar')) return;
+  button.replaceChildren(el('span.user-avatar', { html: ACCOUNT_ICON, 'aria-hidden': 'true' }));
 }
 
 /** Inches or centimeters, for the ruler and every dialog that measures. */
@@ -97,32 +71,11 @@ export function openUnitsMenu(anchor) {
   });
 }
 
-export async function confirmSignOut() {
-  const ok = await confirmDialog({
-    title: 'Sign out?',
-    message: 'Your documents stay in your Puter account. Any unsaved change in an open document is saved first.',
-    confirmLabel: 'Sign out', danger: false,
-  });
-  if (!ok) return;
-  const pending = [];
-  window.dispatchEvent(new CustomEvent('app:before-signout', {
-    detail: { waitUntil: (promise) => pending.push(Promise.resolve(promise)) },
-  }));
-  try {
-    if ((await Promise.all(pending)).some((saved) => saved === false)) return;
-    await P.signOut();
-    location.hash = '';
-    location.reload();
-  } catch (e) {
-    toast(e?.message || 'Could not sign out. Please try again', { icon: 'alert', duration: 8000 });
-  }
-}
-
 export function openAbout() {
   openModal({
     title: 'writedoc',
     content: el('div', {},
-      el('p.modal-text', {}, 'writedoc is a private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
+      el('p.modal-text', {}, 'writedoc is a private word processor with an original canvas editor. Your files are saved as .docx in this browser, and stay on your device.'),
       el('p.modal-text', {}, 'This version supports text and paragraph formatting, selection, undo, and DOCX downloads. Advanced document features are not supported yet.'),
       el('p.small.muted', {}, '© 2026 salim-slimani.')),
   });

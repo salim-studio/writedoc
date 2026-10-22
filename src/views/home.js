@@ -1,7 +1,7 @@
 /**
  * Home: the list of documents in the app folder, with new / import / open
  * actions. Rows open the editor; a per-row menu renames, duplicates,
- * downloads, or deletes. The list lives in the Puter cloud, so without a
+ * downloads, or deletes. The list lives in this browser, so without a
  * session the screen offers the sign-in instead of the list.
  */
 
@@ -13,13 +13,11 @@ import { toast } from '../ui/toast.js';
 import { openAppMenu, renderAccountButton } from '../ui/appmenu.js';
 import { openShortcuts } from '../ui/shortcuts.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { TEMPLATES } from '../lib/templates.js';
 import { deleteVersions, renameVersions } from '../lib/versions.js';
-import { movePublication, unpublishAt } from '../lib/publish.js';
 import { moveGoal, rememberGoal } from '../lib/goal.js';
 import { movePosition, forgetPosition } from '../lib/position.js';
-import { listCustomTemplates, customTemplateItems, deleteTemplate } from '../lib/customtemplates.js';
 import { isStarred, toggleStar, moveStar, forgetStar, pruneStars, starredFirst, starredPaths } from '../lib/starred.js';
 import { openModal } from '../ui/modal.js';
 import { HANWORD_IMPORTABLE } from '../lib/importers.js';
@@ -39,7 +37,7 @@ const SORT_KEY = 'writedoc:sort';
 /** Files ordered by the chosen key: newest, A to Z, or largest first. Names compare as shown, without their extension. */
 export function sortFiles(files, sort) {
   const list = [...files];
-  const byName = (a, b) => P.stripExtension(a.name).localeCompare(P.stripExtension(b.name), undefined, { numeric: true, sensitivity: 'base' }) || a.name.localeCompare(b.name);
+  const byName = (a, b) => D.stripExtension(a.name).localeCompare(D.stripExtension(b.name), undefined, { numeric: true, sensitivity: 'base' }) || a.name.localeCompare(b.name);
   if (sort === 'name') return list.sort(byName);
   if (sort === 'size') return list.sort((a, b) => (b.size || 0) - (a.size || 0) || a.name.localeCompare(b.name));
   return list.sort((a, b) => (b.modified || 0) - (a.modified || 0) || a.name.localeCompare(b.name));
@@ -59,7 +57,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   let loadRequest = 0;
 
   const fileInput = el('input', {
-    type: 'file', multiple: true, accept: P.IMPORT_ACCEPT, hidden: true, 'aria-hidden': 'true', tabindex: -1,
+    type: 'file', multiple: true, accept: D.IMPORT_ACCEPT, hidden: true, 'aria-hidden': 'true', tabindex: -1,
     onchange: () => { importMany(fileInput.files, { picked: true }); fileInput.value = ''; },
   });
 
@@ -132,7 +130,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
         el('h2.home-h2', {}, 'Your documents'),
         el('div.home-list-tools', {}, sortBtn, search)),
       list, listStatus),
-    el('footer.home-foot', {}, 'Saved as .docx in your Puter cloud under ', el('code', {}, `${P.FOLDER}/`)));
+    el('footer.home-foot', {}, 'Saved as .docx in this browser under ', el('code', {}, `${D.FOLDER}/`)));
 
   /* Drag and drop anywhere on the home screen imports documents. */
   let dragDepth = 0;
@@ -150,77 +148,11 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   });
   root.append(dropHint);
 
-  let templateRequest = 0;
-  async function openTemplateMenu(anchor) {
+  function openTemplateMenu(anchor) {
     // A click on the button while its menu is open closes it; the templates are listed only for an opening click.
     if (clickClosedMenu(anchor)) return;
-    const request = ++templateRequest;
     const builtIn = TEMPLATES.map((t) => ({ label: t.name, icon: t.icon, hint: t.description, onSelect: () => newFromTemplate?.(t.id) }));
-    // The menu opens at once with the built-in templates; the user's own are a cloud read that fills in below them.
-    const pending = openMenu({ anchor, label: 'Templates', minWidth: 260, items: [{ header: 'New from template' }, ...builtIn, { separator: true }, { note: 'Loading your templates…' }] });
-    pending.menu?.setAttribute('aria-busy', 'true');
-    let mine = [], failed = false;
-    try { mine = await listCustomTemplates(); } catch (e) { console.error(e); failed = true; }
-    // By the time the listing returns, the user may have closed the menu, pressed the button again, opened
-    // another menu or a dialog (which closes this menu): none of those may be covered by the full menu.
-    if (destroyed || request !== templateRequest || !pending.menu?.isConnected) return;
-    if (menuAnchor() && menuAnchor() !== anchor) return;
-    // A dialog opened meanwhile has the keyboard; the menu neither covers it nor stays under it.
-    if (document.querySelector('.modal-root:not(.closing)')) { pending.close(); return; }
-    // The keyboard may have moved down the built-in templates meanwhile: the rebuilt menu keeps its place.
-    const focusedLabel = pending.menu.contains(document.activeElement) ? document.activeElement.querySelector?.('.menu-label')?.firstChild?.textContent : null;
-    const full = openMenu({
-      anchor, label: 'Templates', minWidth: 260, focusFirst: !focusedLabel,
-      items: [
-        { header: 'New from template' },
-        ...builtIn,
-        ...customTemplateItems(mine, { onPick: (id) => newFromTemplate?.(id), onManage: () => manageTemplates(mine) }),
-        (failed || !mine.length) && { separator: true },
-        failed && { note: 'Could not load your templates. Check your connection and open this menu again' },
-      ],
-    });
-    if (focusedLabel && full.menu) {
-      const items = [...full.menu.querySelectorAll('.menu-item')];
-      (items.find((item) => item.querySelector('.menu-label')?.firstChild?.textContent === focusedLabel) || items[0])?.focus({ preventScroll: true });
-    }
-  }
-
-  /** The templates of your own, each with a delete button. */
-  function manageTemplates(templates) {
-    const pending = new Set();
-    const list = el('div.version-list', { role: 'list', 'aria-label': 'My templates' });
-    const modal = openModal({ title: 'My templates', content: el('div', {}, el('p.modal-text', {}, `These live in ${P.FOLDER}/Templates on your Puter drive.`), list) });
-    const render = (items) => {
-      list.replaceChildren(...(items.length ? items.map((t) => el('div.file-row', { role: 'listitem' },
-        el('span.file-main', {}, el('span.file-icon', { html: icon('brand', 20, 1.7) }), el('span.file-text', {}, el('span.file-name', {}, t.name), el('span.file-meta', {}, relativeTime(t.modified)))),
-        el('button.btn.btn-ghost.btn-sm', { type: 'button', disabled: pending.has(t.path), 'aria-label': `Delete template ${t.name}`, onclick: async (e) => {
-          if (pending.has(t.path)) return;
-          pending.add(t.path);
-          const button = e.currentTarget;
-          const ok = await confirmDialog({ title: 'Delete template?', message: `"${t.name}" will be removed from your templates. Files made from it are not affected.`, confirmLabel: 'Delete' });
-          if (!ok) { pending.delete(t.path); return; }
-          button.disabled = true;
-          button.textContent = 'Deleting…';
-          try {
-            await deleteTemplate(t.path);
-            // Remove only this completed row. Rebuilding from the handler's
-            // original list would resurrect another concurrently deleted row.
-            const row = button.closest('.file-row');
-            const neighbor = row.nextElementSibling || row.previousElementSibling;
-            // The keyboard is on the row's button, on nothing, or still in the closing confirmation whose opener is about to go.
-            const active = document.activeElement;
-            const hadFocus = row.contains(active) || active === document.body || !!active?.closest('.modal-root.closing');
-            row.remove();
-            if (!list.childElementCount) render([]);
-            // The pressed button is gone with its row: the keyboard moves to the next template, or to the dialog's Close.
-            if (hadFocus) (neighbor?.querySelector('button') || modal.panel.querySelector('[aria-label="Close"]'))?.focus({ preventScroll: true });
-            toast('Template deleted', { icon: 'trash' });
-          } catch (e) { toast(e?.message || 'Could not delete the template', { icon: 'alert' }); }
-          finally { pending.delete(t.path); button.disabled = false; button.textContent = 'Delete'; }
-        } }, pending.has(t.path) ? 'Deleting…' : 'Delete'))) : [el('div.list-state', {}, el('span', {}, 'No templates of your own yet.'))]));
-    };
-    render(templates);
-    return modal;
+    openMenu({ anchor, label: 'Templates', minWidth: 260, items: [{ header: 'New from template' }, ...builtIn] });
   }
 
   async function load() {
@@ -228,23 +160,16 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     const request = ++loadRequest;
     loading = true;
     error = null;
-    if (session.signedOut) {
-      // Nothing to list without a session; the list area offers the sign-in.
-      files = [];
-      loading = false;
-      renderList();
-      return;
-    }
     renderList();
     try {
-      const loaded = await P.listFiles();
+      const loaded = await D.listFiles();
       if (destroyed || request !== loadRequest) return;
       files = loaded;
       pruneStars(files);
     } catch (e) {
       if (destroyed || request !== loadRequest) return;
       console.error(e);
-      error = navigator.onLine ? 'Could not load your files from Puter.' : 'You are offline. Connect to see your files.';
+      error = 'Could not load your files from this browser.';
     }
     loading = false;
     renderList();
@@ -270,10 +195,10 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     if (destroyed) return;
     const ext = file.name.slice(file.name.lastIndexOf('.'));
     // Typing the extension along with the name does not give the file a second one.
-    const stem = (value) => { const clean = P.sanitizeName(value); return ext && clean.toLowerCase().endsWith(ext.toLowerCase()) ? clean.slice(0, -ext.length).trim() : clean; };
+    const stem = (value) => { const clean = D.sanitizeName(value); return ext && clean.toLowerCase().endsWith(ext.toLowerCase()) ? clean.slice(0, -ext.length).trim() : clean; };
     let renamed = false;
     const name = await promptDialog({
-      title: 'Rename', label: 'Name', value: P.stripExtension(file.name), confirmLabel: 'Rename',
+      title: 'Rename', label: 'Name', value: D.stripExtension(file.name), confirmLabel: 'Rename',
       validate: (v) => {
         const clean = stem(v);
         // Dots alone name no file: "..docx" would show as "." and lose its version history.
@@ -288,7 +213,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
         // Confirming the current name is not a rename; the file is left alone.
         if (newName === file.name) return;
         const target = `${file.path.slice(0, file.path.lastIndexOf('/') + 1)}${newName}`;
-        try { await P.renameFile(file.path, newName); }
+        try { await D.renameFile(file.path, newName); }
         catch (cause) { throw new Error(cause?.message || 'Could not rename', { cause }); }
         renamed = true;
         keepFocus = { path: target, control: 'file-menu-btn' };
@@ -300,8 +225,6 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
         moveGoal(file.path, target);
         movePosition(file.path, target);
         await renameVersions(file.path, target);
-        // Best effort, like the version history: a published page follows the file.
-        movePublication(file.path, target).catch((e) => console.warn('[documents] the published page could not follow the rename', e));
         // An accepted rename still needs its metadata and list updated if
         // the prompt was cancelled while the request was in flight.
         load();
@@ -312,14 +235,14 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
 
   async function duplicate(file) {
     try {
-      const blob = await P.readFile(file.path);
-      const stem = P.stripExtension(file.name);
+      const blob = await D.readFile(file.path);
+      const stem = D.stripExtension(file.name);
       const ext = file.name.slice(file.name.lastIndexOf('.'));
       const names = new Set(files.map((f) => f.name.toLowerCase()));
       let name = `${stem} copy${ext}`;
       let n = 2;
       while (names.has(name.toLowerCase())) name = `${stem} copy ${n++}${ext}`;
-      const path = await P.createFile(`${P.FOLDER}/${name}`, blob);
+      const path = await D.createFile(`${D.FOLDER}/${name}`, blob);
       keepFocus = { path, control: 'file-menu-btn' };
       toast('Duplicated');
       load();
@@ -331,7 +254,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
 
   /** A file another window deleted or renamed: say so, and show the list as it is now. */
   function gone(e) {
-    if (!P.isNotFound(e)) return false;
+    if (!D.isNotFound(e)) return false;
     toast('That file no longer exists', { icon: 'alert' });
     load();
     return true;
@@ -339,9 +262,8 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
 
   async function download(file) {
     try {
-      const blob = await P.readFile(file.path);
-      if (P.isApp() && P.canSaveFiles()) P.saveFileAs(blob, file.name).catch((e) => toast(e?.message || 'Could not save the download', { icon: 'alert' }));
-      else P.downloadBlob(blob, file.name);
+      const blob = await D.readFile(file.path);
+      D.downloadBlob(blob, file.name);
     } catch (e) {
       if (gone(e)) return;
       toast(e?.message || 'Could not download', { icon: 'alert' });
@@ -351,17 +273,16 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   async function remove(file) {
     const ok = await confirmDialog({
       title: 'Delete document?',
-      message: `"${P.stripExtension(file.name)}" will be moved out of your writedoc folder and deleted. This cannot be undone.`,
+      message: `"${D.stripExtension(file.name)}" will be moved out of your writedoc folder and deleted. This cannot be undone.`,
       confirmLabel: 'Delete',
     });
     if (!ok) return;
     try {
       const index = [...list.querySelectorAll('.file-row')].findIndex((row) => row.dataset.path === file.path);
       // Already gone (another window deleted or renamed it): the deletion is done, and so is the tidying up.
-      try { await P.deleteFile(file.path); } catch (e) { if (!P.isNotFound(e)) throw e; }
+      try { await D.deleteFile(file.path); } catch (e) { if (!D.isNotFound(e)) throw e; }
       keepFocus = { index: Math.max(0, index) };
       deleteVersions(file.path);
-      unpublishAt(file.path).catch((e) => console.warn('[documents] the published page could not be taken down', e));
       forgetStar(file.path);
       rememberGoal(file.path, null);
       forgetPosition(file.path);
@@ -401,10 +322,6 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     clear(list);
     // Loading, errors, and empty states are messages, not document list items.
     list.setAttribute('role', 'region');
-    if (session.signedOut) {
-      listStatus.textContent = '';
-      return;
-    }
     if (loading) {
       // Announced: the list emptied and nothing has taken its place yet.
       listStatus.textContent = 'Loading your documents';
@@ -421,7 +338,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
     }
     const stars = new Set(starredPaths());
     // Match the name as shown, without the extension: "docx" is not a search for every document.
-    const shown = starredFirst(sortFiles(query ? files.filter((f) => P.stripExtension(f.name).toLowerCase().includes(query)) : files, sort), stars);
+    const shown = starredFirst(sortFiles(query ? files.filter((f) => D.stripExtension(f.name).toLowerCase().includes(query)) : files, sort), stars);
     listStatus.textContent = query ? (shown.length ? `${shown.length === 1 ? '1 document' : `${shown.length} documents`} shown` : 'No matches') : '';
     if (!shown.length) {
       // No row is left to take the focus (the last document deleted, or the last match of a search): it goes to
@@ -456,7 +373,7 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
         el('button.file-main', { type: 'button', onclick: () => openPath(file.path) },
           el('span.file-icon', {}, icons.brand.cloneNode(true)),
           el('span.file-text', {},
-            el('span.file-name', {}, P.stripExtension(file.name)),
+            el('span.file-name', {}, D.stripExtension(file.name)),
             el('span.file-meta', {}, [starred ? 'Starred' : null, HANWORD_IMPORTABLE.test(file.name) ? `Hanword ${file.name.split('.').pop().toUpperCase()}` : null, relativeTime(file.modified), formatBytes(file.size)].filter(Boolean).join(' · ')))),
         starBtn, menuBtn);
       row.addEventListener('contextmenu', (e) => {
@@ -486,12 +403,8 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
   document.addEventListener('keydown', onKey);
 
   load();
-  let hadSession = !session.signedOut;
   const onSession = () => {
     renderAccountButton(avatar);
-    // Signing in brings the list; the sign-in state is replaced by the files.
-    if (!hadSession && !session.signedOut) load();
-    hadSession = !session.signedOut;
   };
   session.addEventListener('change', onSession);
 

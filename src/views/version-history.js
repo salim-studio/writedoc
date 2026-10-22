@@ -12,7 +12,7 @@
 import { el } from '../ui/dom.js';
 import { confirmDialog, promptDialog } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { engineApi } from '../lib/engine-api.js';
 import { listVersions, readVersionMeta, writeVersionMeta } from '../lib/versions.js';
 import { sidePane, hint } from './review-ui.js';
@@ -50,7 +50,7 @@ export function createVersionHistory({ editor, pkg, doc, error, author, live = (
 
   async function load() {
     status.textContent = '';
-    if (!doc.path) { list.replaceChildren(el('p.rv-empty', {}, 'Versions are kept once the document is saved to Puter.')); saveNow.disabled = true; return; }
+    if (!doc.path) { list.replaceChildren(el('p.rv-empty', {}, 'Versions are kept once the document is saved.')); saveNow.disabled = true; return; }
     saveNow.disabled = !!pkg()?.readOnly;
     list.replaceChildren(el('p.rv-status', {}, 'Loading versions…'));
     const request = loading = listVersions(doc.path).then(async found => Promise.all(found.map(async v => ({ ...v, ...await readVersionMeta(v) }))));
@@ -100,7 +100,7 @@ export function createVersionHistory({ editor, pkg, doc, error, author, live = (
     catch (e) { error(e); }
   }
 
-  const readBytes = async v => new Uint8Array(await (await P.readFile(v.path)).arrayBuffer());
+  const readBytes = async v => new Uint8Array(await (await D.readFile(v.path)).arrayBuffer());
   const versionName = v => v.label || `${dayLabel(v.time)} ${timeLabel(v.time)}`;
 
   async function open(v) {

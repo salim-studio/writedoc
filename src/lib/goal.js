@@ -65,5 +65,5 @@ export function moveGoal(from, to, { storage = store(), copy = false } = {}) {
 /** "1,204 / 2,000 words" for the status bar, and the share done (0 to 1, capped). */
 export function describeGoal(words, goal) {
   const done = goal > 0 ? Math.min(1, words / goal) : 0;
-  return { label: `${words.toLocaleString()} / ${goal.toLocaleString()} words`, done, reached: goal > 0 && words >= goal };
+  return { label: `${words.toLocaleString('en-US')} / ${goal.toLocaleString('en-US')} words`, done, reached: goal > 0 && words >= goal };
 }

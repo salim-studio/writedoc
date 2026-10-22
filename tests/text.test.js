@@ -57,7 +57,7 @@ describe('text statistics', () => {
   it('pluralizes counts', () => {
     expect(formatCount(1, 'word')).toBe('1 word');
     expect(formatCount(2, 'word')).toBe('2 words');
-    expect(formatCount(1200, 'page')).toBe(`${(1200).toLocaleString()} pages`);
+    expect(formatCount(1200, 'page')).toBe('1,200 pages');
     expect(formatSelectionCount(12, 340, 'word')).toBe('12 of 340 words');
     expect(formatSelectionCount(1, 1, 'word')).toBe('1 of 1 word');
   });

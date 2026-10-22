@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { it, expect, vi } from 'vitest';
+import * as D from '../src/lib/drive.js';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 vi.mock('../src/views/editor.js', () => ({
   editorView: vi.fn(({ doc }) => ({
@@ -10,11 +13,7 @@ vi.mock('../src/views/editor.js', () => ({
 
 it('saves only pending edits when the connection comes back', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  const write = vi.fn(async (path) => ({ path }));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { readdir: async () => [], read: async () => new Blob(['A']), mkdir: async () => {}, stat: vi.fn(async () => null), write },
-  });
+  const write = D.writeFile;
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');
@@ -38,7 +37,7 @@ it('saves only pending edits when the connection comes back', async () => {
   await new Promise((resolve) => setTimeout(resolve, 100));
   // An untouched new document gets no file from a reconnect alone.
   expect(write).not.toHaveBeenCalled();
-  expect(puter.fs.stat).not.toHaveBeenCalled();
+  expect(D.statFile).not.toHaveBeenCalled();
 
   doc.changed();
   onLine.mockReturnValue(false);

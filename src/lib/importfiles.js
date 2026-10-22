@@ -8,7 +8,7 @@
 import { el } from '../ui/dom.js';
 import { toast } from '../ui/toast.js';
 import { openModal } from '../ui/modal.js';
-import * as P from './puter.js';
+import * as D from './drive.js';
 import { session } from './session.js';
 import { HANWORD_IMPORTABLE, importHanword } from './importers.js';
 import { importKind } from './importers.js';
@@ -18,7 +18,7 @@ export const IMPORT_FORMATS = 'DOCX, Hanword (.hwp, .hwpx), Markdown, HTML, or t
 
 /** Importable DOCX, Hanword, and text files, in the order given. */
 export function importableFiles(fileList) {
-  return [...(fileList || [])].filter((f) => f && (P.IMPORTABLE.test(f.name || '') || importKind(f.name, f.type)));
+  return [...(fileList || [])].filter((f) => f && (D.IMPORTABLE.test(f.name || '') || importKind(f.name, f.type)));
 }
 
 /**
@@ -49,10 +49,8 @@ export async function importFiles(fileList, {
   if (picked.length === 1) { await openFile(picked[0]); return; }
   // Text formats need the engine to become documents, so they open one at a
   // time; DOCX and converted Hanword files are written into the folder.
-  const words = picked.filter((f) => P.OPENABLE.test(f.name || ''));
-  const texts = picked.filter((f) => !P.OPENABLE.test(f.name || ''));
-  // Only the files written to the cloud directly need a session; text files open like a single one does.
-  if (words.length && session.signedOut && !await session.signIn()) { if (stillHere()) toast('Sign in to import several files at once', { icon: 'info' }); return; }
+  const words = picked.filter((f) => D.OPENABLE.test(f.name || ''));
+  const texts = picked.filter((f) => !D.OPENABLE.test(f.name || ''));
   if (!stillHere()) return;
   let saved = 0;
   const issues = [];
@@ -60,9 +58,9 @@ export async function importFiles(fileList, {
     try {
       const converted = HANWORD_IMPORTABLE.test(f.name) ? await importHanword(f) : null;
       if (converted?.warnings.length) issues.push(`${f.name}: ${converted.warnings.join(' ')}`);
-      const name = await P.uniqueName(P.ensureDocx(P.stripExtension(f.name) || 'Untitled document'));
+      const name = await D.uniqueName(D.ensureDocx(D.stripExtension(f.name) || 'Untitled document'));
       // Another tab or import may claim the checked name before this write.
-      await P.writeFile(`${P.FOLDER}/${name}`, converted?.blob || f, { dedupe: true });
+      await D.writeFile(`${D.FOLDER}/${name}`, converted?.blob || f, { dedupe: true });
       saved += 1;
     } catch (e) {
       console.error(e);

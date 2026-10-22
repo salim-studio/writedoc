@@ -1,6 +1,6 @@
 /**
  * The writing assistant: rewrite, shorten, expand, correct, summarize,
- * translate, or continue the selected text through Puter's AI (puter.ai.chat).
+ * translate, or continue the selected text through the AI service.
  * The app sends only the text the user picked (plus an instruction) and
  * shows the answer for review before anything lands in the document.
  */
@@ -40,7 +40,7 @@ export function textFence(text) {
   return '"'.repeat(length);
 }
 
-/** The text of a puter.ai.chat response, whatever shape the provider used. */
+/** The text of an AI chat response, whatever shape the provider used. */
 export function responseText(resp) {
   if (resp == null) return '';
   if (typeof resp === 'string') return resp.trim();
@@ -90,7 +90,7 @@ export function answerParagraphs(text) {
 }
 
 /**
- * Ask the model. `chat(prompt)` is Puter's chat (injectable for tests);
+ * Ask the model. `chat(prompt)` is the AI service's chat (injectable for tests);
  * resolves the cleaned answer or throws a readable error.
  */
 export async function askAi(action, text, { chat, extra = '' } = {}) {

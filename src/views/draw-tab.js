@@ -1,7 +1,7 @@
 /**
  * The Draw tab: write and sketch on the page with pens, pencils and highlighters; erase whole strokes
  * or parts of them; select ink with a lasso to move, delete or convert it; draw against an on-page
- * ruler; turn ink into shapes or (with Puter's AI) into an equation; replay ink in the order it was
+ * ruler; turn ink into shapes or (with the AI service) into an equation; replay ink in the order it was
  * drawn; hide it; and add a drawing canvas. Ribbon controls come from extraTabs(kit), menu-bar items
  * from extendMenu and right-click items from contextMenuItems.
  *
@@ -11,7 +11,7 @@
 import { el, isComposing, MOD_KEY } from '../ui/dom.js';
 import { openMenu } from '../ui/menu.js';
 import { toast } from '../ui/toast.js';
-import * as P from '../lib/puter.js';
+import * as D from '../lib/drive.js';
 import { responseText, cleanAnswer } from '../lib/ai.js';
 import { sweepHits, eraseFromStroke, lassoContains, translateStroke, pathLength } from '../engine/ink-geometry.js';
 import { recognizeStroke, recognizeStrokes } from '../engine/ink-recognizer.js';
@@ -305,7 +305,7 @@ export function createDraw({ editor, pkg, error, onChange = () => {}, commands =
   }
 
   /* ---- Ink to Math ---- */
-  const canMath = () => P.canUseAi() && typeof commands().insertEquation === 'function';
+  const canMath = () => D.canUseAi() && typeof commands().insertEquation === 'function';
   async function inkToMath() {
     const engine = ready(); if (!engine || !canMath()) return;
     const strokes = selected ? selected.items.map(i => i.stroke) : [];
@@ -320,7 +320,7 @@ export function createDraw({ editor, pkg, error, onChange = () => {}, commands =
       + 'a/b for fractions with parentheses around multi-term parts, x^2 for superscripts, x_i for subscripts, √(x) for roots, ∑_(i=1)^n for sums, ∫_a^b for integrals, and Unicode for Greek letters and operators (π, θ, ±, ×, ≤). '
       + 'Reply with the equation only, without explanations, quotes, LaTeX or code fences.';
     let answer;
-    try { answer = cleanAnswer(responseText(await P.aiChat(prompt, dataUrl))); }
+    try { answer = cleanAnswer(responseText(await D.aiChat(prompt, dataUrl))); }
     catch (e) { throw new Error('The handwriting could not be read right now. Try again in a moment.', { cause: e }); }
     answer = answer.replace(/^\$+|\$+$/g, '').replace(/^`+|`+$/g, '').split('\n')[0].trim();
     if (!answer) throw new Error('No equation was recognised. Try writing more clearly.');

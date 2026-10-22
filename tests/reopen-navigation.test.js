@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
+import * as D from '../src/lib/drive.js';
+
+vi.mock('../src/lib/drive.js', async (importOriginal) => (await import('./helpers/drive-mock.js')).makeDriveMock(await importOriginal()));
 
 vi.mock('../src/views/editor.js', () => ({ editorView: vi.fn(({ doc }) => ({
   el: document.createElement('div'), doc, flush: async () => true, destroy: vi.fn(() => doc.destroy()),
@@ -8,10 +11,8 @@ vi.mock('../src/views/editor.js', () => ({ editorView: vi.fn(({ doc }) => ({
 
 it('does not let a delayed version reload overwrite a newer editor, even if reloading fails', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
-    auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
-    fs: { read: async () => new Blob(['document']) },
-  });
+  D.readFile.mockImplementation(async () => new Blob(['document']));
+  D.statFile.mockImplementation(async () => null);
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/edit/writedoc%2FA.docx');
   await import('../src/main.js');

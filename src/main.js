@@ -5,21 +5,18 @@ import { announce, toast } from './ui/toast.js';
 import { closeAllModals, confirmDialog } from './ui/modal.js';
 import { closeMenu } from './ui/menu.js';
 import { session } from './lib/session.js';
-import * as P from './lib/puter.js';
+import * as D from './lib/drive.js';
 import { Doc, needsUnloadWarning } from './lib/doc.js';
-import { errorView, signInView } from './views/gate.js';
+import { errorView } from './views/gate.js';
 import { homeView } from './views/home.js';
 import { editorView } from './views/editor.js';
 import { loadEngine } from './lib/engine.js';
 import { templateById } from './lib/templates.js';
 import { importFiles, nothingImportable } from './lib/importfiles.js';
 import { imageFilesFrom } from './lib/images.js';
-import { customTemplatePath } from './lib/customtemplates.js';
-import { parseLink } from './collab/protocol.js';
 
 const appRoot = document.getElementById('app');
-let current = null; // { kind: 'home' | 'editor' | 'gate', view }
-let launchedPath = null;
+let current = null; // { kind: 'home' | 'editor', view }
 let droppedFiles = null;
 let importRequest = 0;
 
@@ -56,7 +53,7 @@ function go(hash, { newDocument = false } = {}) {
 }
 
 /** Why a document could not be opened, in the user's terms. */
-const openFailureMessage = (e) => (P.isNotFound(e) ? 'That file no longer exists' : e?.name === 'HwpError' ? e.message : 'Could not open the file');
+const openFailureMessage = (e) => (D.isNotFound(e) ? 'That file no longer exists' : e?.name === 'HwpError' ? e.message : 'Could not open the file');
 
 /** The URL that shows a document: its file, or the template it is being written from. */
 const docHash = (doc) => (doc.path ? `#/edit/${encodeURIComponent(doc.path)}` : doc.template ? `#/new/${encodeURIComponent(doc.template)}` : '#/new');
@@ -114,17 +111,6 @@ function mount(kind, view) {
     const heading = view.el.querySelector('h1');
     if (heading) { heading.tabIndex = -1; heading.focus({ preventScroll: true }); }
   }
-}
-
-/** A cloud document was asked for without a session: offer the sign-in, or a new document. */
-function mountSignInGate(requestedHash, what) {
-  document.title = 'writedoc';
-  mount('gate', { el: signInView({
-    title: `Sign in to open this ${what}`,
-    message: `writedoc keeps your files in your own Puter cloud. Sign in to open this ${what}, or start a new file without an account.`,
-    onSignIn: async () => { if (await session.signIn() && location.hash === requestedHash) route(); },
-    onSkip: () => go('#/'),
-  }) });
 }
 
 function showLoading(label = 'Opening') {
@@ -235,15 +221,6 @@ async function route({ newDocument = false } = {}) {
   const requestedHash = location.hash;
   try {
     // An invitation to a shared document (#collab-…): join its room, then open what it holds.
-    let invitation = null;
-    try { invitation = parseLink(location.href); } catch (e) { toast(e.message, { icon: 'alert' }); }
-    if (invitation) {
-      if (current?.kind === 'editor' && current.view.doc.collab?.link?.room === invitation.room) return;
-      if (!await unmount()) return;
-      if (location.hash !== requestedHash) return;
-      await openInvitation(invitation, requestedHash);
-      return;
-    }
     const { route: r, path, template } = parseHash(requestedHash);
     if (current?.kind === 'editor' && r === 'edit' && current.view.doc.path === path) return;
     // Going home from a failed open changes the hash and re-routes when it settles: the list is mounted once.
@@ -256,32 +233,15 @@ async function route({ newDocument = false } = {}) {
     if (r === 'home') {
       mount('home', homeView(nav));
       document.title = 'writedoc';
-      P.setWindowTitle('writedoc');
+      D.setWindowTitle('writedoc');
       return;
     }
     if (r === 'new') {
-      const customPath = customTemplatePath(template);
-      if (customPath) {
-        if (session.signedOut) { mountSignInGate(requestedHash, 'template'); return; }
-        showLoading();
-        try {
-          const doc = await Doc.fromTemplateFile(customPath);
-          if (location.hash !== requestedHash) return;
-          openEditor(doc);
-        } catch (e) {
-          if (location.hash !== requestedHash) return;
-          console.error(e);
-          toast(P.isNotFound(e) ? 'That template no longer exists' : 'Could not open the template', { icon: 'alert', duration: 5000 });
-          go(HOME);
-        }
-        return;
-      }
       const t = template ? templateById(template) : null;
       if (template && !t) toast('That template does not exist', { icon: 'alert' });
       openEditor(Doc.blank(t ? { template: t.id, name: t.name } : {}));
       return;
     }
-    if (session.signedOut) { mountSignInGate(requestedHash, 'document'); return; }
     showLoading();
     try {
       const doc = await Doc.fromPath(path);
@@ -300,46 +260,13 @@ async function route({ newDocument = false } = {}) {
   }
 }
 
-/** Join a shared document from its link and open the editor on the room's state. */
-async function openInvitation(link, requestedHash) {
-  if (!link.local && session.signedOut) { mountSignInGate(requestedHash, 'shared document'); return; }
-  showLoading('Joining the shared document');
-  try {
-    const { joinRoom } = await import('./collab/live.js');
-    const user = { id: session.user?.uuid || session.username, name: session.username };
-    const joined = await joinRoom(link, user);
-    if (location.hash !== requestedHash) { joined.client.close().catch(() => {}); return; }
-    // The room holds the document; this tab never writes a file of its own unless sharing ends.
-    const doc = new Doc({ name: joined.name, blob: new Blob([joined.base], { type: P.DOCX_MIME }) });
-    doc.setSaving(false);
-    doc.collab = { client: joined.client, link };
-    openEditor(doc);
-    document.title = `${doc.name} — writedoc`;
-  } catch (e) {
-    if (location.hash !== requestedHash) return;
-    console.error(e);
-    toast(e?.status === 403 ? e.message : `Could not open the shared document: ${e?.message || e}`, { icon: 'alert', duration: 8000 });
-    go(HOME);
-  }
-}
-
 /* ---------- Boot ---------- */
 
 /**
- * Nobody has to sign in to write: the app opens straight into the editor.
- * Puter is asked for a sign-in at the first action that needs the cloud.
+ * The app opens straight into the editor: there is no account to sign in to,
+ * and the documents live in this browser.
  */
 async function start() {
-  if (!P.hasSDK()) {
-    appRoot.replaceChildren(errorView('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload()));
-    return;
-  }
-  P.onLaunchedWithItems((items) => {
-    const first = items.find((it) => it?.path);
-    if (!first) return;
-    if (booted) nav.openPath(first.path);
-    else launchedPath = first.path;
-  });
   await boot();
 }
 
@@ -352,15 +279,8 @@ async function boot() {
   // Start loading the canvas editor alongside session initialization.
   if (parseHash().route !== 'home') loadEngine().catch(() => {});
   await session.init();
-  // The SDK signs the user in on its own before an AI request; the views follow.
-  P.onAuth((user) => session.signedInAs(user));
   booted = true;
   window.addEventListener('hashchange', route);
-  if (launchedPath) {
-    const p = launchedPath;
-    launchedPath = null;
-    location.hash = `#/edit/${encodeURIComponent(p)}`;
-  }
   await route();
   setupOfflineBanner();
   setupUnloadGuard();
@@ -369,7 +289,6 @@ async function boot() {
     droppedFiles = null;
     nav.importFiles(files);
   }
-  window.addEventListener('app:before-signout', (event) => event.detail.waitUntil(current?.view?.flush?.()));
 }
 
 /**
