@@ -210,5 +210,4 @@ public/fonts/                Noto Sans, license and provenance
 
 writedoc is [MIT](LICENSE). Its engine is original work; `fflate` and
 `yjs` are MIT; Noto Sans is [OFL-1.1](public/fonts/OFL.txt) with
-[source provenance](public/fonts/PROVENANCE.md); everything else is
-listed in [third-party notices](public/licenses/THIRD_PARTY.txt).
+[source provenance](public/fonts/PROVENANCE.md).
