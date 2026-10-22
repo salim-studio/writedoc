@@ -49,7 +49,7 @@ jobs:
             echo "WRITEDOC_KEY_ALIAS=writedoc" >> "$GITHUB_ENV"
             echo "WRITEDOC_KEY_PASSWORD=writedoc" >> "$GITHUB_ENV"
           fi
-      - run: ./gradlew assembleRelease -p android
+      - run: chmod +x android/gradlew && ./android/gradlew -p android assembleRelease
       - name: Collect APK
         run: |
           mkdir -p out
