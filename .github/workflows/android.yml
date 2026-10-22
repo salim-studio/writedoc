@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platforms;android-36" "build-tools;36.0.0" > /dev/null
+      - run: npm ci
+      - run: npx vite build
+      - run: npx cap sync android
+      - name: Signing key
+        run: |
+          if [ -n "${{ secrets.WRITEDOC_KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.WRITEDOC_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/writedoc.keystore"
+            echo "WRITEDOC_KEYSTORE=$RUNNER_TEMP/writedoc.keystore" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEYSTORE_PASSWORD=${{ secrets.WRITEDOC_KEYSTORE_PASSWORD }}" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEY_ALIAS=${{ secrets.WRITEDOC_KEY_ALIAS }}" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEY_PASSWORD=${{ secrets.WRITEDOC_KEY_PASSWORD }}" >> "$GITHUB_ENV"
+          else
+            keytool -genkeypair -keystore "$RUNNER_TEMP/writedoc.keystore" -storepass writedoc \
+              -alias writedoc -keypass writedoc -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=writedoc, OU=writedoc, O=writedoc, L=, ST=, C="
+            echo "WRITEDOC_KEYSTORE=$RUNNER_TEMP/writedoc.keystore" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEYSTORE_PASSWORD=writedoc" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEY_ALIAS=writedoc" >> "$GITHUB_ENV"
+            echo "WRITEDOC_KEY_PASSWORD=writedoc" >> "$GITHUB_ENV"
+          fi
+      - run: ./gradlew assembleRelease -p android
+      - name: Collect APK
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk "out/writedoc-1.0.0.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: writedoc-android
+          path: out/*.apk
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload "${GITHUB_REF_NAME}" out/*.apk --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

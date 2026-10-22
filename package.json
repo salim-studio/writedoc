@@ -18,13 +18,17 @@
     "desktop": "npm run build && electron .",
     "desktop:dev": "electron .",
     "desktop:dist": "npm run build && electron-builder --win --x64",
-    "desktop:dist:all": "npm run build && electron-builder --win --mac --linux"
+    "desktop:dist:all": "npm run build && electron-builder --win --mac --linux",
+    "android:sync": "vite build && cap sync android",
+    "android:apk": "npm run android:sync && cd android && gradlew assembleRelease"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/salim-studio/writedoc.git"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
     "@zip.js/zip.js": "2.14.1",
     "bidi-js": "1.0.3",
     "fflate": "0.8.3",
@@ -42,6 +46,8 @@
     "yjs": "13.6.33"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3",
     "@playwright/test": "^1.63.0",
     "commonmark": "0.31.2",
     "electron": "^45.0.0",

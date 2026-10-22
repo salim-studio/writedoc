@@ -7,3 +7,13 @@ playwright-report/
 .DS_Store
 Thumbs.db
 release/
+
+# Android (Capacitor): keep the project, ignore build output and copied web assets
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
