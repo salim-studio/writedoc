@@ -148,6 +148,27 @@ but are not shipped yet.
 [.github/workflows/desktop.yml](.github/workflows/desktop.yml) builds the
 Windows artifacts on demand and attaches them to `v*` tags.
 
+## Android app
+
+An APK is published on the
+[releases page](https://github.com/salim-studio/writedoc/releases) —
+Android 7.0 (API 24) and newer, sideload it and write offline.
+
+The app is wrapped with [Capacitor](https://capacitorjs.com/) from the same
+`dist/` build, so documents live in the WebView's local store on the
+device. `android/` is the native project; `capacitor.config.json` ties it
+to the web build.
+
+```sh
+npm run android:sync   # build the web app and copy it into android/
+npm run android:apk    # same, then assemble a release APK (needs a JDK + Android SDK)
+```
+
+[.github/workflows/android.yml](.github/workflows/android.yml) builds the
+APK in CI: set `WRITEDOC_KEYSTORE_BASE64`, `WRITEDOC_KEYSTORE_PASSWORD`,
+`WRITEDOC_KEY_ALIAS` and `WRITEDOC_KEY_PASSWORD` as repository secrets to
+sign with your own key (otherwise it signs with a throwaway key).
+
 ## For developers
 
 ```sh
