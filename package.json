@@ -14,7 +14,11 @@
     "check:licenses": "node tools/check-licenses.mjs",
     "prebuild": "npm run check:licenses",
     "test:browser": "playwright test",
-    "check:conformance": "python3 tools/check-docx-schema.py"
+    "check:conformance": "python3 tools/check-docx-schema.py",
+    "desktop": "npm run build && electron .",
+    "desktop:dev": "electron .",
+    "desktop:dist": "npm run build && electron-builder --win --x64",
+    "desktop:dist:all": "npm run build && electron-builder --win --mac --linux"
   },
   "repository": {
     "type": "git",
@@ -40,8 +44,66 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "commonmark": "0.31.2",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
     "jsdom": "^27.0.0",
     "vite": "^8.2.0",
     "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "electron@45.0.0": true
+  },
+  "main": "electron/main.cjs",
+  "build": {
+    "appId": "app.writedoc.desktop",
+    "productName": "writedoc",
+    "copyright": "writedoc",
+    "files": [
+      "dist/**",
+      "electron/**",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "writedoc-1.0.0-setup.exe"
+    },
+    "portable": {
+      "artifactName": "writedoc-1.0.0-portable.exe"
+    },
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity",
+      "icon": "icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Office",
+      "icon": "icon.png"
+    }
   }
 }
