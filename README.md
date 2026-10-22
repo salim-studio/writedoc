@@ -124,6 +124,30 @@ npm run dev
 | `/mock.html` | The full app against an in-memory store |
 | `/mirror.html` | The open file, mirrored in a second window |
 
+## Desktop app
+
+Windows builds are published on the
+[releases page](https://github.com/salim-studio/writedoc/releases): a
+one-click installer and a portable exe that needs no install. Both run
+offline and keep your documents in the app's own local store on your
+machine — nothing is sent anywhere.
+
+Build them yourself:
+
+```sh
+npm ci
+npm run desktop:dist   # installer + portable exe into release/
+npm run desktop        # production build, then open the app
+```
+
+The shell is [Electron](https://www.electronjs.org/) and lives in
+`electron/main.cjs`: it serves `dist/` from a private `app://` origin so
+the app's storage behaves exactly as it does in a browser. macOS (`dmg`)
+and Linux (`AppImage`) targets are configured (`npm run desktop:dist:all`)
+but are not shipped yet.
+[.github/workflows/desktop.yml](.github/workflows/desktop.yml) builds the
+Windows artifacts on demand and attaches them to `v*` tags.
+
 ## For developers
 
 ```sh
@@ -132,6 +156,7 @@ npm test                 # unit suite (vitest)
 npm run test:browser     # browser suite (Playwright; Chrome by default)
 npm run check:conformance  # independent DOCX schema checks (needs Python tools)
 npm run build            # production build into dist/
+npm run desktop:dist     # Windows installer + portable exe into release/
 ```
 
 Every push to `main` is built and published to GitHub Pages by
