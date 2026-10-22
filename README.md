@@ -15,6 +15,13 @@
 > your hands. No accounts to feed, no formats to ransom, no telemetry
 > deciding what you meant.
 
+<p align="center">
+  <a href="https://github.com/salim-studio/writedoc/releases/latest/download/writedoc-1.0.0-setup.exe"><img src="https://img.shields.io/badge/download-Windows%20installer-4f46e5" alt="Download the Windows installer" /></a>
+  <a href="https://github.com/salim-studio/writedoc/releases/latest/download/writedoc-1.0.0-portable.exe"><img src="https://img.shields.io/badge/download-Windows%20portable-4f46e5" alt="Download the portable Windows build" /></a>
+  <a href="https://github.com/salim-studio/writedoc/releases/latest/download/writedoc-1.0.0.apk"><img src="https://img.shields.io/badge/download-Android%20APK-3ddc84" alt="Download the Android APK" /></a>
+  <a href="https://salim-studio.github.io/writedoc/"><img src="https://img.shields.io/badge/open-in%20the%20browser-4f46e5" alt="Open writedoc in the browser" /></a>
+</p>
+
 ## Why writedoc exists
 
 Most writing tools rent your words back to you — your files on their
@@ -132,7 +139,7 @@ one-click installer and a portable exe that needs no install. Both run
 offline and keep your documents in the app's own local store on your
 machine — nothing is sent anywhere.
 
-Build them yourself:
+Or pick a build from the download bar at the top of this page. Build them yourself:
 
 ```sh
 npm ci
@@ -151,7 +158,7 @@ Windows artifacts on demand and attaches them to `v*` tags.
 ## Android app
 
 An APK is published on the
-[releases page](https://github.com/salim-studio/writedoc/releases) —
+[releases page](https://github.com/salim-studio/writedoc/releases) and in the download bar at the top —
 Android 7.0 (API 24) and newer, sideload it and write offline.
 
 The app is wrapped with [Capacitor](https://capacitorjs.com/) from the same
