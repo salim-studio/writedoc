@@ -4,6 +4,7 @@
  */
 import { el, isComposing } from '../ui/dom.js';
 import { formDialog } from './insert-dialogs.js';
+import { iconEl } from '../ui/icons.js';
 import {
   latexToLinear,
   linearToLatex,
@@ -74,9 +75,9 @@ export function openLatexDialog({
 
   const input = el('textarea.input.latex-editor-input', {
     rows: 4,
-    'aria-label': 'كود معادلة LaTeX',
+    'aria-label': 'LaTeX equation code',
     spellcheck: false,
-    placeholder: 'اكتب كود LaTeX هنا، مثال: \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',
+    placeholder: 'Enter LaTeX equation here, e.g.: \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}',
     dir: 'ltr',
   }, initialLatex);
 
@@ -86,7 +87,7 @@ export function openLatexDialog({
 
   let activeCatId = LATEX_CATEGORIES[0].id;
   const paletteContainer = el('div.latex-palette-container');
-  const catNav = el('div.latex-category-nav', { role: 'tablist', 'aria-label': 'أقسام أدوات LaTeX' });
+  const catNav = el('div.latex-category-nav', { role: 'tablist', 'aria-label': 'LaTeX Categories' });
   const paletteItemsGrid = el('div.latex-palette-items', { role: 'group' });
 
   // Update category navigation and palette items
@@ -122,8 +123,8 @@ export function openLatexDialog({
             renderPalette();
           },
         },
-        el('span.latex-cat-icon', {}, '📜'),
-        el('span.latex-cat-name', {}, 'قوالب علمية جاهزة')
+        iconEl('sparkles', 13, 1.8),
+        el('span.latex-cat-name', {}, 'Templates')
       )
     );
 
@@ -179,7 +180,7 @@ export function openLatexDialog({
     if (!text) {
       previewError.hidden = true;
       preview.replaceChildren(
-        el('span.field-hint', {}, 'اكتب معادلة LaTeX أو اختر من الأدوات والقوالب أعلاه لمعاينتها فورياً.')
+        el('span.field-hint', {}, 'Type a LaTeX equation or pick structures and templates above for live preview.')
       );
       return;
     }
@@ -194,7 +195,7 @@ export function openLatexDialog({
       }
     } catch (err) {
       previewError.hidden = false;
-      previewError.textContent = `ملاحظة في بناء LaTeX: ${err.message || 'راجع إغلاق الأقواس أو صحة المعامل'}`;
+      previewError.textContent = `Syntax notice: ${err.message || 'Check braces or command syntax'}`;
       try {
         // Fallback preview
         const linear = latexToLinear(text);
@@ -247,17 +248,18 @@ export function openLatexDialog({
   // Quick Action Toolbar
   const copyBtn = el('button.btn.btn-outline.btn-sm', {
     type: 'button',
+    style: 'display: inline-flex; align-items: center; gap: 5px;',
     onclick: async () => {
       const code = input.value.trim();
       if (!code) return;
       try {
         await navigator.clipboard.writeText(code);
-        toast('تم نسخ كود LaTeX إلى الحافظة');
+        toast('LaTeX code copied to clipboard');
       } catch {
-        toast('تعذر النسخ تلقائياً');
+        toast('Could not copy code');
       }
     },
-  }, '📋 نسخ LaTeX');
+  }, iconEl('copy', 13, 1.8), el('span', {}, 'Copy LaTeX'));
 
   const copyInlineBtn = el('button.btn.btn-outline.btn-sm', {
     type: 'button',
@@ -266,12 +268,12 @@ export function openLatexDialog({
       if (!code) return;
       try {
         await navigator.clipboard.writeText(`$${code}$`);
-        toast('تم نسخ كود LaTeX بصيغة مضمنة $...$');
+        toast('LaTeX copied in inline format ($...$)');
       } catch {
-        toast('تعذر النسخ');
+        toast('Could not copy');
       }
     },
-  }, '$...$ مضمن');
+  }, '$...$ Inline');
 
   const copyDisplayBtn = el('button.btn.btn-outline.btn-sm', {
     type: 'button',
@@ -280,25 +282,27 @@ export function openLatexDialog({
       if (!code) return;
       try {
         await navigator.clipboard.writeText(`$$\n${code}\n$$`);
-        toast('تم نسخ كود LaTeX بصيغة مستقلة $$...$$');
+        toast('LaTeX copied in display format ($$...$$)');
       } catch {
-        toast('تعذر النسخ');
+        toast('Could not copy');
       }
     },
-  }, '$$...$$ مستقل');
+  }, '$$...$$ Display');
 
   const clearBtn = el('button.btn.btn-ghost.btn-sm', {
     type: 'button',
+    style: 'display: inline-flex; align-items: center; gap: 4px;',
     onclick: () => {
       input.value = '';
       renderPreview();
       input.focus();
     },
-  }, '🗑️ مسح');
+  }, iconEl('trash', 13, 1.8), el('span', {}, 'Clear'));
 
   const switchLinearBtn = el('button.btn.btn-ghost.btn-sm', {
     type: 'button',
-    title: 'التبديل إلى محرر المعادلات الخطي المبسط',
+    title: 'Switch to Linear Equation Editor',
+    style: 'display: inline-flex; align-items: center; gap: 4px;',
     onclick: () => {
       if (typeof openEquationDialog === 'function') {
         const linear = latexToLinear(input.value);
@@ -312,7 +316,7 @@ export function openLatexDialog({
         });
       }
     },
-  }, '🔄 المحرر الخطي');
+  }, iconEl('refresh', 13, 1.8), el('span', {}, 'Linear Format'));
 
   const toolbar = el('div.latex-editor-toolbar', {},
     el('div.latex-toolbar-group', {}, copyBtn, copyInlineBtn, copyDisplayBtn),
@@ -321,15 +325,15 @@ export function openLatexDialog({
 
   const previewBox = el('div.latex-preview-wrapper', {},
     el('div.latex-preview-header', {},
-      el('span.field-label', {}, 'المعاينة الحية الفورية (MathML Live Preview)'),
+      el('span.field-label', {}, 'Live MathML Preview'),
       previewError
     ),
     preview
   );
 
   const dialog = formDialog({
-    title: editing ? 'تحرير معادلة LaTeX (Edit LaTeX Equation)' : 'أدوات وكتابة معادلات LaTeX (LaTeX Equation Tools)',
-    submit: editing ? 'تحديث المعادلة' : 'إدراج المعادلة في المستند',
+    title: editing ? 'Edit LaTeX Equation' : 'LaTeX Equation Tools',
+    submit: editing ? 'Update Equation' : 'Insert Equation',
     wide: true,
     className: 'insert-latex-dialog',
     onClose,
@@ -337,18 +341,18 @@ export function openLatexDialog({
       paletteContainer,
       el('div.latex-editor-section', {},
         el('div.latex-editor-header', {},
-          el('span.field-label', {}, 'محرر كود LaTeX'),
+          el('span.field-label', {}, 'LaTeX Code Editor'),
           toolbar
         ),
         input,
-        el('p.field-hint', {}, 'يدعم كافة صيغ LaTeX: الكسور، الجذور، الأسس، المصفوفات، الدوال، الرموز اليونانية، والحروف المزدوجة مثل \\mathbb{R}.')
+        el('p.field-hint', {}, 'Supports standard LaTeX math: fractions, roots, subscripts/superscripts, matrices, Greek letters, and blackboard bold (\\mathbb{R}).')
       ),
       previewBox,
-      el('label.ed-check.latex-display-check', {}, own, 'عرض كمعادلة مستقلة في سطر منفصل (Display Equation)')
+      el('label.ed-check.latex-display-check', {}, own, 'Display on its own line (Display Equation)')
     ],
     onSubmit: () => {
       const text = input.value.trim();
-      if (!text) throw new Error('اكتب معادلة LaTeX أولاً قبل الإدراج.');
+      if (!text) throw new Error('Please enter a LaTeX equation before inserting.');
       const linear = latexToLinear(text);
       return onInsert({ linear, display: own.checked, latex: text });
     },
@@ -367,7 +371,7 @@ export function openLatexDialog({
  */
 export function convertDocumentLatex(engine) {
   if (!engine?.model) {
-    toast('المستند غير جاهز أو غير مفتوح');
+    toast('Document is not open or ready.');
     return 0;
   }
 
@@ -376,7 +380,7 @@ export function convertDocumentLatex(engine) {
   const expressions = extractLatexExpressions(text);
 
   if (!expressions.length) {
-    toast('لم يُعثر على صيغ LaTeX محاطة بـ $ أو $$ في المستند.');
+    toast('No LaTeX math expressions ($...$ or $$...$$) found in document.');
     return 0;
   }
 
@@ -399,7 +403,7 @@ export function convertDocumentLatex(engine) {
   }
 
   if (converted > 0) {
-    toast(`تم تحويل ${converted} معادلة LaTeX إلى كائنات وورد رياضية رسمية بنجاح!`);
+    toast(`Successfully converted ${converted} LaTeX equation(s) to native Word math!`);
   }
   return converted;
 }

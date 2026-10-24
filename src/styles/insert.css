@@ -126,42 +126,43 @@
 
 /* ---- LaTeX Equation Writing Studio ---- */
 .modal-panel.wide:has(> .insert-latex-dialog) { width: 920px; max-width: calc(100vw - 24px); }
-.insert-latex-dialog { display: flex; flex-direction: column; gap: 14px; max-height: 84vh; overflow-y: auto; padding-right: 2px; }
+.insert-latex-dialog { display: flex; flex-direction: column; gap: 14px; max-height: 84vh; overflow-y: auto; padding-right: 2px; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; }
 
 /* Palette Container */
-.latex-palette-container { display: flex; flex-direction: column; gap: 8px; border: 1px solid var(--hairline-strong); border-radius: var(--r-md, 8px); background: var(--surface-2, #f8f9fa); padding: 8px; }
-.latex-category-nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--hairline); padding-bottom: 6px; }
-.latex-cat-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-2); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .15s ease; }
-.latex-cat-btn:hover { background: var(--accent-wash); color: var(--ink); border-color: var(--hairline); }
-.latex-cat-btn.is-active { background: var(--accent); color: #fff; font-weight: 600; }
-.latex-cat-icon { font-size: 14px; line-height: 1; }
+.latex-palette-container { display: flex; flex-direction: column; gap: 8px; border: 1px solid #d2d0ce; border-radius: 4px; background: #fbfbfb; padding: 10px 12px; }
+.latex-category-nav { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid #edebe9; padding-bottom: 8px; }
+.latex-cat-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #323130; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all .12s ease; user-select: none; }
+.latex-cat-btn:hover { background: #eff6fc; color: #0078d4; border-color: #c7e0f4; }
+.latex-cat-btn.is-active { background: #0078d4; color: #ffffff; border-color: #0078d4; font-weight: 600; box-shadow: 0 1px 3px rgba(0, 120, 212, 0.25); }
+.latex-cat-icon { font-size: 13.5px; line-height: 1; }
 
-.latex-palette-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; max-height: 175px; overflow-y: auto; padding: 2px; }
-.latex-item-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; padding: 4px 6px; border: 1px solid var(--hairline); border-radius: 6px; background: var(--paper, #fff); color: var(--paper-ink, #111); cursor: pointer; transition: all .12s ease; text-align: center; }
-.latex-item-btn:hover { border-color: var(--accent); background: var(--accent-wash); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.06); }
-.latex-item-preview { font-family: var(--mono, monospace); font-size: 15px; font-weight: bold; line-height: 1.2; color: var(--ink); }
-.latex-item-label { font-size: 11px; color: var(--ink-2); line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.latex-palette-items { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; max-height: 180px; overflow-y: auto; padding: 4px 2px; }
+.latex-item-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 48px; padding: 5px 8px; border: 1px solid #edebe9; border-radius: 4px; background: #ffffff; color: #201f1e; cursor: pointer; transition: all .12s ease; text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.latex-item-btn:hover { border-color: #0078d4; background: #eff6fc; box-shadow: 0 2px 6px rgba(0, 120, 212, 0.15); transform: translateY(-1px); }
+.latex-item-preview { font-family: 'Cambria Math', 'Segoe UI Symbol', var(--mono, monospace); font-size: 15px; font-weight: 600; line-height: 1.2; color: #201f1e; }
+.latex-item-label { font-size: 11px; color: #605e5c; line-height: 1.2; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Templates Grid */
 .latex-palette-items.is-templates { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); max-height: 220px; }
-.latex-template-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 10px; border: 1px solid var(--hairline); border-radius: 6px; background: var(--paper, #fff); color: var(--paper-ink, #111); cursor: pointer; text-align: start; transition: all .12s ease; }
-.latex-template-card:hover { border-color: var(--accent); background: var(--accent-wash); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
-.latex-tpl-badge { font-size: 10px; font-weight: bold; padding: 1px 6px; border-radius: 4px; background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); }
-.latex-tpl-title { font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1.2; }
-.latex-tpl-code { font-family: var(--mono, monospace); font-size: 11px; color: var(--ink-2); background: var(--surface-2); padding: 2px 4px; border-radius: 3px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.latex-template-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 12px; border: 1px solid #edebe9; border-radius: 4px; background: #ffffff; color: #201f1e; cursor: pointer; text-align: start; transition: all .12s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+.latex-template-card:hover { border-color: #0078d4; background: #eff6fc; box-shadow: 0 2px 8px rgba(0, 120, 212, 0.15); transform: translateY(-1px); }
+.latex-tpl-badge { font-size: 10.5px; font-weight: 600; padding: 1px 6px; border-radius: 3px; background: #eff6fc; color: #0078d4; border: 1px solid #c7e0f4; }
+.latex-tpl-title { font-size: 12px; font-weight: 600; color: #201f1e; line-height: 1.25; }
+.latex-tpl-code { font-family: 'Cascadia Code', 'Consolas', var(--mono, monospace); font-size: 11px; color: #605e5c; background: #f3f2f1; padding: 2px 6px; border-radius: 3px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Editor Section */
 .latex-editor-section { display: flex; flex-direction: column; gap: 6px; }
 .latex-editor-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
 .latex-editor-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex: 1; flex-wrap: wrap; }
-.latex-toolbar-group { display: flex; align-items: center; gap: 4px; }
-.latex-editor-input { font-family: 'JetBrains Mono', 'Fira Code', var(--mono, monospace); font-size: 14px; line-height: 1.5; tab-size: 2; resize: vertical; min-height: 90px; }
+.latex-toolbar-group { display: flex; align-items: center; gap: 6px; }
+.latex-editor-input { font-family: 'Cascadia Code', 'Consolas', 'JetBrains Mono', var(--mono, monospace); font-size: 13.5px; line-height: 1.5; tab-size: 2; resize: vertical; min-height: 90px; border-color: #8a8886; border-radius: 4px; }
+.latex-editor-input:focus { border-color: #0078d4; outline: 1px solid #0078d4; }
 
 /* Live Preview */
 .latex-preview-wrapper { display: flex; flex-direction: column; gap: 6px; }
 .latex-preview-header { display: flex; align-items: center; justify-content: space-between; }
-.latex-preview-error { font-size: 11px; color: var(--danger, #d93025); font-weight: 500; }
-.latex-equation-preview { min-height: 80px; display: flex; align-items: center; justify-content: center; padding: 16px; border: 1.5px solid var(--hairline-strong); border-radius: var(--r-md, 8px); background: var(--paper, #fff); color: var(--paper-ink, #111); font-size: 22px; overflow-x: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,.03); }
+.latex-preview-error { font-size: 11.5px; color: #a80000; font-weight: 500; }
+.latex-equation-preview { min-height: 80px; display: flex; align-items: center; justify-content: center; padding: 16px; border: 1px solid #d2d0ce; border-radius: 4px; background: #ffffff; color: #201f1e; font-size: 22px; overflow-x: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,.04); }
 .latex-equation-preview math { font-size: 22px; }
 
 .latex-display-check { font-weight: 500; margin-top: 2px; }

@@ -15,6 +15,7 @@ import {
   TableOfContents, PanelLeft, ArrowUpDown, LayoutGrid, Rows2, PanelTop, PanelBottom, Paintbrush, Bookmark, Star, Volume2, Smile, Crop,
   LogIn, User, SeparatorHorizontal, ArrowRightToLine, FileCog,
   Globe, Database, Calendar, Landmark, ScanText, GraduationCap, Quote,
+  SquarePi, RefreshCw,
 } from 'lucide';
 
 const ICONS = {
@@ -151,6 +152,8 @@ const ICONS = {
   scanText: ScanText,
   graduationCap: GraduationCap,
   quote: Quote,
+  squarePi: SquarePi,
+  refresh: RefreshCw,
 };
 
 /** Render a Lucide icon as an HTML string. */

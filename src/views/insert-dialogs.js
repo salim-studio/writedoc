@@ -224,6 +224,7 @@ export function openSymbolDialog({ onInsert, onClose }) {
 
 import { openLatexDialog } from './latex-dialog.js';
 import { linearToLatex } from '../engine/latex.js';
+import { iconEl } from '../ui/icons.js';
 
 /* ---- Equation ---- */
 export function openEquationDialog({ initial = '', display = false, onInsert, onClose, editing = false }) {
@@ -244,12 +245,13 @@ export function openEquationDialog({ initial = '', display = false, onInsert, on
 
   const latexModeBtn = el('button.btn.btn-outline.btn-sm', {
     type: 'button',
+    style: 'display: inline-flex; align-items: center; gap: 6px;',
     onclick: () => {
       dialog.modal.close();
       const currentTex = linearToLatex(input.value);
       openLatexDialog({ initial: currentTex, display: own.checked, onInsert, onClose, editing, openEquationDialog });
     },
-  }, '📐 فتح محرر LaTeX المتقدم');
+  }, iconEl('squarePi', 14, 1.8), el('span', {}, 'LaTeX Equation Editor'));
 
   const dialog = formDialog({ title: editing ? 'Edit Equation' : 'Equation', submit: editing ? 'Update' : 'Insert', wide: true, className: 'insert-equation', onClose, content: [
     el('div.row.row-between', {}, field('Equation', input, 'Linear format: a/b fraction, x^2 superscript, x_i subscript, √(x) root, ∑_(i=1)^n sum, ■(a&b@c&d) matrix, \\alpha for Greek.'), latexModeBtn),
