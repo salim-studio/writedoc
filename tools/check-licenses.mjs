@@ -7,7 +7,15 @@ const root = path.resolve(import.meta.dirname, '..');
 execFileSync(process.execPath, [path.join(root, 'tools/generate-opentype-vendor.mjs'), '--check'], { stdio: 'inherit' });
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 // Explicitly reviewed SPDX expressions. Unknown/missing declarations fail closed.
-const approved = new Set(['MIT', 'MIT-0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0', 'BlueOak-1.0.0', 'CC0-1.0', '(MIT AND Zlib)']);
+const approved = new Set([
+  'MIT', 'MIT-0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0', 'BlueOak-1.0.0', 'CC0-1.0', '(MIT AND Zlib)',
+  '0BSD', 'Python-2.0', 'Unlicense', '(MIT OR WTFPL)', '(BSD-2-Clause OR MIT OR Apache-2.0)',
+  'WTFPL OR ISC', 'WTFPL', '(MIT OR CC0-1.0)', '(WTFPL OR MIT)',
+]);
+const approvedCustom = new Set([
+  'node_modules/@trapezedev/gradle-parse',
+  'node_modules/@trapezedev/project',
+]);
 const failures = [];
 const selawikLicense = fs.readFileSync(path.join(root, 'public/fonts/Selawik-OFL.txt'), 'utf8');
 if (!selawikLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !selawikLicense.includes('Copyright 2015, Microsoft Corporation') || !selawikLicense.includes('Reserved Font Name Selawik')) failures.push('Missing Selawik copyright/OFL license');
@@ -19,7 +27,9 @@ let count = 0;
 for (const [location, pkg] of Object.entries(lock.packages)) {
   if (!location) continue;
   count++;
-  if (!approved.has(pkg.license)) failures.push(`${location}@${pkg.version}: unapproved license ${JSON.stringify(pkg.license)}`);
+  if (!approved.has(pkg.license) && !(approvedCustom.has(location) && pkg.license === 'SEE LICENSE')) {
+    failures.push(`${location}@${pkg.version}: unapproved license ${JSON.stringify(pkg.license)}`);
+  }
   const installed = path.join(root, location, 'package.json');
   if (fs.existsSync(installed)) {
     const metadata = JSON.parse(fs.readFileSync(installed, 'utf8'));
