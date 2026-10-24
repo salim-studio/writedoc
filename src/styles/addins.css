@@ -1,240 +1,299 @@
 /* ==========================================================================
-   Add-ins Store & Library Styles (Office & LibreOffice Hybrid Aesthetic)
+   Microsoft Word - Office Add-ins Store Styles (Fluent / Office Standard)
    ========================================================================== */
 
-.addins-dialog {
+.office-addins-dialog {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 860px;
-  min-height: 520px;
-  max-height: 80vh;
+  max-width: 900px;
+  min-height: 540px;
+  max-height: 82vh;
   box-sizing: border-box;
-  font-family: inherit;
-  color: var(--ink, #1f2937);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Segoe UI Web", Aptos, Roboto, Helvetica, Arial, sans-serif;
+  color: #201f1e;
+  background: #ffffff;
 }
 
-.addins-tabs-header {
+/* Office Add-ins Top Sub-header */
+.office-addins-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.office-addins-subtitle {
+  font-size: 13px;
+  color: #605e5c;
+  margin: 0;
+}
+
+/* Fluent Tabs Header */
+.office-addins-tabs-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  border-bottom: 2px solid var(--hairline-strong, #e5e7eb);
-  padding: 0 4px 8px 4px;
+  gap: 4px;
+  border-bottom: 1px solid #edebe9;
+  padding: 0 0 2px 0;
   margin-bottom: 16px;
 }
 
-.addins-tab-btn {
+.office-addins-tab-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-bottom: 2px solid transparent;
   font-size: 13.5px;
-  font-weight: 600;
-  color: var(--ink-2, #4b5563);
+  font-weight: 500;
+  color: #605e5c;
   cursor: pointer;
   transition: all 0.15s ease-in-out;
+  position: relative;
+  top: 1px;
 }
 
-.addins-tab-btn:hover {
-  background: var(--surface-hover, rgba(0, 0, 0, 0.05));
-  color: var(--ink, #111827);
+.office-addins-tab-btn:hover {
+  color: #201f1e;
+  background: #f8f8f8;
 }
 
-.addins-tab-btn.active {
-  background: var(--accent-wash, #e0ecfd);
-  color: var(--accent, #1b365d);
-  box-shadow: inset 0 -2px 0 var(--accent, #1b365d);
+.office-addins-tab-btn.active {
+  color: #0078d4;
+  font-weight: 600;
+  border-bottom-color: #0078d4;
+  background: transparent;
 }
 
-.addins-tab-badge {
+.office-addins-tab-badge {
   display: inline-block;
   padding: 1px 7px;
   border-radius: 10px;
   font-size: 11px;
-  font-weight: 700;
-  background: var(--accent, #1b365d);
-  color: #fff;
+  font-weight: 600;
+  background: #eff6fc;
+  color: #0078d4;
+  border: 1px solid #c7e0f4;
 }
 
-.addins-body-container {
+.office-addins-tab-btn.active .office-addins-tab-badge {
+  background: #0078d4;
+  color: #ffffff;
+  border-color: #0078d4;
+}
+
+/* Main Body Container */
+.office-addins-body-container {
   flex: 1;
   overflow-y: auto;
-  padding-inline-end: 6px;
+  padding-right: 6px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Store Controls: Search & Category Chips */
-.addins-toolbar {
+/* Toolbar: Search & Filter Chips */
+.office-addins-toolbar {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.addins-search-row {
+.office-addins-search-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  position: relative;
 }
 
-.addins-search-input {
-  flex: 1;
-  padding: 8px 14px;
-  border: 1px solid var(--hairline-strong, #d1d5db);
-  border-radius: 6px;
+.office-addins-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #605e5c;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.office-addins-search-input {
+  width: 100%;
+  padding: 8px 14px 8px 36px;
+  border: 1px solid #8a8886;
+  border-radius: 2px;
   font-size: 13.5px;
-  background: var(--surface, #ffffff);
-  color: inherit;
+  background: #ffffff;
+  color: #201f1e;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.addins-search-input:focus {
-  border-color: var(--accent, #1b365d);
-  box-shadow: 0 0 0 3px rgba(27, 54, 93, 0.15);
+.office-addins-search-input:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
 }
 
-.addins-categories {
+.office-addins-categories {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
 
-.addin-cat-chip {
-  padding: 4px 12px;
-  border: 1px solid var(--hairline-strong, #e5e7eb);
+.office-addin-cat-chip {
+  padding: 4px 14px;
+  border: 1px solid #edebe9;
   border-radius: 16px;
-  background: var(--surface, #f9fafb);
-  font-size: 12px;
+  background: #ffffff;
+  font-size: 12.5px;
   font-weight: 500;
-  color: var(--ink-2, #4b5563);
+  color: #605e5c;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.addin-cat-chip:hover {
-  background: var(--surface-hover, #f3f4f6);
-  color: var(--ink, #111827);
+.office-addin-cat-chip:hover {
+  background: #f3f2f1;
+  color: #201f1e;
+  border-color: #c8c6c4;
 }
 
-.addin-cat-chip.active {
-  background: var(--accent, #1b365d);
-  border-color: var(--accent, #1b365d);
+.office-addin-cat-chip.active {
+  background: #0078d4;
+  border-color: #0078d4;
   color: #ffffff;
+  font-weight: 600;
 }
 
-/* Add-in Cards Grid */
-.addins-grid {
+/* Office Add-ins Cards Grid */
+.office-addins-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
   gap: 14px;
 }
 
-.addin-card {
+.office-addin-card {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--hairline-strong, #e5e7eb);
-  border-radius: 8px;
-  background: var(--surface, #ffffff);
-  padding: 14px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  background: #ffffff;
+  padding: 16px;
+  box-shadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.08), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.04);
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
-  position: relative;
 }
 
-.addin-card:hover {
+.office-addin-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
-  border-color: var(--accent, #1b365d);
+  box-shadow: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.13), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.11);
+  border-color: #c7e0f4;
 }
 
-.addin-card-header {
+.office-addin-card-header {
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
-.addin-card-icon {
+.office-addin-card-icon {
   width: 44px;
   height: 44px;
-  border-radius: 8px;
-  background: var(--accent-wash, #f0f4f9);
+  border-radius: 4px;
+  background: #f8f9fa;
+  border: 1px solid #edebe9;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
   flex-shrink: 0;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
 }
 
-.addin-card-title-box {
+.office-addin-card-icon.copilot { background: #eff6fc; border-color: #c7e0f4; }
+.office-addin-card-icon.qr_code { background: #f0f7ff; border-color: #bfdbfe; }
+.office-addin-card-icon.translator { background: #ecfdf5; border-color: #a7f3d0; }
+.office-addin-card-icon.lorem { background: #eff6fc; border-color: #c7e0f4; }
+.office-addin-card-icon.stamp { background: #fef2f2; border-color: #fecaca; }
+.office-addin-card-icon.calc { background: #faf5ff; border-color: #e9d5ff; }
+.office-addin-card-icon.signature { background: #eff6fc; border-color: #bfdbfe; }
+.office-addin-card-icon.bibtex { background: #eff6fc; border-color: #c7e0f4; }
+.office-addin-card-icon.timer { background: #fff1f2; border-color: #fecdd3; }
+.office-addin-card-icon.code { background: #f3f4f6; border-color: #e5e7eb; }
+.office-addin-card-icon.swot { background: #eff6fc; border-color: #c7e0f4; }
+.office-addin-card-icon.custom { background: #fffbeb; border-color: #fde68a; }
+
+.office-addin-card-title-box {
   flex: 1;
   min-width: 0;
 }
 
-.addin-card-title {
+.office-addin-card-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   margin: 0 0 2px 0;
-  color: var(--ink, #111827);
+  color: #201f1e;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.addin-card-subtitle {
-  font-size: 11px;
-  color: var(--ink-2, #6b7280);
+.office-addin-card-author {
+  font-size: 11.5px;
+  color: #605e5c;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.addin-card-badge {
+.office-addin-card-badge {
   display: inline-block;
   padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  background: #f3f4f6;
-  color: #374151;
+  border-radius: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: #f3f2f1;
+  color: #323130;
   align-self: flex-start;
 }
 
-.addin-card-badge.official {
-  background: #dbeafe;
-  color: #1e40af;
+.office-addin-card-badge.official {
+  background: #eff6fc;
+  color: #0078d4;
+  border: 1px solid #c7e0f4;
 }
 
-.addin-card-badge.custom {
-  background: #fef3c7;
-  color: #92400e;
+.office-addin-card-badge.custom {
+  background: #fff4ce;
+  color: #795e00;
+  border: 1px solid #ffe799;
 }
 
-.addin-card-meta {
+.office-addin-card-meta {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 11.5px;
-  color: var(--ink-2, #6b7280);
+  color: #605e5c;
   margin-bottom: 8px;
 }
 
-.addin-card-rating {
-  color: #d97706;
-  font-weight: 700;
+.office-addin-card-stars {
+  color: #ffb900;
+  font-size: 12px;
+  letter-spacing: 1px;
 }
 
-.addin-card-desc {
+.office-addin-card-rating {
+  font-weight: 600;
+  color: #323130;
+}
+
+.office-addin-card-desc {
   font-size: 12px;
-  line-height: 1.5;
-  color: var(--ink-2, #4b5563);
+  line-height: 1.45;
+  color: #605e5c;
   margin: 0 0 14px 0;
   flex: 1;
   display: -webkit-box;
@@ -243,178 +302,189 @@
   overflow: hidden;
 }
 
-.addin-card-actions {
+.office-addin-card-actions {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-top: auto;
-  border-top: 1px solid var(--hairline, #f3f4f6);
-  padding-top: 10px;
+  border-top: 1px solid #f3f2f1;
+  padding-top: 12px;
 }
 
-.addin-btn {
-  flex: 1;
+/* Office Fluent Buttons */
+.office-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: 5px;
-  font-size: 12.5px;
+  padding: 6px 16px;
+  border-radius: 2px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all 0.15s ease;
+  font-family: inherit;
 }
 
-.addin-btn-primary {
-  background: var(--accent, #1b365d);
+.office-btn-primary {
+  background: #0078d4;
   color: #ffffff;
+  flex: 1;
 }
 
-.addin-btn-primary:hover {
-  background: #142844;
+.office-btn-primary:hover {
+  background: #106ebe;
 }
 
-.addin-btn-secondary {
-  background: var(--surface, #ffffff);
-  border-color: var(--hairline-strong, #d1d5db);
-  color: var(--ink, #1f2937);
+.office-btn-primary:active {
+  background: #005a9e;
 }
 
-.addin-btn-secondary:hover {
-  background: var(--surface-hover, #f9fafb);
-  border-color: #9ca3af;
+.office-btn-secondary {
+  background: #ffffff;
+  border-color: #8a8886;
+  color: #201f1e;
+  flex: 1;
 }
 
-.addin-btn-danger {
+.office-btn-secondary:hover {
+  background: #f3f2f1;
+  border-color: #323130;
+}
+
+.office-btn-danger {
   background: transparent;
-  color: #dc2626;
-  border-color: #fca5a5;
-  padding: 6px 8px;
+  color: #a4262c;
+  border-color: #edebe9;
+  padding: 6px 10px;
   flex: 0 0 auto;
 }
 
-.addin-btn-danger:hover {
-  background: #fef2f2;
+.office-btn-danger:hover {
+  background: #fdf3f4;
+  border-color: #f1707b;
 }
 
-/* Request / Add New Add-in Form */
-.addin-request-container {
+/* Add Custom Add-in Form */
+.office-addin-request-container {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background: var(--surface, #ffffff);
-  border: 1px solid var(--hairline-strong, #e5e7eb);
-  border-radius: 8px;
+  background: #ffffff;
+  border: 1px solid #edebe9;
+  border-radius: 4px;
   padding: 20px;
 }
 
-.addin-request-banner {
-  background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
-  border: 1px solid #bfdbfe;
-  border-radius: 6px;
-  padding: 12px 16px;
+.office-addin-request-banner {
+  background: #eff6fc;
+  border: 1px solid #c7e0f4;
+  border-radius: 4px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.addin-request-banner-icon {
-  font-size: 28px;
+.office-addin-request-banner-icon {
+  color: #0078d4;
+  display: flex;
+  align-items: center;
 }
 
-.addin-request-banner-text h3 {
+.office-addin-request-banner-text h3 {
   margin: 0 0 4px 0;
   font-size: 14px;
-  color: #1e3a8a;
+  font-weight: 600;
+  color: #0078d4;
 }
 
-.addin-request-banner-text p {
+.office-addin-request-banner-text p {
   margin: 0;
   font-size: 12px;
-  color: #3b82f6;
+  color: #201f1e;
   line-height: 1.4;
 }
 
-.addin-form-grid {
+.office-addin-form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 
-.addin-form-col-full {
+.office-addin-form-col-full {
   grid-column: 1 / -1;
 }
 
-.addin-form-group {
+.office-addin-form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.addin-form-group label {
+.office-addin-form-group label {
   font-size: 12.5px;
   font-weight: 600;
-  color: var(--ink, #111827);
+  color: #323130;
 }
 
-.addin-form-group input,
-.addin-form-group select,
-.addin-form-group textarea {
+.office-addin-form-group input,
+.office-addin-form-group select,
+.office-addin-form-group textarea {
   padding: 8px 12px;
-  border: 1px solid var(--hairline-strong, #d1d5db);
-  border-radius: 6px;
+  border: 1px solid #8a8886;
+  border-radius: 2px;
   font-size: 13px;
-  background: var(--surface, #ffffff);
-  color: inherit;
+  background: #ffffff;
+  color: #201f1e;
   outline: none;
   font-family: inherit;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.addin-form-group textarea {
+.office-addin-form-group textarea {
   min-height: 80px;
   resize: vertical;
 }
 
-.addin-form-group input:focus,
-.addin-form-group select:focus,
-.addin-form-group textarea:focus {
-  border-color: var(--accent, #1b365d);
-  box-shadow: 0 0 0 3px rgba(27, 54, 93, 0.12);
+.office-addin-form-group input:focus,
+.office-addin-form-group select:focus,
+.office-addin-form-group textarea:focus {
+  border-color: #0078d4;
+  box-shadow: 0 0 0 1px #0078d4;
 }
 
-.addin-form-hint {
-  font-size: 11px;
-  color: var(--ink-2, #6b7280);
+.office-addin-form-hint {
+  font-size: 11.5px;
+  color: #605e5c;
 }
 
-.addin-form-submit-row {
+.office-addin-form-submit-row {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  border-top: 1px solid var(--hairline, #e5e7eb);
+  border-top: 1px solid #edebe9;
   padding-top: 14px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
-/* Tool Runner Modals */
-.addin-runner-dialog {
+/* Tool Runner Sub-dialogs */
+.office-runner-dialog {
   display: flex;
   flex-direction: column;
   gap: 14px;
   max-width: 520px;
 }
 
-.addin-runner-preview {
+.office-runner-preview {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  border: 1px dashed var(--hairline-strong, #d1d5db);
-  border-radius: 6px;
-  background: var(--surface-wash, #f8fafc);
+  border: 1px dashed #c8c6c4;
+  border-radius: 4px;
+  background: #f8f9fa;
   min-height: 140px;
 }

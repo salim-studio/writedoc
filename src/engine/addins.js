@@ -1,7 +1,8 @@
 /**
- * Add-ins and Extensions Engine for WriteDoc.
+ * Add-ins and Extensions Engine for WriteDoc (Microsoft Word Office Add-ins Standard).
  * Provides a built-in catalog of productive tools, manages installed state,
  * and allows requesting & dynamically adding new user-created add-ins to the library.
+ * All text and interface specifications follow Microsoft Office standards in English.
  */
 import { generateQrPngBlob, generateQrSvg } from './qr-encoder.js';
 
@@ -34,167 +35,156 @@ const safeStorage = {
 };
 
 export const ADDIN_CATEGORIES = [
-  { id: 'all', label: 'الكل (All)', icon: 'grid2x2' },
-  { id: 'ai', label: 'ذكاء اصطناعي (AI & Copilot)', icon: 'sparkle' },
-  { id: 'productivity', label: 'إنتاجية وقوالب (Productivity)', icon: 'fileText' },
-  { id: 'tools', label: 'أدوات ووسائط (Tools & Media)', icon: 'settings' },
-  { id: 'academic', label: 'أكاديمي وبحث (Academic & Dev)', icon: 'book' },
-  { id: 'design', label: 'تصميم وتوثيق (Design & Security)', icon: 'palette' },
+  { id: 'all', label: 'All' },
+  { id: 'ai', label: 'AI & Copilot' },
+  { id: 'productivity', label: 'Productivity' },
+  { id: 'utilities', label: 'Utilities' },
+  { id: 'academic', label: 'Academic & Dev' },
+  { id: 'security', label: 'Security & Legal' },
 ];
 
 export const BUILTIN_ADDINS = [
   {
     id: 'ai_assistant',
-    name: 'مساعد الذكاء الاصطناعي للكتابة',
-    nameEn: 'AI Writing Copilot',
-    icon: '🤖',
+    name: 'Copilot Writing Assistant',
+    iconKey: 'copilot',
     category: 'ai',
-    author: 'WriteDoc AI Labs',
+    author: 'Microsoft Verified',
     version: '2.4.0',
     rating: 4.9,
-    downloads: '38.4k+',
-    badge: 'رسمي',
-    description: 'مساعد كتابي فوري لتلخيص الفقرات، وتحسين البلاغة والصياغة الأكاديمية، وإعادة الصياغة، وتصحيح القواعد وتوليد الأفكار مباشرة في المستند.',
-    actionType: 'interactive',
-  },
-  {
-    id: 'quick_translator',
-    name: 'المترجم الفوري للمستندات',
-    nameEn: 'Quick Multilingual Translator',
-    icon: '🌐',
-    category: 'tools',
-    author: 'Language Team',
-    version: '1.9.2',
-    rating: 4.8,
-    downloads: '29.1k+',
-    badge: 'شائع',
-    description: 'ترجمة فورية متعددة اللغات (العربية، الإنجليزية، الفرنسية، الإسبانية، الألمانية، التركية، الصينية) للنصوص المحددة داخل المستند.',
+    downloads: '1.2M+',
+    badge: 'Official',
+    description: 'Draft, summarize, rewrite, and polish documents with intelligent AI assistance directly within Microsoft Word.',
     actionType: 'interactive',
   },
   {
     id: 'qr_generator',
-    name: 'منشئ رموز QR والباركود',
-    nameEn: 'QR & Barcode Generator',
-    icon: '📱',
-    category: 'tools',
-    author: 'WriteDoc Visuals',
+    name: 'QR Code & Barcode Studio',
+    iconKey: 'qr_code',
+    category: 'utilities',
+    author: 'Office Media Labs',
     version: '2.1.0',
     rating: 4.9,
-    downloads: '42.3k+',
-    badge: 'مميز',
-    description: 'توليد رموز استجابة سريعة QR عالية الدقة للروابط والمراجع والوثائق وتضمينها فورياً كصورة داخل المستند بدقة متناهية.',
+    downloads: '850K+',
+    badge: 'Featured',
+    description: 'Generate and embed high-resolution QR codes for websites, reference documents, contact details, and inventory tracking.',
+    actionType: 'interactive',
+  },
+  {
+    id: 'quick_translator',
+    name: 'Deep Translator',
+    iconKey: 'translator',
+    category: 'utilities',
+    author: 'Microsoft Translator',
+    version: '3.0.1',
+    rating: 4.8,
+    downloads: '940K+',
+    badge: 'Popular',
+    description: 'Translate words, sentences, or entire paragraphs across 60+ languages with in-place text insertion.',
     actionType: 'interactive',
   },
   {
     id: 'arabic_lorem',
-    name: 'مولد النصوص العربية والبديلة',
-    nameEn: 'Smart Arabic & Latin Lorem Ipsum',
-    icon: '📝',
+    name: 'Smart Lorem Ipsum & Sample Text',
+    iconKey: 'lorem',
     category: 'productivity',
-    author: 'Typography Studio',
-    version: '1.5.0',
+    author: 'Typography Suite',
+    version: '1.8.0',
     rating: 4.7,
-    downloads: '18.9k+',
-    badge: 'أساسي',
-    description: 'إدراج فقرات تجريبية فصيحة من عيون الأدب العربي وخطب البلاغة أو نص لوريم إيبسوم اللاتيني الكلاسيكي لاختبار التنسيق وتوزيع الصفحات.',
+    downloads: '420K+',
+    badge: 'Core',
+    description: 'Insert placeholder dummy paragraphs in Latin Lorem Ipsum, formal English academic prose, or typography test sentences.',
     actionType: 'interactive',
   },
   {
     id: 'watermark_stamp',
-    name: 'أختام الحماية والعلامات المائية',
-    nameEn: 'Security Stamp & Watermark',
-    icon: '🛡️',
-    category: 'design',
-    author: 'Legal & Security',
-    version: '1.8.0',
+    name: 'Security Stamps & Classification',
+    iconKey: 'stamp',
+    category: 'security',
+    author: 'Enterprise Security',
+    version: '1.5.0',
     rating: 4.8,
-    downloads: '21.5k+',
-    badge: 'أمني',
-    description: 'إدراج أختام رسمية وعلامات حالة الوثيقة ("سري للغاية"، "مسودة"، "معتمد وموثق"، "نسخة غير نهائية"، أو ختم مخصص) بحدود وألوان مميزة.',
+    downloads: '310K+',
+    badge: 'Security',
+    description: 'Apply official classification markings and security banners (TOP SECRET, CONFIDENTIAL, DRAFT, APPROVED, or custom text).',
     actionType: 'interactive',
   },
   {
     id: 'sci_calc',
-    name: 'الحاسبة العلمية ومحول الوحدات',
-    nameEn: 'Scientific Calc & Converter',
-    icon: '🧮',
-    category: 'tools',
+    name: 'Formula Calculator & Unit Converter',
+    iconKey: 'calc',
+    category: 'utilities',
     author: 'MathTools Inc.',
-    version: '1.4.2',
+    version: '2.0.0',
     rating: 4.7,
-    downloads: '14.6k+',
-    badge: 'علمي',
-    description: 'حل المعادلات الحسابية الرياضية مباشرة، وحساب النسب المئوية، وتحويل القياسات ووحدات الطباعة (سم، نقاط، إنش) وزمن القراءة.',
+    downloads: '260K+',
+    badge: 'Utility',
+    description: 'Evaluate mathematical formulas, compute percentages, and convert typography units (points, inches, cm) and reading time.',
     actionType: 'interactive',
   },
   {
     id: 'signature_block',
-    name: 'كتلة التوقيع والاعتماد الرسمي',
-    nameEn: 'Official Signature Block',
-    icon: '✒️',
+    name: 'Official Signature & Approval Line',
+    iconKey: 'signature',
     category: 'productivity',
-    author: 'Business Essentials',
+    author: 'Business Legal',
     version: '1.2.0',
     rating: 4.9,
-    downloads: '26.8k+',
-    badge: 'رسمي',
-    description: 'إدراج قالب توقيع واعتماد رسمي جاهز للطباعة يحتوي على اسم المسؤول، المسمى الوظيفي، خط التوقيع، وموضع الختم والتاريخ.',
+    downloads: '580K+',
+    badge: 'Official',
+    description: 'Insert a formal execution block with signature line, signatory title, approval date, and corporate seal box.',
     actionType: 'interactive',
   },
   {
     id: 'bibtex_manager',
-    name: 'مستورد مراجع BibTeX',
-    nameEn: 'BibTeX Citation Importer',
-    icon: '📚',
+    name: 'BibTeX Citation Importer',
+    iconKey: 'bibtex',
     category: 'academic',
     author: 'Scholar Suite',
-    version: '2.0.1',
+    version: '2.2.0',
     rating: 4.9,
-    downloads: '31.2k+',
-    badge: 'أكاديمي',
-    description: 'تحويل واستيراد مراجع صيغة BibTeX (@article, @book, @inproceedings) إلى مراجع علمية منسقة بنمط APA أو IEEE مباشرة.',
+    downloads: '390K+',
+    badge: 'Academic',
+    description: 'Import BibTeX references from Google Scholar, PubMed, and IEEE, and format them into APA, IEEE, or Chicago citations.',
     actionType: 'interactive',
   },
   {
     id: 'pomodoro_timer',
-    name: 'مؤقت بومودورو للتركيز',
-    nameEn: 'Pomodoro Focus Timer',
-    icon: '⏱️',
+    name: 'Focus Writing Sprint Timer',
+    iconKey: 'timer',
     category: 'productivity',
-    author: 'FlowState',
-    version: '1.1.0',
+    author: 'Productivity Labs',
+    version: '1.3.0',
     rating: 4.6,
-    downloads: '16.4k+',
-    badge: 'إنتاجية',
-    description: 'مؤقت ذكي لجلسات الكتابة المركزة (25 دقيقة تركيز / 5 دقائق استراحة) لزيادة الإنتاجية وإنجاز المقالات والبحوث دون تشتت.',
+    downloads: '180K+',
+    badge: 'Productivity',
+    description: 'Maximize focus with 25-minute writing sprint intervals and gentle status alerts to boost document drafting.',
     actionType: 'interactive',
   },
   {
     id: 'code_formatter',
-    name: 'منسق كتل الأكواد البرمجية',
-    nameEn: 'Code Block Syntax Formatter',
-    icon: '📑',
+    name: 'Code Block Syntax Styler',
+    iconKey: 'code',
     category: 'academic',
     author: 'DevTools Lab',
-    version: '1.6.0',
+    version: '1.7.0',
     rating: 4.8,
-    downloads: '23.7k+',
-    badge: 'مطورين',
-    description: 'تنسيق مقتطفات الأكواد البرمجية (JS, Python, C++, HTML, SQL) في صندوق مونو أنيق مع أرقام الأسطر وخلفية متباينة.',
+    downloads: '450K+',
+    badge: 'Developer',
+    description: 'Format syntax code snippets (JavaScript, Python, C++, HTML, SQL) inside a shaded monospaced box with line numbers.',
     actionType: 'interactive',
   },
   {
     id: 'decision_matrix',
-    name: 'مصفوفة التحليل الرباعي SWOT',
-    nameEn: 'SWOT Analysis Matrix',
-    icon: '📊',
+    name: 'SWOT Analysis & Decision Matrix',
+    iconKey: 'swot',
     category: 'academic',
-    author: 'Strategy Pro',
-    version: '1.3.0',
+    author: 'Strategy Frameworks',
+    version: '1.4.0',
     rating: 4.7,
-    downloads: '12.8k+',
-    badge: 'أعمال',
-    description: 'إدراج جدول التحليل الرباعي الاستراتيجي (نقاط القوة، الضعف، الفرص، التهديدات) أو مصفوفة المقارنة الملونة باتجاه منظم.',
+    downloads: '210K+',
+    badge: 'Business',
+    description: 'Insert pre-formatted 2x2 SWOT analysis matrices (Strengths, Weaknesses, Opportunities, Threats) and decision tables.',
     actionType: 'interactive',
   },
 ];
@@ -209,7 +199,7 @@ export function clearAddinStorageForTesting() {
 }
 
 /**
- * Retrieve user-created / requested add-ins from localStorage.
+ * Retrieve user-created / requested add-ins from storage.
  */
 export function getCustomAddins() {
   try {
@@ -310,40 +300,36 @@ export function getInstalledAddins() {
 
 /**
  * Request and dynamically create a new add-in tool.
- * When a user requests an add-in ("عند طلب اضافة تضاف الى المكتبة"),
- * this function constructs the tool, adds it to the library catalog,
- * persists it, and installs it immediately.
+ * Adds it to the library catalog, persists it, and installs it immediately.
  */
 export function requestAddin({
   name,
-  nameEn = '',
   description,
   category = 'productivity',
-  icon = '✨',
+  iconKey = 'custom',
   actionType = 'template',
   templateText = '',
   prompt = '',
   customCode = '',
 }) {
   if (!name || !name.trim()) {
-    throw new Error('يجب تحديد اسم للإضافة الجديدة.');
+    throw new Error('Please enter a name for the new add-in.');
   }
 
   const id = `addin_custom_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const newAddin = {
     id,
     name: name.trim(),
-    nameEn: nameEn.trim() || name.trim(),
-    icon: icon.trim() || '💡',
+    iconKey: iconKey || 'custom',
     category: category || 'productivity',
-    author: 'طلب مخصص (أنت)',
+    author: 'Custom Developer',
     version: '1.0.0',
     rating: 5.0,
     downloads: '1',
-    badge: 'مخصص',
+    badge: 'Custom',
     custom: true,
     createdAt: new Date().toISOString(),
-    description: (description || 'أداة مخصصة تمت إضافتها إلى المكتبة بناءً على طلبك.').trim(),
+    description: (description || 'Custom add-in added to your Word library.').trim(),
     actionType, // 'template' | 'transform' | 'ai_prompt' | 'custom_code'
     templateText: templateText || '',
     prompt: prompt || '',
@@ -372,16 +358,15 @@ export function deleteCustomAddin(id) {
 
 /**
  * Core executor for running an add-in within the editor context.
- * ctx has: { editor, pkg, onChange, run, insertDrawing, openModal, toast, ... }
  */
 export async function executeAddin(addinOrId, ctx) {
   const addin = typeof addinOrId === 'string' ? getAddinById(addinOrId) : addinOrId;
   if (!addin) throw new Error('Add-in not found');
 
-  const { editor, run, onChange, toast, openModal } = ctx;
+  const { editor, toast } = ctx;
   const engine = editor();
   if (!engine) {
-    toast?.('المحرر غير جاهز حالياً.');
+    toast?.('Editor is not ready.');
     return false;
   }
 
@@ -415,7 +400,7 @@ export async function executeAddin(addinOrId, ctx) {
     case 'decision_matrix':
       return insertDecisionMatrix(ctx);
     default:
-      toast?.(`تم تشغيل الأداة: ${addin.name}`);
+      toast?.(`Add-in launched: ${addin.name}`);
       return true;
   }
 }
@@ -435,22 +420,22 @@ function executeCustomAddin(addin, ctx) {
     let text = addin.templateText || '';
     const now = new Date();
     text = text
-      .replace(/\{date\}/gi, now.toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' }))
-      .replace(/\{time\}/gi, now.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }))
-      .replace(/\{selection\}/gi, selText || 'نص افتراضي')
-      .replace(/\{title\}/gi, 'مستند بدون عنوان');
+      .replace(/\{date\}/gi, now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }))
+      .replace(/\{time\}/gi, now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }))
+      .replace(/\{selection\}/gi, selText || 'Sample selection')
+      .replace(/\{title\}/gi, 'Document Title');
 
     run(engine, () => {
       engine.model.replace(text);
       return true;
     });
-    toast?.(`تم إدراج قالب: ${addin.name}`);
+    toast?.(`Template inserted: ${addin.name}`);
     return true;
   }
 
   if (addin.actionType === 'transform') {
     if (!selText) {
-      toast?.('يرجى تحديد نص في المستند لتطبيق هذه الأداة عليه.');
+      toast?.('Please select text in the document to apply this tool.');
       return false;
     }
     let transformed = selText;
@@ -459,30 +444,29 @@ function executeCustomAddin(addin, ctx) {
         const fn = new Function('text', addin.customCode);
         transformed = fn(selText) || selText;
       } catch (err) {
-        toast?.(`خطأ في معالجة النص: ${err.message}`);
+        toast?.(`Transform error: ${err.message}`);
         return false;
       }
     } else {
-      // Default transform: clean and format
-      transformed = `«${selText.replace(/\s+/g, ' ').trim()}»`;
+      transformed = `"${selText.replace(/\s+/g, ' ').trim()}"`;
     }
     run(engine, () => {
       engine.model.replace(transformed);
       return true;
     });
-    toast?.(`تمت معالجة النص بواسطة: ${addin.name}`);
+    toast?.(`Processed with: ${addin.name}`);
     return true;
   }
 
   if (addin.actionType === 'ai_prompt') {
-    const promptText = addin.prompt || 'تحسين وإعادة صياغة النص';
-    const target = selText || 'موضوع تقرير رسمي';
-    const sampleOutput = `\n[ملاحظة ${addin.name} وفق أمر "${promptText}"]:\n${target}\n(تم التحسين والصياغة بصورة احترافية وفق المعايير المطلوبة).\n`;
+    const promptText = addin.prompt || 'Improve and rewrite selection';
+    const target = selText || 'Executive Summary Topic';
+    const sampleOutput = `\n[${addin.name} - Prompt: "${promptText}"]:\n${target}\n(Refined with academic clarity, active voice, and professional standard).\n`;
     run(engine, () => {
       engine.model.replace(sampleOutput);
       return true;
     });
-    toast?.(`تم تطبيق أمر الذكاء الاصطناعي: ${addin.name}`);
+    toast?.(`AI instruction executed: ${addin.name}`);
     return true;
   }
 
@@ -490,15 +474,15 @@ function executeCustomAddin(addin, ctx) {
     try {
       const fn = new Function('ctx', 'engine', 'selText', addin.customCode);
       fn(ctx, engine, selText);
-      toast?.(`تم تنفيذ الأداة البرمجية: ${addin.name}`);
+      toast?.(`Executed custom script: ${addin.name}`);
       return true;
     } catch (err) {
-      toast?.(`خطأ في تنفيذ كود الأداة: ${err.message}`);
+      toast?.(`Script execution error: ${err.message}`);
       return false;
     }
   }
 
-  toast?.(`تم تشغيل الأداة المخصصة: ${addin.name}`);
+  toast?.(`Custom add-in executed: ${addin.name}`);
   return true;
 }
 
@@ -511,23 +495,23 @@ export function insertOfficialSignatureBlock(ctx) {
   const engine = editor();
   if (!engine) return;
 
-  const today = new Intl.DateTimeFormat('ar-EG', { dateStyle: 'full' }).format(new Date());
+  const today = new Intl.DateTimeFormat('en-US', { dateStyle: 'full' }).format(new Date());
   const block = [
     '\n',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-    'الاعتماد والتوقيع الرسمي',
-    'الاسم الكامل: ........................................     الصفة: ........................................',
-    `التاريخ: ${today}`,
-    'التوقيع الرقمي / الختم الإداري:',
-    '\n         [   ختم الاعتماد الرسمي   ]               ______________________',
-    '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n',
+    '────────────────────────────────────────────────────────────',
+    'EXECUTIVE APPROVAL & SIGNATURE',
+    'Full Name: ........................................    Title: ........................................',
+    `Execution Date: ${today}`,
+    'Digital Signature & Corporate Seal:',
+    '\n         [  OFFICIAL CORPORATE SEAL  ]           ______________________',
+    '────────────────────────────────────────────────────────────\n',
   ].join('\n');
 
   run(engine, () => {
     engine.model.replace(block);
     return true;
   });
-  toast?.('تم إدراج كتلة التوقيع والاعتماد الرسمي بنجاح.');
+  toast?.('Signature block inserted successfully.');
 }
 
 export function formatSelectedAsCode(ctx) {
@@ -535,7 +519,7 @@ export function formatSelectedAsCode(ctx) {
   const engine = editor();
   if (!engine) return;
   const [a, b] = engine.model.range;
-  const text = a === b ? 'console.log("Hello, WriteDoc Add-ins!");' : engine.model.text.slice(a, b);
+  const text = a === b ? 'console.log("Hello, Word Add-ins!");' : engine.model.text.slice(a, b);
 
   const lines = text.split('\n');
   const formatted = lines.map((l, i) => `${String(i + 1).padStart(2, ' ')} │ ${l}`).join('\n');
@@ -545,7 +529,7 @@ export function formatSelectedAsCode(ctx) {
     engine.model.replace(box);
     return true;
   });
-  toast?.('تم تنسيق الكود البرمجي في صندوق أنيق.');
+  toast?.('Code block styled with monospace syntax.');
 }
 
 export function insertDecisionMatrix(ctx) {
@@ -555,15 +539,15 @@ export function insertDecisionMatrix(ctx) {
 
   const matrix = [
     '\n╔══════════════════════════════════════════════════════════════════╗',
-    '║                  مصفوفة التحليل الرباعي SWOT                      ║',
+    '║                    SWOT ANALYSIS MATRIX                          ║',
     '╠══════════════════════════════╦═══════════════════════════════════╣',
-    '║  نقاط القوة (Strengths)      ║  نقاط الضعف (Weaknesses)          ║',
-    '║  • الكفاءة العالية والجودة   ║  • محدودية الموارد الزمنية        ║',
-    '║  • تقنيات متطورة وسريعة      ║  • الحاجة إلى تدريب إضافي         ║',
+    '║  STRENGTHS                   ║  WEAKNESSES                       ║',
+    '║  • High performance & speed  ║  • Resource & timeline bounds     ║',
+    '║  • Robust cloud architecture ║  • Additional training needed     ║',
     '╠══════════════════════════════╬═══════════════════════════════════╣',
-    '║  الفرص (Opportunities)       ║  التهديدات (Threats)              ║',
-    '║  • التوسع في أسواق جديدة     ║  • المنافسة التقنية المتسارعة     ║',
-    '║  • تبني أدوات الذكاء الصاعد  ║  • التغيرات التنظيمية والتشريعية  ║',
+    '║  OPPORTUNITIES               ║  THREATS                          ║',
+    '║  • Market expansion          ║  • Fast-moving competition        ║',
+    '║  • AI tooling integration    ║  • Regulatory compliance updates  ║',
     '╚══════════════════════════════╩═══════════════════════════════════╝\n',
   ].join('\n');
 
@@ -571,10 +555,9 @@ export function insertDecisionMatrix(ctx) {
     engine.model.replace(matrix);
     return true;
   });
-  toast?.('تم إدراج مصفوفة التحليل الرباعي SWOT.');
+  toast?.('SWOT Analysis Matrix inserted.');
 }
 
-// Global pomodoro state
 let pomodoroInterval = null;
 let pomodoroRemaining = 25 * 60;
 
@@ -583,14 +566,14 @@ export function togglePomodoroTimer(ctx) {
   if (pomodoroInterval) {
     clearInterval(pomodoroInterval);
     pomodoroInterval = null;
-    toast?.('تم إيقاف مؤقت بومودورو.');
+    toast?.('Focus timer stopped.');
     const el = document.getElementById('writedoc-pomodoro-badge');
     if (el) el.remove();
     return;
   }
 
   pomodoroRemaining = 25 * 60;
-  toast?.('⏱️ بدأ مؤقت بومودورو: 25 دقيقة تركيز في الكتابة!');
+  toast?.('⏱️ Focus timer started: 25 minutes of writing sprint!');
   updatePomodoroBadge();
 
   pomodoroInterval = setInterval(() => {
@@ -599,7 +582,7 @@ export function togglePomodoroTimer(ctx) {
     if (pomodoroRemaining <= 0) {
       clearInterval(pomodoroInterval);
       pomodoroInterval = null;
-      alert('🔔 انتهت جلسة التركيز (25 دقيقة)! حان وقت استراحة قصيرة مدتها 5 دقائق.');
+      alert('🔔 Writing sprint completed! Take a 5-minute break.');
       const el = document.getElementById('writedoc-pomodoro-badge');
       if (el) el.remove();
     }
@@ -612,8 +595,8 @@ function updatePomodoroBadge() {
     badge = document.createElement('div');
     badge.id = 'writedoc-pomodoro-badge';
     badge.style.cssText =
-      'position: fixed; bottom: 32px; left: 24px; z-index: 9999; background: #1b365d; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;';
-    badge.title = 'انقر لإيقاف مؤقت بومودورو';
+      'position: fixed; bottom: 32px; left: 24px; z-index: 9999; background: #0078d4; color: #fff; padding: 6px 14px; border-radius: 4px; font-size: 12.5px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s;';
+    badge.title = 'Click to stop timer';
     badge.onclick = () => {
       if (pomodoroInterval) {
         clearInterval(pomodoroInterval);
@@ -625,10 +608,9 @@ function updatePomodoroBadge() {
   }
   const mins = Math.floor(pomodoroRemaining / 60);
   const secs = pomodoroRemaining % 60;
-  badge.innerHTML = `⏱️ جلسة تركيز: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} (إيقاف)`;
+  badge.innerHTML = `⏱️ Focus Sprint: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} (Stop)`;
 }
 
-/* Fallback simple runners if UI dialogs are not yet invoked */
 function openDefaultAiAssistant(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
@@ -636,13 +618,13 @@ function openDefaultAiAssistant(ctx) {
   const [a, b] = engine.model.range;
   const text = a === b ? '' : engine.model.text.slice(a, b).trim();
   const summary = text
-    ? `\n[ملخص ذكي من مساعد الكتابة]:\n${text.split('. ').slice(0, 2).join('. ')}.\n`
-    : '\n[مساعد الكتابة الذكي]: يمكنك تحديد أي نص لتلخيصه أو تحسين أسلوبه البلاغي.\n';
+    ? `\n[AI Writing Copilot Summary]:\n${text.split('. ').slice(0, 2).join('. ')}.\n`
+    : '\n[AI Writing Copilot]: Select text to summarize, expand, or rewrite with academic eloquence.\n';
   run(engine, () => {
     engine.model.replace(summary);
     return true;
   });
-  toast?.('تم تطبيق مساعد الذكاء الاصطناعي.');
+  toast?.('Copilot assistant executed.');
 }
 
 function openDefaultTranslator(ctx) {
@@ -651,67 +633,66 @@ function openDefaultTranslator(ctx) {
   if (!engine) return;
   const [a, b] = engine.model.range;
   const text = a === b ? 'Hello World' : engine.model.text.slice(a, b).trim();
-  const trans = `\n[الترجمة الفورية]: ${text} (Translated / مترجم)\n`;
+  const trans = `\n[Translation]: ${text}\n`;
   run(engine, () => {
     engine.model.replace(trans);
     return true;
   });
-  toast?.('تمت الترجمة بنجاح.');
+  toast?.('Text translated successfully.');
 }
 
 function openDefaultQrGenerator(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
-  const qrSvg = generateQrSvg('https://salim-studio.github.io/writedoc/', { size: 180 });
-  toast?.('تم إنشاء رمز QR بنجاح.');
+  toast?.('QR Code generated.');
 }
 
 function openDefaultLorem(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
-  const arabicText =
-    '\nإن اللغة العربية سيدة اللغات وأعرقها بياناً، تفيض بالبلاغة وتتسع لكافة مناحي العلوم والفنون. وهذا نص تجريبي فصيح لاختبار التناسق الطباعي وتدفق الفقرات على مساحة الصفحة.\n';
+  const passage =
+    '\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.\n';
   run(engine, () => {
-    engine.model.replace(arabicText);
+    engine.model.replace(passage);
     return true;
   });
-  toast?.('تم إدراج نص تجريبي عربي فصيح.');
+  toast?.('Sample dummy text inserted.');
 }
 
 function openDefaultWatermark(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
-  const stamp = '\n═══════════════════════════════════════════\n    [ 🛡️ سري للغاية ومكتوم - TOP SECRET ]\n═══════════════════════════════════════════\n';
+  const stamp = '\n═══════════════════════════════════════════\n    [ TOP SECRET - CLASSIFIED DOCUMENT ]\n═══════════════════════════════════════════\n';
   run(engine, () => {
     engine.model.replace(stamp);
     return true;
   });
-  toast?.('تم إدراج ختم الحماية: سري للغاية.');
+  toast?.('Classification watermark inserted.');
 }
 
 function openDefaultCalc(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
-  const calcText = ' [الناتج الرياضي: 1,250 × 1.15 = 1,437.50] ';
+  const calcText = ' [Calculation: 1,250 × 1.15 = 1,437.50] ';
   run(engine, () => {
     engine.model.replace(calcText);
     return true;
   });
-  toast?.('تم إدراج نتيجة العملية الحسابية.');
+  toast?.('Calculation result inserted.');
 }
 
 function openDefaultBibtex(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
-  const bib = '\nSmith, J., & Doe, A. (2025). Advanced Document Processing in Modern Cloud Architecture. Journal of Computing, 42(3), 115-128. https://doi.org/10.1016/j.comp.2025.01.012\n';
+  const bib = '\nSmith, J., & Doe, A. (2025). Advanced Document Processing in Cloud Architecture. Journal of Computing, 42(3), 115-128. https://doi.org/10.1016/j.comp.2025.01.012\n';
   run(engine, () => {
     engine.model.replace(bib);
     return true;
   });
-  toast?.('تم استيراد المرجع الأكاديمي بنجاح.');
+  toast?.('Academic citation inserted.');
 }

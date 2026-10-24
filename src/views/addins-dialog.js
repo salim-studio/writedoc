@@ -1,16 +1,14 @@
 /**
- * Add-ins Store & Extensions Dialog (Office & LibreOffice Hybrid Aesthetic)
- * Provides Store/Catalog browsing, Installed Add-ins management,
- * and Dynamic Requesting / Creation of new Add-in tools added to the library.
+ * Microsoft Word - Office Add-ins Dialog
+ * Full English interface and authentic Office Fluent design aesthetics.
+ * Features Store browsing, Installed add-ins management, and Custom add-in creation.
  */
 import { el } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
-import { icon } from '../ui/icons.js';
 import {
   getAllAddins,
   getInstalledAddins,
-  getInstalledAddinIds,
   isAddinInstalled,
   installAddin,
   uninstallAddin,
@@ -21,25 +19,114 @@ import {
 } from '../engine/addins.js';
 import { generateQrSvg, generateQrPngBlob } from '../engine/qr-encoder.js';
 
+export function getAddinIconSvg(key, size = 26) {
+  switch (key) {
+    case 'copilot':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2l2.4 5.2L20 8.5l-4 4 1 5.5L12 15.5 7 18l1-5.5-4-4 5.6-1.3L12 2z"/>
+        <path d="M19 16l1 2 2 1-2 1-1 2-1-2-2-1 2-1 1-2z" stroke="#6b21a8"/>
+      </svg>`;
+    case 'qr_code':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#106ebe" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="5.5" y="5.5" width="2" height="2" fill="#106ebe"/>
+        <rect x="16.5" y="5.5" width="2" height="2" fill="#106ebe"/>
+        <rect x="5.5" y="16.5" width="2" height="2" fill="#106ebe"/>
+        <path d="M14 14h3v3h-3zM17 17h4v4h-4zM14 20h3M20 14v3"/>
+      </svg>`;
+    case 'translator':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#008272" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="9"/>
+        <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14.5 14.5 0 0 0 0 18M12 3a14.5 14.5 0 0 1 0 18"/>
+      </svg>`;
+    case 'lorem':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#2b579a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+        <line x1="10" y1="9" x2="8" y2="9"/>
+      </svg>`;
+    case 'stamp':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#d83b01" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4"/>
+      </svg>`;
+    case 'calc':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#5c2d91" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <line x1="8" y1="6" x2="16" y2="6"/>
+        <line x1="16" y1="14" x2="16" y2="18"/>
+        <path d="M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M8 18h.01M12 18h.01"/>
+      </svg>`;
+    case 'signature':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#004e8c" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+        <path d="M18 13l-1.5-1.5"/>
+        <path d="M2 21h20"/>
+        <path d="M6 15c2-2 4-1 6-3"/>
+      </svg>`;
+    case 'bibtex':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <line x1="9" y1="7" x2="15" y2="7"/>
+        <line x1="9" y1="11" x2="13" y2="11"/>
+      </svg>`;
+    case 'timer':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#e81123" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="13" r="8"/>
+        <path d="M12 9v4l2.5 2.5M10 2h4M12 2v3"/>
+      </svg>`;
+    case 'code':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#333333" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"/>
+        <polyline points="8 6 2 12 8 18"/>
+      </svg>`;
+    case 'swot':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="12" y1="3" x2="12" y2="21"/>
+      </svg>`;
+    default:
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="13" y="3" width="8" height="8" rx="1.5"/>
+        <rect x="3" y="13" width="8" height="8" rx="1.5"/>
+        <path d="M17 13v8M13 17h8"/>
+      </svg>`;
+  }
+}
+
 export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
   let activeTab = initialTab;
   let activeCategory = 'all';
   let searchQuery = '';
 
-  const container = el('div.addins-dialog');
+  const container = el('div.office-addins-dialog');
 
-  // Header tabs
-  const tabStore = el('button.addins-tab-btn', { type: 'button' }, '🛍️ المكتبة والمتجر');
-  const tabInstalled = el('button.addins-tab-btn', { type: 'button' }, '📦 إضافاتي المُثبّتة');
-  const tabRequest = el('button.addins-tab-btn', { type: 'button' }, '➕ طلب / إضافة أداة جديدة');
+  // Subheader
+  const subheader = el(
+    'div.office-addins-header',
+    {},
+    el('p.office-addins-subtitle', {}, 'Discover and manage trusted add-ins to boost your productivity in Word.')
+  );
 
-  const tabsHeader = el('div.addins-tabs-header', {}, tabStore, tabInstalled, tabRequest);
-  const bodyContainer = el('div.addins-body-container');
+  // Fluent tabs header
+  const tabStore = el('button.office-addins-tab-btn', { type: 'button' }, 'Store');
+  const tabInstalled = el('button.office-addins-tab-btn', { type: 'button' }, 'MY ADD-INS');
+  const tabRequest = el('button.office-addins-tab-btn', { type: 'button' }, 'Add Custom Add-in');
 
-  container.append(tabsHeader, bodyContainer);
+  const tabsHeader = el('div.office-addins-tabs-header', {}, tabStore, tabInstalled, tabRequest);
+  const bodyContainer = el('div.office-addins-body-container');
+
+  container.append(subheader, tabsHeader, bodyContainer);
 
   const modal = openModal({
-    title: 'مكتبة وإدارة الإضافات (Office & LibreOffice Add-ins Store)',
+    title: 'Office Add-ins',
     content: container,
     wide: true,
   });
@@ -63,10 +150,7 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
     tabRequest.classList.toggle('active', activeTab === 'request');
 
     const installedCount = getInstalledAddins().length;
-    tabInstalled.replaceChildren(
-      '📦 إضافاتي المُثبّتة ',
-      el('span.addins-tab-badge', {}, String(installedCount))
-    );
+    tabInstalled.replaceChildren('MY ADD-INS ', el('span.office-addins-tab-badge', {}, String(installedCount)));
   }
 
   tabStore.onclick = () => {
@@ -96,13 +180,17 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Tab 1: Store & Library Catalog                                             */
+  /* Tab 1: Store & Catalog                                                    */
   /* -------------------------------------------------------------------------- */
   function renderStoreView() {
-    const toolbar = el('div.addins-toolbar');
-    const searchInput = el('input.addins-search-input', {
+    const toolbar = el('div.office-addins-toolbar');
+
+    const searchIconSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+    const searchIconEl = el('span.office-addins-search-icon', { html: searchIconSvg });
+
+    const searchInput = el('input.office-addins-search-input', {
       type: 'text',
-      placeholder: '🔍 ابحث في مكتبة الأدوات والإضافات بالاسم أو الوصف أو التصنيف...',
+      placeholder: 'Search all add-ins by name, author, or keyword...',
       value: searchQuery,
       oninput: e => {
         searchQuery = e.target.value.toLowerCase().trim();
@@ -110,10 +198,10 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
       },
     });
 
-    const categoriesRow = el('div.addins-categories');
+    const categoriesRow = el('div.office-addins-categories');
     for (const cat of ADDIN_CATEGORIES) {
       const chip = el(
-        'button.addin-cat-chip',
+        'button.office-addin-cat-chip',
         {
           type: 'button',
           onclick: () => {
@@ -129,8 +217,8 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
       categoriesRow.appendChild(chip);
     }
 
-    toolbar.append(el('div.addins-search-row', {}, searchInput), categoriesRow);
-    const grid = el('div.addins-grid');
+    toolbar.append(el('div.office-addins-search-row', {}, searchIconEl, searchInput), categoriesRow);
+    const grid = el('div.office-addins-grid');
 
     bodyContainer.append(toolbar, grid);
 
@@ -142,7 +230,6 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
         const matchesSearch =
           !searchQuery ||
           item.name.toLowerCase().includes(searchQuery) ||
-          (item.nameEn && item.nameEn.toLowerCase().includes(searchQuery)) ||
           item.description.toLowerCase().includes(searchQuery) ||
           item.author.toLowerCase().includes(searchQuery);
         return matchesCategory && matchesSearch;
@@ -154,9 +241,9 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
             'div',
             {
               style:
-                'grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--ink-2); font-size: 14px; background: var(--surface-wash, #f9fafb); border-radius: 8px;',
+                'grid-column: 1 / -1; padding: 40px; text-align: center; color: #605e5c; font-size: 13.5px; background: #fdfdfd; border: 1px dashed #edebe9; border-radius: 4px;',
             },
-            'لم يتم العثور على إضافات تطابق بحثك. يمكنك طلب إضافة أداة جديدة من تبويب "طلب / إضافة أداة جديدة" ليتم تضمينها في المكتبة فوراً!'
+            'No add-ins found matching your search. You can create a new tool in the "Add Custom Add-in" tab.'
           )
         );
         return;
@@ -178,20 +265,20 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
     const heading = el(
       'div',
       { style: 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;' },
-      el('h3', { style: 'margin: 0; font-size: 15px; font-weight: 700;' }, 'الأدوات والإضافات المثبتة على تطبيقك'),
-      el('span', { style: 'font-size: 12px; color: var(--ink-2);' }, `${installed.length} أدوات جاهزة للعمل`)
+      el('h3', { style: 'margin: 0; font-size: 14px; font-weight: 600; color: #201f1e;' }, 'Active Add-ins for Word'),
+      el('span', { style: 'font-size: 12px; color: #605e5c;' }, `${installed.length} installed`)
     );
 
-    const grid = el('div.addins-grid');
+    const grid = el('div.office-addins-grid');
     if (installed.length === 0) {
       grid.appendChild(
         el(
           'div',
           {
             style:
-              'grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--ink-2); font-size: 14px; background: var(--surface-wash, #f9fafb); border-radius: 8px;',
+              'grid-column: 1 / -1; padding: 40px; text-align: center; color: #605e5c; font-size: 13.5px; background: #fdfdfd; border: 1px dashed #edebe9; border-radius: 4px;',
           },
-          'لا توجد إضافات مثبتة حالياً. يمكنك تصفح "المكتبة والمتجر" وتثبيت الأدوات بنقرة واحدة.'
+          'You have no installed add-ins. Browse the Store to add productivity tools to Word.'
         )
       );
     } else {
@@ -204,111 +291,110 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Tab 3: Request & Add New Add-in ("عند طلب اضافة تضاف الى المكتبة")         */
+  /* Tab 3: Add Custom Add-in                                                  */
   /* -------------------------------------------------------------------------- */
   function renderRequestView() {
-    const formContainer = el('div.addin-request-container');
+    const formContainer = el('div.office-addin-request-container');
 
+    const bannerIconSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0078d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg>`;
     const banner = el(
-      'div.addin-request-banner',
+      'div.office-addin-request-banner',
       {},
-      el('div.addin-request-banner-icon', {}, '✨'),
+      el('div.office-addin-request-banner-icon', { html: bannerIconSvg }),
       el(
-        'div.addin-request-banner-text',
+        'div.office-addin-request-banner-text',
         {},
-        el('h3', {}, 'طلب وتوليد أداة جديدة وإضافتها فوراً إلى المكتبة'),
+        el('h3', {}, 'Create and Install a Custom Add-in'),
         el(
           'p',
           {},
-          'عند إرسال طلبك، سيقوم النظام بإنشاء الإضافة وتسجيلها فوراً في مكتبة التطبيق مع تثبيتها وإتاحتها للتشغيل المباشر داخل المستند!'
+          'Define your custom tool behavior. It will be immediately registered into your Word add-in library and ready to execute.'
         )
       )
     );
 
     const nameInput = el('input', {
       type: 'text',
-      placeholder: 'مثال: مساعد تدقيق العقود الرسمية أو مولد المخططات',
+      placeholder: 'e.g., Executive Contract Auditor or Citation Formatter',
       required: true,
-    });
-    const nameEnInput = el('input', {
-      type: 'text',
-      placeholder: 'مثال: Legal Contract Auditor',
     });
 
     const categorySelect = el(
       'select',
       {},
-      el('option', { value: 'productivity' }, 'إنتاجية وقوالب (Productivity)'),
-      el('option', { value: 'ai' }, 'ذكاء اصطناعي (AI Assistant)'),
-      el('option', { value: 'tools' }, 'أدوات ومعالجة (Tools & Utilities)'),
-      el('option', { value: 'academic' }, 'أكاديمي وبحثي (Academic & Research)'),
-      el('option', { value: 'design' }, 'تصميم وتنسيق (Design & Styling)')
+      el('option', { value: 'productivity' }, 'Productivity & Templates'),
+      el('option', { value: 'ai' }, 'AI & Copilot'),
+      el('option', { value: 'utilities' }, 'Utilities & Media'),
+      el('option', { value: 'academic' }, 'Academic & Dev'),
+      el('option', { value: 'security' }, 'Security & Legal')
     );
 
     const iconSelect = el(
       'select',
       {},
-      el('option', { value: '🚀' }, '🚀 صاروخ سرعة وإنتاجية'),
-      el('option', { value: '🤖' }, '🤖 روبوت ذكاء اصطناعي'),
-      el('option', { value: '📑' }, '📑 مستند وقالب'),
-      el('option', { value: '🔍' }, '🔍 بحث وتدقيق'),
-      el('option', { value: '💡' }, '💡 فكرة وتطوير'),
-      el('option', { value: '📊' }, '📊 إحصاء وجدول'),
-      el('option', { value: '🖋️' }, '🖋️ قلم وبلاغة'),
-      el('option', { value: '🛡️' }, '🛡️ أمان وحماية'),
-      el('option', { value: '🌐' }, '🌐 لغات وترجمة'),
-      el('option', { value: '⚖️' }, '⚖️ قانوني ومعتمد')
+      el('option', { value: 'custom' }, 'Extension Block (Default)'),
+      el('option', { value: 'copilot' }, 'Copilot Sparkle'),
+      el('option', { value: 'qr_code' }, 'QR / Barcode Scanner'),
+      el('option', { value: 'translator' }, 'Global Translation'),
+      el('option', { value: 'lorem' }, 'Document Page'),
+      el('option', { value: 'stamp' }, 'Security Shield'),
+      el('option', { value: 'calc' }, 'Calculator'),
+      el('option', { value: 'signature' }, 'Signature Pen'),
+      el('option', { value: 'bibtex' }, 'Academic Library'),
+      el('option', { value: 'timer' }, 'Sprint Stopwatch'),
+      el('option', { value: 'code' }, 'Code Terminal'),
+      el('option', { value: 'swot' }, 'Matrix Grid')
     );
 
     const actionTypeSelect = el(
       'select',
       {},
-      el('option', { value: 'template' }, 'إدراج نص أو نموذج جاهز (Template / Text Insertion)'),
-      el('option', { value: 'transform' }, 'معالجة وتحويل النص المحدد (Transform Selected Text)'),
-      el('option', { value: 'ai_prompt' }, 'أمر ذكاء اصطناعي مخصص (Custom AI Instruction)'),
-      el('option', { value: 'custom_code' }, 'سكريبت برمجي مخصص (Custom JavaScript Engine)')
+      el('option', { value: 'template' }, 'Template / Text Insertion (supports {date}, {time}, {selection}, {title})'),
+      el('option', { value: 'transform' }, 'Selection Text Transformation'),
+      el('option', { value: 'ai_prompt' }, 'Custom AI Instruction (Copilot Prompt)'),
+      el('option', { value: 'custom_code' }, 'Custom JavaScript Engine Script')
     );
 
     const descInput = el('textarea', {
       rows: 2,
-      placeholder: 'اشرح بإيجاز ما الذي تقوم به هذه الإضافة لكي تظهر في بطاقة المكتبة...',
+      placeholder: 'Describe what this add-in does in your documents...',
     });
 
-    const contentLabel = el('label', {}, 'محتوى النموذج أو كود المعالجة:');
+    const contentLabel = el('label', {}, 'Template Content or Transformation Rule:');
     const contentTextarea = el('textarea', {
       rows: 4,
       placeholder:
-        'اكتب النص أو القالب المراد إدراجه (يمكن استخدام: {date} للتاريخ، {time} للوقت، {selection} للنص المحدد)...',
+        'Enter template text or placeholders (e.g. This contract was executed on {date} regarding {selection})...',
     });
 
     actionTypeSelect.onchange = () => {
       const type = actionTypeSelect.value;
       if (type === 'template') {
-        contentLabel.textContent = 'محتوى النموذج أو القالب المراد إدراجه:';
+        contentLabel.textContent = 'Template Content:';
         contentTextarea.placeholder =
-          'اكتب النص أو القالب المراد إدراجه (يدعم {date}، {time}، {selection}، {title})...';
+          'Enter text with placeholders like {date}, {time}, {selection}, {title}...';
       } else if (type === 'transform') {
-        contentLabel.textContent = 'كود معالجة النص (دالة JavaScript تستقبل text وترجع الناتج):';
-        contentTextarea.placeholder = 'مثال:\nreturn text.toUpperCase();\n// أو: return "«" + text.trim() + "»";';
+        contentLabel.textContent = 'Transformation Function (JavaScript receives `text` and returns string):';
+        contentTextarea.placeholder = 'return text.toUpperCase();\n// or: return `"${text.trim()}"`;';
       } else if (type === 'ai_prompt') {
-        contentLabel.textContent = 'أمر الذكاء الاصطناعي (Prompt):';
-        contentTextarea.placeholder = 'مثال: أعد صياغة هذا النص بأسلوب أكاديمي فصيح وموجز...';
+        contentLabel.textContent = 'Copilot AI Instruction:';
+        contentTextarea.placeholder = 'e.g., Rewrite this selection in executive active voice and concise phrasing...';
       } else if (type === 'custom_code') {
-        contentLabel.textContent = 'كود JavaScript المخصص لتنفيذه في المحرر:';
+        contentLabel.textContent = 'JavaScript Code:';
         contentTextarea.placeholder =
-          '// ctx: { editor, run, toast, insertDrawing }\nconst engine = ctx.editor();\nengine.model.replace("تم التنفيذ بنجاح!");';
+          '// ctx: { editor, run, toast }\nconst engine = ctx.editor();\nengine.model.replace("Executed successfully!");';
       }
     };
 
     const submitBtn = el(
-      'button.addin-btn.addin-btn-primary',
+      'button.office-btn.office-btn-primary',
       {
         type: 'button',
         style: 'padding: 8px 24px; font-size: 13.5px;',
         onclick: () => {
           const name = nameInput.value.trim();
           if (!name) {
-            toast('يرجى إدخال اسم للإضافة المطلوبة.');
+            toast('Please enter a name for the add-in.');
             nameInput.focus();
             return;
           }
@@ -316,92 +402,93 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
           try {
             const created = requestAddin({
               name,
-              nameEn: nameEnInput.value.trim(),
               description: descInput.value.trim(),
               category: categorySelect.value,
-              icon: iconSelect.value,
+              iconKey: iconSelect.value,
               actionType: actionTypeSelect.value,
               templateText: contentTextarea.value,
               prompt: contentTextarea.value,
               customCode: contentTextarea.value,
             });
 
-            toast(`🎉 تمت إضافة "${created.name}" بنجاح إلى المكتبة وتم تثبيتها!`);
+            toast(`Add-in "${created.name}" installed successfully.`);
             activeTab = 'installed';
             renderView();
           } catch (err) {
-            toast(`فشل إضافة الأداة: ${err.message}`);
+            toast(`Failed to create add-in: ${err.message}`);
           }
         },
       },
-      '➕ إضافة الأداة إلى المكتبة وتثبيتها الآن'
+      'Install Add-in'
     );
 
     const formGrid = el(
-      'div.addin-form-grid',
+      'div.office-addin-form-grid',
       {},
-      el('div.addin-form-group', {}, el('label', {}, 'اسم الأداة / الإضافة (بالعربية): *'), nameInput),
-      el('div.addin-form-group', {}, el('label', {}, 'الاسم الإنجليزي (اختياري):'), nameEnInput),
-      el('div.addin-form-group', {}, el('label', {}, 'تصنيف الأداة في المكتبة:'), categorySelect),
-      el('div.addin-form-group', {}, el('label', {}, 'رمز / أيقونة الأداة:'), iconSelect),
-      el('div.addin-form-group.addin-form-col-full', {}, el('label', {}, 'نوع وسلوك تنفيذ الأداة:'), actionTypeSelect),
-      el('div.addin-form-group.addin-form-col-full', {}, el('label', {}, 'وصف الأداة وطريقة عملها:'), descInput),
+      el('div.office-addin-form-group', {}, el('label', {}, 'Add-in Name: *'), nameInput),
+      el('div.office-addin-form-group', {}, el('label', {}, 'Category:'), categorySelect),
+      el('div.office-addin-form-group', {}, el('label', {}, 'Icon Symbol:'), iconSelect),
+      el('div.office-addin-form-group', {}, el('label', {}, 'Execution Mode:'), actionTypeSelect),
+      el('div.office-addin-form-group.office-addin-form-col-full', {}, el('label', {}, 'Description:'), descInput),
       el(
-        'div.addin-form-group.addin-form-col-full',
+        'div.office-addin-form-group.office-addin-form-col-full',
         {},
         contentLabel,
         contentTextarea,
         el(
-          'span.addin-form-hint',
+          'span.office-addin-form-hint',
           {},
-          '💡 هذه الأداة ستصبح متاحة بشكل دائم في مكتبتك ويمكن تشغيلها في أي وقت داخل مستنداتك.'
+          'This add-in will be permanently accessible from the Insert > My Add-ins ribbon and menus.'
         )
       )
     );
 
-    formContainer.append(banner, formGrid, el('div.addin-form-submit-row', {}, submitBtn));
+    formContainer.append(banner, formGrid, el('div.office-addin-form-submit-row', {}, submitBtn));
     bodyContainer.appendChild(formContainer);
   }
 
   /* -------------------------------------------------------------------------- */
-  /* Helper: Render an individual Add-in Card                                  */
+  /* Helper: Render an individual Office Add-in Card                           */
   /* -------------------------------------------------------------------------- */
   function createAddinCard(item, { isInstalledView = false } = {}) {
-    const card = el('div.addin-card');
+    const card = el('div.office-addin-card');
     const isInstalled = isAddinInstalled(item.id);
 
-    // Icon & Header
-    const iconEl = el('div.addin-card-icon', {}, item.icon || '🧩');
+    // Vector SVG Icon
+    const iconKey = item.iconKey || 'custom';
+    const iconSvg = getAddinIconSvg(iconKey, 24);
+    const iconContainer = el(`div.office-addin-card-icon.${iconKey}`, { html: iconSvg });
+
     const titleBox = el(
-      'div.addin-card-title-box',
+      'div.office-addin-card-title-box',
       {},
-      el('h4.addin-card-title', { title: item.name }, item.name),
-      el('p.addin-card-subtitle', { title: item.nameEn || item.author }, item.nameEn || item.author)
+      el('h4.office-addin-card-title', { title: item.name }, item.name),
+      el('p.office-addin-card-author', { title: item.author }, item.author)
     );
 
-    const badgeClass = item.custom ? 'custom' : item.badge === 'رسمي' ? 'official' : '';
-    const badgeEl = el('span.addin-card-badge' + (badgeClass ? `.${badgeClass}` : ''), {}, item.badge || 'أداة');
+    const badgeClass = item.custom ? 'custom' : item.badge === 'Official' ? 'official' : '';
+    const badgeEl = el('span.office-addin-card-badge' + (badgeClass ? `.${badgeClass}` : ''), {}, item.badge || 'Verified');
 
-    const header = el('div.addin-card-header', {}, iconEl, titleBox, badgeEl);
+    const header = el('div.office-addin-card-header', {}, iconContainer, titleBox, badgeEl);
 
-    // Meta: rating, downloads, author
+    // Meta: rating & installs
     const meta = el(
-      'div.addin-card-meta',
+      'div.office-addin-card-meta',
       {},
-      el('span.addin-card-rating', {}, `★ ${item.rating || '5.0'}`),
-      el('span', {}, `• ${item.downloads || '1k+'}`),
-      el('span', {}, `• ${item.author || 'WriteDoc'}`)
+      el('span.office-addin-card-stars', {}, '★★★★★'),
+      el('span.office-addin-card-rating', {}, String(item.rating || '5.0')),
+      el('span', {}, `(${item.downloads || '10K+'})`)
     );
 
     // Description
-    const desc = el('p.addin-card-desc', { title: item.description }, item.description);
+    const desc = el('p.office-addin-card-desc', { title: item.description }, item.description);
 
-    // Actions row
-    const actions = el('div.addin-card-actions');
+    // Action buttons
+    const actions = el('div.office-addin-card-actions');
 
     if (isInstalled) {
       const launchBtn = el(
-        'button.addin-btn.addin-btn-primary',
+        'button.office-btn.office-btn-primary',
         {
           type: 'button',
           onclick: async () => {
@@ -409,57 +496,57 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
             await executeAddin(item, fullCtx);
           },
         },
-        '🚀 تشغيل الأداة'
+        'Open'
       );
 
-      const uninstallBtn = el(
-        'button.addin-btn.addin-btn-secondary',
+      const removeBtn = el(
+        'button.office-btn.office-btn-secondary',
         {
           type: 'button',
-          title: 'إلغاء تثبيت هذه الأداة من تطبيقك',
+          title: 'Remove this add-in from Word',
           onclick: () => {
             uninstallAddin(item.id);
-            toast(`تم إلغاء تثبيت: ${item.name}`);
+            toast(`Removed ${item.name} from Word.`);
             renderView();
           },
         },
-        'إلغاء التثبيت'
+        'Remove'
       );
 
-      actions.append(launchBtn, uninstallBtn);
+      actions.append(launchBtn, removeBtn);
 
       if (item.custom) {
         const deleteBtn = el(
-          'button.addin-btn.addin-btn-danger',
+          'button.office-btn.office-btn-danger',
           {
             type: 'button',
-            title: 'حذف الأداة المخصصة نهائياً من المكتبة',
+            title: 'Delete custom add-in permanently',
             onclick: () => {
-              if (confirm(`هل أنت متأكد من حذف الأداة المخصصة "${item.name}" نهائياً؟`)) {
+              if (confirm(`Are you sure you want to delete "${item.name}"?`)) {
                 deleteCustomAddin(item.id);
-                toast(`تم حذف الأداة المخصصة "${item.name}" من المكتبة.`);
+                toast(`Deleted ${item.name}.`);
                 renderView();
               }
             },
           },
-          '🗑️'
+          'Delete'
         );
         actions.appendChild(deleteBtn);
       }
     } else {
-      const installBtn = el(
-        'button.addin-btn.addin-btn-primary',
+      const addBtn = el(
+        'button.office-btn.office-btn-primary',
         {
           type: 'button',
           onclick: () => {
             installAddin(item.id);
-            toast(`✅ تم تثبيت أداة "${item.name}" بنجاح في تطبيقك!`);
+            toast(`Added ${item.name} to Word.`);
             renderView();
           },
         },
-        '📥 تثبيت في التطبيق'
+        'Add'
       );
-      actions.appendChild(installBtn);
+      actions.appendChild(addBtn);
     }
 
     card.append(header, meta, desc, actions);
@@ -472,33 +559,33 @@ export function openAddinsDialog(ctx = {}, { initialTab = 'store' } = {}) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* Sub-Dialogs for Interactive Built-in Add-ins                                */
+/* Sub-Dialogs for Interactive Built-in Add-ins (English Standard)           */
 /* -------------------------------------------------------------------------- */
 
 /**
- * 📱 QR & Barcode Studio Dialog
+ * QR Code & Barcode Studio
  */
 export function openQrGeneratorDialog(ctx) {
   const { editor, run, toast, insertDrawing } = ctx;
   const engine = editor();
   if (!engine) return;
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
-  const input = el('input.addins-search-input', {
+  const input = el('input.office-addins-search-input', {
     type: 'text',
-    placeholder: 'أدخل الرابط أو النص لتوليد رمز QR له...',
+    placeholder: 'Enter website URL or text to encode...',
     value: 'https://salim-studio.github.io/writedoc/',
   });
 
-  const previewBox = el('div.addin-runner-preview');
+  const previewBox = el('div.office-runner-preview');
   function updatePreview() {
     const text = input.value.trim() || 'WriteDoc QR Code';
     try {
       const svg = generateQrSvg(text, { size: 160 });
       previewBox.innerHTML = svg;
     } catch (err) {
-      previewBox.textContent = `خطأ في توليد الرمز: ${err.message}`;
+      previewBox.textContent = `Error generating QR code: ${err.message}`;
     }
   }
 
@@ -506,7 +593,7 @@ export function openQrGeneratorDialog(ctx) {
   updatePreview();
 
   const insertBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
@@ -516,42 +603,40 @@ export function openQrGeneratorDialog(ctx) {
         try {
           const blob = await generateQrPngBlob(text, { size: 280 });
           if (insertDrawing) {
-            // Insert as image drawing
             const { pictureFragment } = await import('../engine/picture-insert.js');
             const arrayBuf = await blob.arrayBuffer();
             const pngBytes = new Uint8Array(arrayBuf);
             await insertDrawing((eng, id, order) => pictureFragment({ png: pngBytes, width: 200, height: 200 }, { id, order }));
           } else {
-            // Text fallback representation
             run(engine, () => {
-              engine.model.replace(`\n[رمز QR للرابط: ${text}]\n`);
+              engine.model.replace(`\n[QR Code for URL: ${text}]\n`);
               return true;
             });
           }
-          toast?.('تم إدراج رمز QR بنجاح في المستند.');
+          toast?.('QR Code embedded into document.');
         } catch (err) {
-          toast?.(`تعذر إدراج الرمز: ${err.message}`);
+          toast?.(`Failed to embed QR code: ${err.message}`);
         }
       },
     },
-    'إدراج رمز QR في المستند'
+    'Insert QR Code into Document'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'الرابط أو النص:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Target URL or Text:'),
     input,
     previewBox,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px;' }, insertBtn)
   );
 
   const modal = openModal({
-    title: '📱 منشئ رموز الاستجابة السريعة (QR Code Studio)',
+    title: 'QR Code & Barcode Studio',
     content,
   });
 }
 
 /**
- * 🤖 AI Writing Assistant Dialog
+ * Copilot Writing Assistant
  */
 export function openAiAssistantDialog(ctx) {
   const { editor, run, toast } = ctx;
@@ -561,33 +646,33 @@ export function openAiAssistantDialog(ctx) {
   const [a, b] = engine.model.range;
   const selected = a === b ? '' : engine.model.text.slice(a, b).trim();
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
-  const sourceBox = el('textarea.addins-search-input', {
+  const sourceBox = el('textarea.office-addins-search-input', {
     rows: 4,
-    placeholder: 'اكتب أو حدد النص المراد معالجته بالذكاء الاصطناعي...',
+    placeholder: 'Enter or select the text you want Copilot to refine...',
     value: selected,
   });
 
   const promptSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: 'improve' }, 'تحسين الصياغة والبلاغة اللغوية (Improve Arabic Fluency)'),
-    el('option', { value: 'summarize' }, 'تلخيص النص في نقاط رئيسية موجزة (Summarize)'),
-    el('option', { value: 'expand' }, 'توسيع الفكرة وتطوير الشرح (Elaborate & Expand)'),
-    el('option', { value: 'academic' }, 'تحويل إلى أسلوب بحثي أكاديمي محكم (Academic Style)'),
-    el('option', { value: 'conclusion' }, 'توليد خاتمة واستنتاج نهائي (Generate Conclusion)')
+    el('option', { value: 'improve' }, 'Improve clarity, tone, and active phrasing'),
+    el('option', { value: 'summarize' }, 'Summarize into key bullet points'),
+    el('option', { value: 'expand' }, 'Elaborate and provide analytical depth'),
+    el('option', { value: 'academic' }, 'Transform into formal academic standard'),
+    el('option', { value: 'conclusion' }, 'Generate an executive conclusion')
   );
 
   const applyBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
       onclick: () => {
         const text = sourceBox.value.trim();
         if (!text) {
-          toast?.('يرجى كتابة أو تحديد نص أولاً.');
+          toast?.('Please select or enter text first.');
           return;
         }
         modal.close();
@@ -595,43 +680,43 @@ export function openAiAssistantDialog(ctx) {
         let output = '';
         const mode = promptSelect.value;
         if (mode === 'summarize') {
-          output = `\n📌 [خلاصة ذكية]:\n• ${text.split('. ').slice(0, 3).join('\n• ')}\n`;
+          output = `\n[Executive Summary]:\n• ${text.split('. ').slice(0, 3).join('\n• ')}\n`;
         } else if (mode === 'expand') {
-          output = `\n${text}\nوتجدر الإشارة في هذا السياق إلى أن التحليل العميق لهذه المعطيات يبرز أبعاداً استراتيجية بالغة الأهمية تسهم في تعزيز الكفاءة وبناء استنتاجات مستدامة تلبي المعايير المرجوة.\n`;
+          output = `\n${text}\nFurthermore, in-depth evaluation indicates strategic significance across all operational metrics, reinforcing the foundational findings and ensuring sustainable compliance.\n`;
         } else if (mode === 'academic') {
-          output = `\nبناءً على التتبع المنهجي لمحددات البحث، يتجلى بوضوح أن «${text}»، وهو ما يتطابق مع النماذج النظرية المعتمدة في الدراسات المعاصرة ذات الصلة.\n`;
+          output = `\nEmpirical observation demonstrates that "${text}", aligning with established theoretical frameworks and peer-reviewed literature in the field.\n`;
         } else if (mode === 'conclusion') {
-          output = `\nوفي الختام، تؤكد نتائج هذا الطرح أن «${text}» تشكل ركيزة أساسية تستوجب مواصلة التطوير والمتابعة وفق مؤشرات قياس محددة.\n`;
+          output = `\nIn conclusion, the synthesis of "${text}" validates the primary hypothesis and establishes actionable trajectories for future research and implementation.\n`;
         } else {
-          output = `\n«${text.replace(/\s+/g, ' ').trim()}» (تمت مراجعته وتدقيقه لغوياً وبلاغياً وفق أعلى معايير الفصاحة العربية).\n`;
+          output = `\n"${text.replace(/\s+/g, ' ').trim()}" (Polished for conciseness, professional tone, and grammatical precision).\n`;
         }
 
         run(engine, () => {
           engine.model.replace(output);
           return true;
         });
-        toast?.('تم تطبيق مساعد الذكاء الاصطناعي بنجاح.');
+        toast?.('Copilot assistant applied changes.');
       },
     },
-    'تطبيق وإدراج في المستند'
+    'Apply & Insert'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'النص المطلوب معالجته:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Source Passage:'),
     sourceBox,
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'الإجراء المطلوب من الذكاء الاصطناعي:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Copilot Action:'),
     promptSelect,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;' }, applyBtn)
   );
 
   const modal = openModal({
-    title: '🤖 مساعد الذكاء الاصطناعي للكتابة (AI Copilot)',
+    title: 'Copilot Writing Assistant',
     content,
   });
 }
 
 /**
- * 🌐 Multilingual Quick Translator Dialog
+ * Deep Multilingual Translator
  */
 export function openTranslatorDialog(ctx) {
   const { editor, run, toast } = ctx;
@@ -641,99 +726,99 @@ export function openTranslatorDialog(ctx) {
   const [a, b] = engine.model.range;
   const selected = a === b ? '' : engine.model.text.slice(a, b).trim();
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
-  const sourceBox = el('textarea.addins-search-input', {
+  const sourceBox = el('textarea.office-addins-search-input', {
     rows: 3,
-    placeholder: 'أدخل أو حدد النص المراد ترجمته...',
-    value: selected || 'Welcome to WriteDoc online editor',
+    placeholder: 'Enter text to translate...',
+    value: selected || 'Welcome to Microsoft Word online document processor',
   });
 
   const langSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: 'ar' }, 'العربية (Arabic)'),
-    el('option', { value: 'en' }, 'الإنجليزية (English)'),
-    el('option', { value: 'fr' }, 'الفرنسية (French)'),
-    el('option', { value: 'es' }, 'الإسبانية (Spanish)'),
-    el('option', { value: 'de' }, 'الألمانية (German)'),
-    el('option', { value: 'tr' }, 'التركية (Turkish)')
+    el('option', { value: 'en' }, 'English'),
+    el('option', { value: 'ar' }, 'Arabic (العربية)'),
+    el('option', { value: 'fr' }, 'French (Français)'),
+    el('option', { value: 'es' }, 'Spanish (Español)'),
+    el('option', { value: 'de' }, 'German (Deutsch)'),
+    el('option', { value: 'tr' }, 'Turkish (Türkçe)'),
+    el('option', { value: 'zh' }, 'Chinese (中文)')
   );
 
   const insertModeSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: 'below' }, 'إدراج الترجمة أسفل النص الأصلي'),
-    el('option', { value: 'replace' }, 'استبدال النص الأصلي بالترجمة')
+    el('option', { value: 'below' }, 'Insert translation below original passage'),
+    el('option', { value: 'replace' }, 'Replace selection with translation')
   );
 
   const translateBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
       onclick: () => {
         const text = sourceBox.value.trim();
         if (!text) {
-          toast?.('يرجى إدخال نص للترجمة.');
+          toast?.('Please enter text to translate.');
           return;
         }
         modal.close();
 
-        // High quality contextual translation simulator
         const targetLang = langSelect.options[langSelect.selectedIndex].text;
-        const translated = `[ترجمة إلى ${targetLang}]: ${text}`;
+        const translated = `[Translation - ${targetLang}]: ${text}`;
         const output = insertModeSelect.value === 'replace' ? translated : `\n${text}\n${translated}\n`;
 
         run(engine, () => {
           engine.model.replace(output);
           return true;
         });
-        toast?.(`تمت الترجمة إلى ${targetLang}.`);
+        toast?.(`Translated to ${targetLang}.`);
       },
     },
-    'ترجمة وإدراج'
+    'Translate & Insert'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'النص الأصلي:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Original Text:'),
     sourceBox,
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'لغة الترجمة المطلوبة:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Target Language:'),
     langSelect,
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'طريقة الإدراج في المستند:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Insertion Mode:'),
     insertModeSelect,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;' }, translateBtn)
   );
 
   const modal = openModal({
-    title: '🌐 المترجم الفوري للمستندات (Quick Translator)',
+    title: 'Deep Translator',
     content,
   });
 }
 
 /**
- * 🛡️ Security Stamps & Watermark Dialog
+ * Security Stamps & Classification
  */
 export function openWatermarkDialog(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
   const presetSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: 'TOP_SECRET' }, '🛡️ سري للغاية ومكتوم - TOP SECRET'),
-    el('option', { value: 'DRAFT' }, '📝 مسودة عمل غير نهائية - DRAFT'),
-    el('option', { value: 'APPROVED' }, '✅ معتمد وموثق رسمياً - APPROVED'),
-    el('option', { value: 'CONFIDENTIAL' }, '🔒 خاص وغير قابل للتداول - CONFIDENTIAL'),
-    el('option', { value: 'CUSTOM' }, '✏️ ختم بنص مخصص...')
+    el('option', { value: 'TOP_SECRET' }, 'TOP SECRET - STRICTLY CONFIDENTIAL'),
+    el('option', { value: 'DRAFT' }, 'DRAFT - NOT FOR DISTRIBUTION'),
+    el('option', { value: 'APPROVED' }, 'APPROVED & CERTIFIED'),
+    el('option', { value: 'CONFIDENTIAL' }, 'CONFIDENTIAL - INTERNAL USE ONLY'),
+    el('option', { value: 'CUSTOM' }, 'Custom watermark text...')
   );
 
-  const customInput = el('input.addins-search-input', {
+  const customInput = el('input.office-addins-search-input', {
     type: 'text',
-    placeholder: 'اكتب نص الختم أو العلامة المائية...',
+    placeholder: 'Enter custom stamp banner text...',
     style: 'display: none;',
   });
 
@@ -742,7 +827,7 @@ export function openWatermarkDialog(ctx) {
   };
 
   const insertBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
@@ -750,64 +835,64 @@ export function openWatermarkDialog(ctx) {
         modal.close();
         let stampText = presetSelect.options[presetSelect.selectedIndex].text;
         if (presetSelect.value === 'CUSTOM') {
-          stampText = customInput.value.trim() || 'وثيقة رسمية معتمدة';
+          stampText = customInput.value.trim() || 'CERTIFIED OFFICIAL DOCUMENT';
         }
 
-        const border = '═'.repeat(Math.max(40, stampText.length + 8));
+        const border = '═'.repeat(Math.max(46, stampText.length + 8));
         const stampBlock = `\n${border}\n    [ ${stampText} ]\n${border}\n`;
 
         run(engine, () => {
           engine.model.replace(stampBlock);
           return true;
         });
-        toast?.(`تم إدراج ختم: ${stampText}`);
+        toast?.(`Inserted classification banner: ${stampText}`);
       },
     },
-    'إدراج الختم في المستند'
+    'Insert Classification Banner'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'اختر نوع الختم أو العلامة المائية:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Classification Preset:'),
     presetSelect,
     customInput,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;' }, insertBtn)
   );
 
   const modal = openModal({
-    title: '🛡️ أختام الحماية والعلامات المائية',
+    title: 'Security Stamps & Classification',
     content,
   });
 }
 
 /**
- * 📝 Smart Lorem Ipsum Dialog
+ * Smart Lorem Ipsum & Sample Text
  */
 export function openLoremDialog(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
   const typeSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: 'arabic_literature' }, 'أدب عربي فصيح وبلاغة (عيون النثر العربي)'),
-    el('option', { value: 'arabic_academic' }, 'نص أكاديمي وتحليلي باللغة العربية'),
-    el('option', { value: 'latin_lorem' }, 'لوريم إيبسوم لاتيني كلاسيكي (Lorem Ipsum Dolor)'),
-    el('option', { value: 'arabic_alphabet' }, 'جملة الأبجدية الكاملة واختبار الخطوط')
+    el('option', { value: 'latin_lorem' }, 'Classic Latin Lorem Ipsum (Standard Typography)'),
+    el('option', { value: 'english_academic' }, 'Formal English Academic Prose'),
+    el('option', { value: 'arabic_prose' }, 'Classical Eloquent Arabic Prose (عيون النثر)'),
+    el('option', { value: 'pangram' }, 'Complete Alphabet Font Pangram')
   );
 
   const countSelect = el(
-    'select.addins-search-input',
+    'select.office-addins-search-input',
     {},
-    el('option', { value: '1' }, 'فقرة واحدة (1 Paragraph)'),
-    el('option', { value: '2' }, 'فقرتان (2 Paragraphs)'),
-    el('option', { value: '3' }, 'ثلاث فقرات (3 Paragraphs)')
+    el('option', { value: '1' }, '1 Paragraph'),
+    el('option', { value: '2' }, '2 Paragraphs'),
+    el('option', { value: '3' }, '3 Paragraphs')
   );
 
   const insertBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
@@ -816,67 +901,66 @@ export function openLoremDialog(ctx) {
         const type = typeSelect.value;
         const count = parseInt(countSelect.value, 10);
 
-        const arabicPara1 =
-          'إن العربية سيدة اللغات وأوسعها بياناً ومرونة، تسطع بتراكيبها البديعة وإيقاع مفرداتها الجزلة. وقد أثرى بها الأدباء دواوين الحكمة وشيدوا بها صروح المعارف والفنون عبر العصور المتعاقبة.';
-        const arabicPara2 =
-          'تتكامل عناصر النص الإنشائي المتقن بتناسق المعاني وائتلاف المباني، حيث ينساب الفكر في أسلوب سلس رصين يجذب المتلقي ويحفظ توازن الطرح وعمق الاستدلال.';
-        const arabicPara3 =
-          'ولا ريب في أن التنسيق الطباعي الرفيع يمنح الكلمة ألقها، ويبرز جماليات الحرف وتناغم السطور على بياض الصفحة لتبلغ الغاية المرجوة من النشر والتأليف.';
-
         const latinPara =
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.';
 
+        const academicPara =
+          'Rigorous document structuring relies on coherent typographical rhythm, standardized margins, and consistent proportional font metrics across distributed digital publication formats.';
+
         let text = '';
-        if (type === 'arabic_alphabet') {
-          text = '\n«نص حكيم له سر قاطع وذو شأن عظيم يكتب بحق» — (اختبار كامل لكافة حروف الهجاء العربية وتراكيبها الحركية).\n';
-        } else if (type === 'latin_lorem') {
-          text = '\n' + Array(count).fill(latinPara).join('\n\n') + '\n';
+        if (type === 'pangram') {
+          text = '\n"The quick brown fox jumps over the lazy dog." — (Full English 26-character typography pangram).\n';
+        } else if (type === 'english_academic') {
+          text = '\n' + Array(count).fill(academicPara).join('\n\n') + '\n';
+        } else if (type === 'arabic_prose') {
+          text = '\nإن اللغة وعاء الفكر ونبراس المعارف، تتجلى في رصانة مفرداتها وبلاغة تراكيبها لتبلغ المعاني غايتها.\n';
         } else {
-          const paras = [arabicPara1, arabicPara2, arabicPara3];
-          text = '\n' + paras.slice(0, count).join('\n\n') + '\n';
+          text = '\n' + Array(count).fill(latinPara).join('\n\n') + '\n';
         }
 
         run(engine, () => {
           engine.model.replace(text);
           return true;
         });
-        toast?.('تم إدراج النص التجريبي بنجاح.');
+        toast?.('Sample dummy text inserted.');
       },
     },
-    'إدراج النص البديل'
+    'Insert Sample Text'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'نوع النص التجريبي:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Sample Text Type:'),
     typeSelect,
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'عدد الفقرات:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Paragraph Count:'),
     countSelect,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;' }, insertBtn)
   );
 
   const modal = openModal({
-    title: '📝 مولد النصوص العربية واللاتينية (Smart Lorem)',
+    title: 'Smart Lorem Ipsum & Sample Text',
     content,
   });
 }
 
 /**
- * 🧮 Scientific Calculator & Unit Converter Dialog
+ * Formula Calculator & Unit Converter
  */
 export function openCalcDialog(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
-  const formulaInput = el('input.addins-search-input', {
+  const formulaInput = el('input.office-addins-search-input', {
     type: 'text',
-    placeholder: 'مثال: (1500 * 1.15) / 12 أو 2^8 + sqrt(144)',
+    placeholder: 'e.g. (1500 * 1.15) / 12 or 2^8 + sqrt(144)',
     value: '(1500 * 1.15) / 12',
   });
 
-  const resultBox = el('div.addin-runner-preview', { style: 'min-height: 60px; font-size: 18px; font-weight: 700; color: #1b365d;' });
+  const resultBox = el('div.office-runner-preview', {
+    style: 'min-height: 50px; font-size: 16px; font-weight: 600; color: #0078d4;',
+  });
 
   function calculate() {
     try {
@@ -886,9 +970,9 @@ export function openCalcDialog(ctx) {
         .replace(/pi/gi, 'Math.PI');
       // eslint-disable-next-line no-new-func
       const val = new Function(`return (${expr});`)();
-      resultBox.textContent = `الناتج = ${Number(val).toLocaleString('ar-EG', { maximumFractionDigits: 4 })}`;
+      resultBox.textContent = `Result = ${Number(val).toLocaleString('en-US', { maximumFractionDigits: 4 })}`;
     } catch {
-      resultBox.textContent = 'أدخل صيغة رياضية صالحة...';
+      resultBox.textContent = 'Enter a valid mathematical expression...';
     }
   }
 
@@ -896,71 +980,71 @@ export function openCalcDialog(ctx) {
   calculate();
 
   const insertBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
       onclick: () => {
         modal.close();
         run(engine, () => {
-          engine.model.replace(` [${formulaInput.value} = ${resultBox.textContent.replace('الناتج = ', '')}] `);
+          engine.model.replace(` [${formulaInput.value} = ${resultBox.textContent.replace('Result = ', '')}] `);
           return true;
         });
-        toast?.('تم إدراج المعادلة والناتج.');
+        toast?.('Formula result inserted.');
       },
     },
-    'إدراج الناتج في المستند'
+    'Insert into Document'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'اكتب العملية الحسابية:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Mathematical Expression:'),
     formulaInput,
     resultBox,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px;' }, insertBtn)
   );
 
   const modal = openModal({
-    title: '🧮 الحاسبة العلمية والعمليات الرياضية',
+    title: 'Formula Calculator & Unit Converter',
     content,
   });
 }
 
 /**
- * 📚 BibTeX Citation Importer Dialog
+ * BibTeX Citation Importer
  */
 export function openBibtexDialog(ctx) {
   const { editor, run, toast } = ctx;
   const engine = editor();
   if (!engine) return;
 
-  const content = el('div.addin-runner-dialog');
+  const content = el('div.office-runner-dialog');
 
-  const bibtexArea = el('textarea.addins-search-input', {
+  const bibtexArea = el('textarea.office-addins-search-input', {
     rows: 6,
-    placeholder: '@article{smith2025,\n  author = {Smith, John and Doe, Jane},\n  title = {Innovations in Cloud Word Processing},\n  journal = {Journal of Modern Software},\n  year = {2025},\n  volume = {14},\n  pages = {101--115}\n}',
+    placeholder:
+      '@article{smith2025,\n  author = {Smith, John and Doe, Jane},\n  title = {Innovations in Cloud Word Processing},\n  journal = {Journal of Modern Software},\n  year = {2025},\n  volume = {14},\n  pages = {101--115}\n}',
   });
 
   const insertBtn = el(
-    'button.addin-btn.addin-btn-primary',
+    'button.office-btn.office-btn-primary',
     {
       type: 'button',
       style: 'padding: 8px 20px;',
       onclick: () => {
         const raw = bibtexArea.value.trim();
         if (!raw) {
-          toast?.('يرجى لصق نص BibTeX أولاً.');
+          toast?.('Please paste BibTeX citation text.');
           return;
         }
         modal.close();
 
-        // Extract fields
         const getField = name => {
           const match = raw.match(new RegExp(`${name}\\s*=\\s*[{"]([^}"]+)[}"]`, 'i'));
           return match ? match[1].trim() : '';
         };
 
         const author = getField('author') || 'Unknown Author';
-        const title = getField('title') || 'Untitled Paper';
+        const title = getField('title') || 'Untitled Article';
         const journal = getField('journal') || getField('booktitle') || '';
         const year = getField('year') || '2025';
         const volume = getField('volume');
@@ -976,20 +1060,20 @@ export function openBibtexDialog(ctx) {
           engine.model.replace(citation);
           return true;
         });
-        toast?.('تم استيراد وتنسيق المرجع الأكاديمي بنجاح.');
+        toast?.('BibTeX reference formatted and inserted.');
       },
     },
-    'تنسيق وإدراج كمرجع أكاديمي'
+    'Format & Insert Reference'
   );
 
   content.append(
-    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'الصق كود المرجع بصيغة BibTeX:'),
+    el('label', { style: 'font-size: 13px; font-weight: 600;' }, 'Paste Raw BibTeX Entry:'),
     bibtexArea,
     el('div', { style: 'display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;' }, insertBtn)
   );
 
   const modal = openModal({
-    title: '📚 مستورد مراجع BibTeX الأكاديمي',
+    title: 'BibTeX Citation Importer',
     content,
   });
 }

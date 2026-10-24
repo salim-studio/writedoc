@@ -617,10 +617,10 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
       onSelect: () => executeAddin(item, { editor, pkg, onChange, run, insertDrawing, base }),
     }));
     return [
-      ...(items.length ? items : [{ label: 'لا توجد إضافات مثبتة', disabled: true }]),
+      ...(items.length ? items : [{ label: 'No add-ins installed', disabled: true }]),
       { separator: true },
-      { label: 'Get Add-ins (مكتبة الإضافات)…', icon: 'addins', onSelect: () => openAddins('store') },
-      { label: 'Request New Add-in (طلب إضافة أداة جديدة)…', icon: 'addins', onSelect: () => openAddins('request') },
+      { label: 'Get Add-ins…', icon: 'addins', onSelect: () => openAddins('store') },
+      { label: 'Add Custom Add-in…', icon: 'addins', onSelect: () => openAddins('request') },
     ];
   }
 
@@ -684,9 +684,9 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
       { label: 'Icons…', icon: 'icons', disabled, onSelect: insertIcons },
       ...(canCapture() ? [{ label: 'Screenshot…', icon: 'screenshot', disabled, onSelect: screenshot }] : []),
       { separator: true },
-      { label: 'Add-ins Store (مكتبة الإضافات)…', icon: 'addins', disabled, onSelect: () => openAddins('store') },
-      { label: 'My Add-ins (إضافاتي)', icon: 'addins', disabled, items: addinItems() },
-      { label: 'Request New Add-in (طلب إضافة جديدة)…', icon: 'addins', disabled, onSelect: () => openAddins('request') },
+      { label: 'Get Add-ins…', icon: 'addins', disabled, onSelect: () => openAddins('store') },
+      { label: 'My Add-ins', icon: 'addins', disabled, items: addinItems() },
+      { label: 'Add Custom Add-in…', icon: 'addins', disabled, onSelect: () => openAddins('request') },
       { separator: true },
       { label: 'Cover Page', icon: 'coverPage', disabled, items: coverPageItems() },
       { label: 'Header', icon: 'header', disabled, items: headerItems('header') },

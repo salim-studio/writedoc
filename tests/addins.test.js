@@ -52,18 +52,17 @@ describe('Add-ins Engine & Store', () => {
 
   it('dynamically creates and registers a user-requested add-in into the library', () => {
     const custom = requestAddin({
-      name: 'مساعد تدقيق العقود الذكي',
-      nameEn: 'Smart Contract Auditor',
-      description: 'أداة مخصصة لتدقيق ومراجعة البنود القانونية في العقود.',
+      name: 'Executive Contract Auditor',
+      description: 'Audit clauses and review legal terms in contracts.',
       category: 'productivity',
-      icon: '⚖️',
+      iconKey: 'custom',
       actionType: 'template',
-      templateText: 'العقد المبرم بتاريخ {date} بشأن {selection}.',
+      templateText: 'Contract executed on {date} regarding {selection}.',
     });
 
     expect(custom.id).toMatch(/^addin_custom_/);
     expect(custom.custom).toBe(true);
-    expect(custom.name).toBe('مساعد تدقيق العقود الذكي');
+    expect(custom.name).toBe('Executive Contract Auditor');
 
     // It is immediately installed
     expect(isAddinInstalled(custom.id)).toBe(true);
@@ -79,9 +78,9 @@ describe('Add-ins Engine & Store', () => {
 
   it('allows deleting a custom requested add-in from the library', () => {
     const custom = requestAddin({
-      name: 'أداة تجريبية مؤقتة',
-      description: 'وصف تجريبي',
-      category: 'tools',
+      name: 'Temporary Helper Tool',
+      description: 'Test description',
+      category: 'utilities',
       actionType: 'template',
     });
 
@@ -94,14 +93,14 @@ describe('Add-ins Engine & Store', () => {
 
   it('executes custom template add-in and replaces placeholders', async () => {
     const custom = requestAddin({
-      name: 'قالب ملخص التقرير',
+      name: 'Executive Report Summary',
       category: 'productivity',
       actionType: 'template',
-      templateText: 'ملخص التقرير بتاريخ {date} للموضوع: {selection}',
+      templateText: 'Executive report on {date} for: {selection}',
     });
 
     let replacedText = '';
-    const sampleText = 'بيانات المبيعات السنوية';
+    const sampleText = 'Annual Sales Performance';
     const fakeEngine = {
       model: {
         range: [0, sampleText.length],
@@ -119,8 +118,8 @@ describe('Add-ins Engine & Store', () => {
     };
 
     await executeAddin(custom, ctx);
-    expect(replacedText).toContain('ملخص التقرير بتاريخ');
-    expect(replacedText).toContain('بيانات المبيعات السنوية');
+    expect(replacedText).toContain('Executive report on');
+    expect(replacedText).toContain('Annual Sales Performance');
   });
 
   it('generates valid QR matrix and SVG without crashing', () => {
