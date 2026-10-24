@@ -24,6 +24,8 @@ import { diagramDrawingXml, parseDiagramDescription, DIAGRAM_LAYOUTS } from '../
 import { insertBodyField, fieldInstruction, evaluateField, documentProperties, setFieldContextProvider, DOCUMENT_PROPERTY_NAMES, formatDatePicture } from '../engine/field-results.js';
 import { linearToOmml, ommlToLinear, EQUATION_GALLERY } from '../engine/math-linear.js';
 import { ommlToMathml } from '../engine/omml-mathml.js';
+import { openLatexDialog, convertDocumentLatex } from './latex-dialog.js';
+import { ommlToLatex } from '../engine/latex.js';
 import { dropCapState, setDropCap } from '../engine/drop-caps.js';
 import { iconSvg } from '../lib/icon-library.js';
 import { chartCommands } from './insert-chart.js';
@@ -524,10 +526,10 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     }
     return null;
   };
-  function placeEquation({ linear, display }) {
+  function placeEquation({ linear, display, latex }) {
     const engine = ready(); if (!engine) return;
     engine.finishComposition();
-    const xml = linearToOmml(linear, { display }), text = (ommlToLinear(xml) || linear).replace(/\s+/g, ' ').trim() || 'Equation';
+    const xml = linearToOmml(linear, { display }), text = (latex || ommlToLinear(xml) || linear).replace(/\s+/g, ' ').trim() || 'Equation';
     run(engine, () => {
       const model = engine.model;
       if (display) {
@@ -549,14 +551,35 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     openEquationDialog({ initial: initial?.linear ?? (current ? ommlToLinear(current.math.xml) : ''), display: initial?.display ?? /oMathPara/.test(current?.math.xml || ''), editing: !!current,
       onClose: () => queueMicrotask(() => editor()?.focus()), onInsert: placeEquation });
   }
+  function insertLatex(initial = null) {
+    const engine = ready(); if (!engine) return;
+    engine.finishComposition();
+    const current = initial ? null : selectedMath();
+    openLatexDialog({
+      initial: initial?.latex ?? (current ? ommlToLatex(current.math.xml) : ''),
+      display: initial?.display ?? /oMathPara/.test(current?.math.xml || ''),
+      editing: !!current,
+      onClose: () => queueMicrotask(() => editor()?.focus()),
+      onInsert: placeEquation,
+      openEquationDialog,
+    });
+  }
   function equationItems() {
     const engine = ready();
     const preview = linear => { const node = el('span.insert-equation-thumb'); try { node.innerHTML = ommlToMathml(linearToOmml(linear)); } catch { node.textContent = linear; } return node; };
     return [...galleryItems([{ header: 'Built-In', items: EQUATION_GALLERY.map(entry => ({ label: entry.name, preview: preview(entry.linear), disabled: !engine, onSelect: () => placeEquation({ linear: entry.linear, display: true }) })) }], { columns: 2, size: 'wide', label: 'Equations' }),
-      { separator: true }, { label: 'Insert New Equation', icon: 'equation', shortcut: equationShortcut, disabled: !engine, onSelect: () => insertEquation() },
-      ...(selectedMath() ? [{ label: 'Edit Equation…', onSelect: () => insertEquation() }] : [])];
+      { separator: true },
+      { label: 'LaTeX Equation Studio…', icon: 'latex', shortcut: `${MOD_KEY}+Alt+L`, disabled: !engine, onSelect: () => insertLatex() },
+      { label: 'Insert New Equation (Linear)', icon: 'equation', shortcut: equationShortcut, disabled: !engine, onSelect: () => insertEquation() },
+      { label: 'Convert All LaTeX in Document…', icon: 'sparkle', disabled: !engine, onSelect: () => convertDocumentLatex(engine) },
+      ...(selectedMath() ? [
+        { separator: true },
+        { label: 'Edit in LaTeX…', icon: 'latex', onSelect: () => insertLatex() },
+        { label: 'Edit Equation…', icon: 'equation', onSelect: () => insertEquation() }
+      ] : [])];
   }
   const equationShortcut = MOD_KEY === 'Cmd' ? 'Ctrl+=' : 'Alt+=';
+  const latexShortcut = `${MOD_KEY}+Alt+L`;
 
   /* ---- Symbols ---- */
   function placeSymbol(ch, font = null) {
@@ -612,16 +635,17 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const object = menuButton('Object', 'object', objectItems, { size: 'small', text: 'Object' });
     const equationMain = command('Equation', 'equation', () => insertEquation(), { size: 'large', shortcut: equationShortcut });
     const equation = kit.split(equationMain, { label: 'Equation gallery', size: 'large', open: (anchor, e) => openMenu({ anchor, label: 'Equations', minWidth: 300, pointer: !!e?.detail, onClose: e?.detail ? () => editor()?.focus() : null, items: equationItems() }) });
+    const latexBtn = command('LaTeX', 'latex', () => insertLatex(), { text: 'LaTeX', shortcut: latexShortcut });
     const symbol = menuButton('Symbol', 'symbol', symbolItems, { size: 'small', text: 'Symbol' });
-    noSteal(blankPage, shapes, icons, chart, signature, dateTime, equationMain, ...(screenshotButton ? [screenshotButton] : []));
+    noSteal(blankPage, shapes, icons, chart, signature, dateTime, equationMain, latexBtn, ...(screenshotButton ? [screenshotButton] : []));
     when(coverPage, can); when(blankPage, () => can() && !ready()?.model.selectedParagraphs[0]?.cellId); if (!kit.pageBreak) when(pageBreak, () => can() && !ready()?.model.selectedParagraphs[0]?.cellId);
-    for (const control of [pictures, shapes, icons, diagram, chart, header, footer, pageNumber, textBox, quickParts, wordArt, dropCap, signature, dateTime, object, equationMain, equation.arrow, symbol, ...(screenshotButton ? [screenshotButton] : [])]) when(control, can);
+    for (const control of [pictures, shapes, icons, diagram, chart, header, footer, pageNumber, textBox, quickParts, wordArt, dropCap, signature, dateTime, object, equationMain, equation.arrow, latexBtn, symbol, ...(screenshotButton ? [screenshotButton] : [])]) when(control, can);
     return {
       pages: [rows([coverPage], [blankPage], [pageBreak])],
       illustrations: [pictures, shapes, rows([icons], [diagram], [chart])],
       headerFooter: [header, footer, pageNumber],
       text: [textBox, rows([quickParts], [wordArt], [dropCap]), rows([signature], [dateTime], [object])],
-      symbols: [equation, rows([symbol])],
+      symbols: [equation, rows([latexBtn], [symbol])],
     };
   }
 
@@ -653,6 +677,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
       { label: 'Bookmark…', icon: 'bookmark', disabled, onSelect: () => base.bookmark?.() },
       { label: 'Comment', icon: 'newComment', disabled: disabled || !base.comment, onSelect: () => base.comment?.() },
       { separator: true },
+      { label: 'LaTeX Equation…', icon: 'latex', shortcut: latexShortcut, disabled, onSelect: () => insertLatex() },
       { label: 'Equation', icon: 'equation', shortcut: equationShortcut, disabled, onSelect: () => insertEquation() },
       { label: 'Symbol…', icon: 'symbol', disabled, onSelect: moreSymbols },
     ];
@@ -667,7 +692,10 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
       if (ready()?.model.selectedImage?.kind === 'chart' && commands.editChart) items.push({ label: 'Edit Chart Data…', icon: 'chart', onSelect: () => commands.editChart() });
       return items;
     }
-    if (context === 'text' && selectedMath()) return [{ label: 'Edit Equation…', icon: 'equation', onSelect: () => insertEquation() }];
+    if (context === 'text' && selectedMath()) return [
+      { label: 'Edit in LaTeX…', icon: 'latex', onSelect: () => insertLatex() },
+      { label: 'Edit Equation…', icon: 'equation', onSelect: () => insertEquation() }
+    ];
     return [];
   }
 
@@ -677,6 +705,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     if (e.defaultPrevented || isComposing(e) || !e.target?.matches?.('.canvas-input') || !ready()) return;
     const equationChord = MOD_KEY === 'Cmd' ? e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey : e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey;
     if (equationChord && e.code === 'Equal') { e.preventDefault(); insertEquation(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.altKey && e.code === 'KeyL') { e.preventDefault(); insertLatex(); return; }
     if (e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey && ['KeyD', 'KeyT', 'KeyP'].includes(e.code)) {
       e.preventDefault();
       if (e.code === 'KeyP') { insertPageNumber('current', PAGE_NUMBER_DESIGNS[0], null); return; }
@@ -692,7 +721,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     insertPageNumber: (event, button) => openMenu({ anchor: button || document.activeElement, label: 'Page Number', minWidth: 220, items: pageNumberItems(), pointer: !!event?.detail, onClose: event?.detail ? () => editor()?.focus() : null }),
     textBoxItems, insertTextBox: () => insertTextBoxDesign(TEXT_BOX_DESIGNS[0]), wordArtItems, insertWordArt, insertSignatureLine,
     dropCapItems, dropCapOptions, insertDateTime, insertField, quickPartsItems, saveAutoText, objectItems, insertTextFromFile,
-    equationItems, insertEquation, symbolItems, insertSymbol: moreSymbols, moreSymbols,
+    equationItems, insertEquation, insertLatex, convertDocumentLatex: () => convertDocumentLatex(ready()), symbolItems, insertSymbol: moreSymbols, moreSymbols,
     extendMenu, contextMenuItems,
   };
   Object.assign(commands, chartCommands({ hub: { ready, fail, insertDrawing, textWidth }, pkg, editor }));

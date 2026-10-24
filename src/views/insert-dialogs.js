@@ -222,6 +222,9 @@ export function openSymbolDialog({ onInsert, onClose }) {
   return dialog.modal;
 }
 
+import { openLatexDialog } from './latex-dialog.js';
+import { linearToLatex } from '../engine/latex.js';
+
 /* ---- Equation ---- */
 export function openEquationDialog({ initial = '', display = false, onInsert, onClose, editing = false }) {
   const input = el('textarea.input.insert-equation-input', { rows: 3, 'aria-label': 'Equation in linear format', spellcheck: false, placeholder: 'For example: x = (-b ± √(b^2 - 4ac))/2a' }, initial);
@@ -238,8 +241,18 @@ export function openEquationDialog({ initial = '', display = false, onInsert, on
   };
   input.addEventListener('input', render); own.addEventListener('change', render);
   input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey && !isComposing(e)) { e.preventDefault(); input.form.requestSubmit(); } });
+
+  const latexModeBtn = el('button.btn.btn-outline.btn-sm', {
+    type: 'button',
+    onclick: () => {
+      dialog.modal.close();
+      const currentTex = linearToLatex(input.value);
+      openLatexDialog({ initial: currentTex, display: own.checked, onInsert, onClose, editing, openEquationDialog });
+    },
+  }, '📐 فتح محرر LaTeX المتقدم');
+
   const dialog = formDialog({ title: editing ? 'Edit Equation' : 'Equation', submit: editing ? 'Update' : 'Insert', wide: true, className: 'insert-equation', onClose, content: [
-    field('Equation', input, 'Linear format: a/b fraction, x^2 superscript, x_i subscript, √(x) root, ∑_(i=1)^n sum, ■(a&b@c&d) matrix, \\alpha for Greek.'),
+    el('div.row.row-between', {}, field('Equation', input, 'Linear format: a/b fraction, x^2 superscript, x_i subscript, √(x) root, ∑_(i=1)^n sum, ■(a&b@c&d) matrix, \\alpha for Greek.'), latexModeBtn),
     symbols, el('div', {}, el('span.field-label', {}, 'Preview'), preview), el('label.ed-check', {}, own, 'Display on its own line'),
     el('details.insert-equation-more', {}, el('summary', {}, 'Common equations'), gallery)],
   onSubmit: () => {
@@ -249,7 +262,7 @@ export function openEquationDialog({ initial = '', display = false, onInsert, on
   render(); input.focus(); input.select();
   return dialog.modal;
 }
-export { linearToOmml, ommlToLinear };
+export { linearToOmml, ommlToLinear, openLatexDialog };
 
 /* ---- Icons ---- */
 /** Icons: search and browse the original icon set; several icons can be inserted at once, in one color. */

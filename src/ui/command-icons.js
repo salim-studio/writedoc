@@ -271,6 +271,7 @@ export const COMMAND_ICONS = {
   field: r(2.5, 6.5, 15, 7, 'of') + t(10, 12.2, '{ }', 6.5, { c: 'txb' }),
   symbol: t(10, 15.5, 'Ω', 14),
   equation: t(10, 15.5, 'π', 15),
+  latex: r(2.5, 3, 15, 14, 'of', 1.5) + t(10, 12, '{ }', 6, { c: 'txb' }) + p('M5.5 14h9', 'b'),
   object: r(2.5, 2.5, 13, 13, 'of', 2) + r(7, 7, 10.5, 10.5, 'bs glassy', 2) + ci(10, 10, 1.1, 'glint'),
   // Screenshot: a screen with a captured region marked by blue corner brackets.
   screenshot: r(2.5, 3.5, 15, 10.5, 'of', 1.4) + p('M7.5 17h5M10 14v3', 'o') + p('M5.5 8.5v-2h2.5M14.5 8.5v-2H12M5.5 9.5v2h2.5M14.5 9.5v2H12', 'b thick'),
