@@ -214,6 +214,10 @@ export function classicMenus(ctx) {
     w.textEffectItems && sub('Text Effects', w.textEffectItems() || []),
     control(c.paragraphGeometry, 'Paragraph…', { icon: 'paragraphDialog', shortcut: sc('format.paragraph') }),
     control(c.pageSetup, 'Document…', { icon: 'pageSetup' }),
+    c.ltrDirection && c.rtlDirection && sub('Text Direction', [
+      control(c.ltrDirection, 'Left-to-Right Text Direction', { icon: 'dirLtr', checked: c.ltrDirection.getAttribute('aria-pressed') === 'true' }),
+      control(c.rtlDirection, 'Right-to-Left Text Direction', { icon: 'dirRtl', checked: c.rtlDirection.getAttribute('aria-pressed') === 'true' }),
+    ]),
     sep,
     w.bulletsAndNumbering ? opt(w.bulletsAndNumbering, 'Bullets and Numbering…', { icon: 'numbers', disabled: !editable() }) : sub('Bullets and Numbering', [
       control(c.bullets, 'Bulleted List', { icon: 'bullets', checked: c.bullets.getAttribute('aria-pressed') === 'true' }),

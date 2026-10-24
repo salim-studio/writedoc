@@ -17,7 +17,7 @@ const trailing = text => [...text].every(c=>trailingTypes.has(bidi.getBidiCharTy
 // 17.3.2.30). Such a space is part of the reversed text, not an L1 line tail.
 export const bidiRtlSpace = c => c.text === ' ' && c.style.rtl && c.style.bidiLevel % 2 === 1;
 
-export function bidiCharacters(chars) {
+export function bidiCharacters(chars, baseDir = 'ltr') {
   if (!chars.length) return chars;
   chars=rtlFontCharacters(chars,text=>bidi.getBidiCharTypeName(text));
   let proxy = '', rtl = false;
@@ -31,7 +31,7 @@ export function bidiCharacters(chars) {
     if(rtl && c.text==='\t') proxy+='\u202c\u202b';
   }
   if (rtl) proxy += '\u202c';
-  const {levels} = bidi.getEmbeddingLevels(proxy, 'ltr');
+  const {levels} = bidi.getEmbeddingLevels(proxy, baseDir);
   return chars.map((c,i) => ({...c, style:{...c.style,bidiLevel:levels[indices[i]],bidiDirection:levels[indices[i]]%2 ? 'rtl' : 'ltr'}}));
 }
 

@@ -195,6 +195,8 @@ export const COMMAND_ICONS = {
   indent: p('M3 3.5h14M9.5 7.5h7.5M9.5 11.5h7.5M3 16.5h14', 'o') + p('M2.5 9.5h5M5.5 7.5l2 2-2 2', 'b'),
   sort: az(6, 9) + arrowDown(13.5, 3.5, 13),
   pilcrow: p('M11.5 3.5v13M14.5 3.5v13M16.5 3.5H9.5', 'b thick') + p('M9.5 3.5a3.3 3.3 0 0 0 0 6.6h2V3.5z', 'bs'),
+  dirLtr: p('M3 7l3.5 3.5L3 14', 'b thick') + p('M13.5 4v12M16 4v12M9.5 4h6.5', 'o thick') + p('M13.5 4H10a3 3 0 0 0 0 6h3.5V4z', 's'),
+  dirRtl: p('M8.5 4v12M11 4v12M4.5 4h6.5', 'o thick') + p('M8.5 4H5a3 3 0 0 0 0 6h3.5V4z', 's') + p('M17 7l-3.5 3.5L17 14', 'b thick'),
   alignLeft: p('M3 4.5h14M3 8.5h9M3 12.5h14M3 16.5h9', 'o'),
   alignCenter: p('M3 4.5h14M5.5 8.5h9M3 12.5h14M5.5 16.5h9', 'o'),
   alignRight: p('M3 4.5h14M8 8.5h9M3 12.5h14M8 16.5h9', 'o'),

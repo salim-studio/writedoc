@@ -38,6 +38,18 @@ export function keyboardShortcuts({ editor, pkg, applyStyleLevel, focusFont, foc
       return paragraph(engine => engine.setParagraphFormat({ spaceBefore: (format().spaceBefore ?? 0) > 0 ? 0 : 12 }));
     }
     if (!control || e.altKey) return null;
+    if (code === 'ShiftLeft' || (e.shiftKey && e.location === 1)) {
+      return paragraph(engine => {
+        const currentAlign = format().alignment;
+        engine.setParagraphFormat({ bidi: false, ...(currentAlign === 'right' ? { alignment: 'left' } : {}) });
+      });
+    }
+    if (code === 'ShiftRight' || (e.shiftKey && e.location === 2)) {
+      return paragraph(engine => {
+        const currentAlign = format().alignment;
+        engine.setParagraphFormat({ bidi: true, ...(currentAlign === 'left' ? { alignment: 'right' } : {}) });
+      });
+    }
     if (!e.shiftKey && code === 'KeyQ') return paragraph(engine => engine.clearDirectParagraphFormatting());
     if (code === 'KeyM') {
       const left = format().indentLeft;

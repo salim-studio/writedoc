@@ -140,6 +140,16 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
   small(c.outdent, { icon: 'outdent' }); small(c.indent, { icon: 'indent' });
   c.outdent.setAttribute('aria-label', 'Decrease Indent'); c.indent.setAttribute('aria-label', 'Increase Indent');
   c.outdent.title = 'Decrease Indent'; c.indent.title = 'Increase Indent';
+  if (c.ltrDirection) {
+    small(c.ltrDirection, { icon: 'dirLtr' });
+    c.ltrDirection.setAttribute('aria-label', 'Left-to-Right Text Direction');
+    c.ltrDirection.title = 'Left-to-Right Text Direction (Ctrl+Left Shift)';
+  }
+  if (c.rtlDirection) {
+    small(c.rtlDirection, { icon: 'dirRtl' });
+    c.rtlDirection.setAttribute('aria-label', 'Right-to-Left Text Direction');
+    c.rtlDirection.title = 'Right-to-Left Text Direction (Ctrl+Right Shift)';
+  }
   const sort = command('Sort', 'sort', () => w.sortParagraphs?.());
   const marks = command('Show Formatting Marks', 'pilcrow', () => w.toggleMarks?.(), { shortcut: `${MOD_KEY}+8`, attrs: { 'aria-pressed': 'false' } });
   noFocusSteal(sort, marks, multilevel);
@@ -162,7 +172,7 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
   const paragraphLauncher = w.paragraphDialog ? command('Paragraph Settings', 'paragraphDialog', () => w.paragraphDialog(), { shortcut: MOD_KEY === 'Cmd' ? 'Cmd+Option+M' : null }) : small(c.paragraphGeometry, { icon: 'paragraphDialog' });
   if (w.paragraphDialog) { noFocusSteal(paragraphLauncher); when(paragraphLauncher, () => !!a.hasDocument?.()); }
   const paragraphGroup = [rows(
-    [bulletSplit, numberSplit, multilevel, divider(), c.outdent, c.indent, divider(), sort, divider(), marks],
+    [bulletSplit, numberSplit, multilevel, divider(), c.outdent, c.indent, ...(c.ltrDirection && c.rtlDirection ? [divider(), c.ltrDirection, c.rtlDirection] : []), divider(), sort, divider(), marks],
     [alignLeft, alignCenter, alignRight, justify, divider(), c.lineSpacingMenu, divider(), c.paragraphShading, bordersControl, divider(), paragraphLauncher])];
 
   // The quick style gallery shows the document's paragraph styles in their own formatting.

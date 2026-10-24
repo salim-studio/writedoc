@@ -98,6 +98,16 @@ const ICONS = {
   h2: Heading2,
   h3: Heading3,
   pilcrow: Pilcrow,
+  dirLtr: [
+    ['path', { d: 'M4 7l4 4-4 4', stroke: '#0078d4', 'stroke-width': '2.2', fill: 'none' }],
+    ['path', { d: 'M16 4v14M19 4v14M12 4h7', stroke: 'currentColor', 'stroke-width': '2', fill: 'none' }],
+    ['path', { d: 'M16 4h-4a3.5 3.5 0 0 0 0 7h4z', fill: 'currentColor' }]
+  ],
+  dirRtl: [
+    ['path', { d: 'M9 4v14M12 4v14M5 4h7', stroke: 'currentColor', 'stroke-width': '2', fill: 'none' }],
+    ['path', { d: 'M9 4H5a3.5 3.5 0 0 0 0 7h4z', fill: 'currentColor' }],
+    ['path', { d: 'M20 7l-4 4 4 4', stroke: '#0078d4', 'stroke-width': '2.2', fill: 'none' }]
+  ],
   replace: Replace,
   zoomIn: ZoomIn,
   zoomOut: ZoomOut,
