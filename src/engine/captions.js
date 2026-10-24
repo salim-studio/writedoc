@@ -150,7 +150,7 @@ export function formatImageReferenceRuns({
     Year: year,
     Publisher: publisher,
     URL: url,
-    Pages: location,
+    Pages: location ? location.replace(/^(?:pp?\.?\s*)+/i, '') : '',
     Volume: volume,
     Issue: issue,
   };

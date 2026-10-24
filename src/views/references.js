@@ -273,17 +273,192 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     fill(); type.focus();
   }
 
-  /* ---- Image Source Reference ---- */
-  async function imageReferenceDialog() {
+  /* ---- Image Source Reference & OCR ---- */
+  async function imageReferenceDialog(options = {}) {
     const engine = ready(); if (!engine) return;
     if (!engine.model.selectedImage) throw new Error('Select an image first.');
     if (engine.session.path !== null) engine.editStory(null);
     const captions = await import('../engine/captions.js');
     const doiModule = await import('../engine/doi.js');
+    const ocrModule = await import('../engine/ocr.js');
+    const textSourceModule = await import('../engine/text-source.js');
+
+    const selectedImage = engine.model.selectedImage;
+    const thumbUrl = ocrModule.getImageThumbnailUrl(engine, selectedImage);
+    const imageBlobOrCanvas = ocrModule.getImageBlobOrCanvas(engine, selectedImage);
     const sourceTypes = Object.entries(captions.IMAGE_REF_TYPES).map(([id, name]) => [id, name]);
     const citationStyles = Object.entries(captions.IMAGE_CITATION_STYLES).map(([id, name]) => [id, name]);
 
     let authorsList = null;
+
+    /* OCR & Source Identification Section */
+    const ocrLangSelect = select('Language / لغة النص', Object.entries(ocrModule.OCR_LANGUAGES), 'ara+eng');
+    const ocrExtractBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '⚡ تحويل الصورة إلى كتابة (Extract Text)');
+    const ocrProgressBar = el('div.ref-ocr-progress-bar', { style: 'display: none;' }, el('div.ref-ocr-progress-fill', { style: 'width: 0%;' }));
+    const ocrStatus = el('span.ref-ocr-status', { style: 'font-size: 12px; color: var(--ink-2); display: block; padding: 2px 0;' }, 'يمكنك تحويل النص في الصورة إلى كتابة والبحث التلقائي عن المرجع ورقم الصفحة.');
+    const ocrTextarea = el('textarea.ref-ocr-text.input', {
+      placeholder: 'سيظهر النص المستخرج من الصورة هنا، أو يمكنك لصق أي فقرة للبحث عن مصدرها الأكاديمي ورقم صفحتها...',
+      rows: 3,
+      dir: 'auto',
+    });
+    const findSourceBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '🔍 معرفة المصدر واستيراد المرجع والصفحة');
+    const insertTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📝 إدراج النص في المستند');
+    const copyTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📋 نسخ النص');
+    const sourceResults = el('div.ref-source-results', { style: 'display: none;' });
+
+    async function doOcr() {
+      if (!imageBlobOrCanvas) {
+        ocrStatus.textContent = '⚠️ Could not read image pixels.';
+        return;
+      }
+      ocrExtractBtn.disabled = true;
+      ocrExtractBtn.textContent = 'Processing OCR…';
+      ocrProgressBar.style.display = 'block';
+      const fill = ocrProgressBar.firstElementChild;
+      fill.style.width = '10%';
+      ocrStatus.textContent = '⏳ جاري تشغيل نموذج التعرف الضوئي (OCR)...';
+      try {
+        const res = await ocrModule.recognizeImage(imageBlobOrCanvas, {
+          lang: ocrLangSelect.value,
+          onProgress: p => {
+            fill.style.width = `${p.progress}%`;
+            ocrStatus.textContent = p.message;
+          },
+        });
+        fill.style.width = '100%';
+        ocrTextarea.value = res.text;
+        ocrStatus.textContent = `✓ تم استخراج النص بنجاح (${res.text.length} حرف، دقة: ${Math.round(res.confidence)}%)`;
+        ocrStatus.style.color = '#1b7340';
+        if (res.text.trim()) {
+          doFindSource();
+        }
+      } catch (err) {
+        ocrStatus.textContent = `⚠️ خطأ في التعرف الضوئي: ${err.message || 'فشلت المعالجة'}`;
+        ocrStatus.style.color = '#d93025';
+      } finally {
+        ocrExtractBtn.disabled = false;
+        ocrExtractBtn.textContent = '⚡ تحويل الصورة إلى كتابة (Extract Text)';
+      }
+    }
+    ocrExtractBtn.onclick = doOcr;
+
+    async function doFindSource() {
+      const textToSearch = ocrTextarea.value.trim();
+      if (!textToSearch) {
+        ocrStatus.textContent = '⚠️ يرجى استخراج النص من الصورة أولاً أو كتابة جملة للبحث عن مصدرها.';
+        ocrStatus.style.color = '#d93025';
+        return;
+      }
+      findSourceBtn.disabled = true;
+      findSourceBtn.textContent = 'جاري البحث…';
+      ocrStatus.textContent = '⏳ جاري البحث في قواعد البيانات الأكاديمية (Crossref & OpenAlex) عن المقالات والكتب وأرقام الصفحات…';
+      ocrStatus.style.color = 'var(--ink-2)';
+      sourceResults.style.display = 'grid';
+      sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, 'جاري البحث عن المراجع العلمية المطابقة...'));
+
+      try {
+        const { queryUsed, results } = await textSourceModule.identifyTextSource(textToSearch);
+        if (!results.length) {
+          sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `لم يتم العثور على توثيق مباشر لعبارة: "${queryUsed.slice(0, 50)}…". يمكنك إدخال DOI أو البيانات يدوياً أدناه.`));
+          ocrStatus.textContent = 'لم يتم العثور على مرجع أكاديمي مباشر.';
+          return;
+        }
+
+        ocrStatus.textContent = `✓ تم العثور على ${results.length} مصدر/مرجع أكاديمي مطابق!`;
+        ocrStatus.style.color = '#1b7340';
+
+        sourceResults.replaceChildren(
+          ...results.map(item => {
+            const card = el('div.ref-source-card', {},
+              el('p.ref-source-card-title', {}, item.title),
+              el('div.ref-source-card-meta', {},
+                item.authors ? el('span', {}, `👤 ${item.authors}`) : null,
+                item.year ? el('span', {}, `📅 ${item.year}`) : null,
+                item.journal ? el('span', {}, `🏛️ ${item.journal}`) : null,
+                item.location ? el('span.ref-source-badge.page', {}, `📄 ${item.location}`) : null,
+                item.doi ? el('span.ref-source-badge', {}, `DOI: ${item.doi}`) : null,
+              ),
+              el('div.ref-source-card-actions', {},
+                el('button.btn.btn-outline', {
+                  type: 'button',
+                  style: 'font-size: 12px; padding: 3px 10px; font-weight: 600;',
+                  onclick: () => {
+                    if (item.title) title.value = item.title;
+                    if (item.authors) author.value = item.authors;
+                    if (item.year) year.value = item.year;
+                    if (item.journal) journal.value = item.journal;
+                    if (item.volume) volume.value = item.volume;
+                    if (item.issue) issue.value = item.issue;
+                    if (item.location) location.value = item.location;
+                    else if (item.rawPage) location.value = item.rawPage.includes('-') ? `pp. ${item.rawPage}` : `p. ${item.rawPage}`;
+                    if (item.publisher) publisher.value = item.publisher;
+                    if (item.url) url.value = item.url;
+                    if (item.sourceType && captions.IMAGE_REF_TYPES[item.sourceType]) sourceType.value = item.sourceType;
+                    authorsList = item.authorsList || null;
+                    sync();
+                    card.style.borderColor = '#1b7340';
+                    card.style.background = '#e6f4ea';
+                  },
+                }, '📥 استيراد هذا المرجع والصفحة (Import Reference & Page)')
+              )
+            );
+            return card;
+          })
+        );
+      } catch (err) {
+        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: #d93025;' }, `⚠️ ${err.message}`));
+        ocrStatus.textContent = `⚠️ ${err.message}`;
+        ocrStatus.style.color = '#d93025';
+      } finally {
+        findSourceBtn.disabled = false;
+        findSourceBtn.textContent = '🔍 معرفة المصدر واستيراد المرجع والصفحة';
+      }
+    }
+    findSourceBtn.onclick = doFindSource;
+
+    insertTextBtn.onclick = () => {
+      const txt = ocrTextarea.value.trim();
+      if (!txt) return;
+      engine.execute(() => {
+        engine.model.select(engine.model.range[1]);
+        engine.model.replace('\n' + txt + '\n');
+      });
+      ocrStatus.textContent = '✓ تم إدراج النص المستخرج في المستند بنجاح!';
+      ocrStatus.style.color = '#1b7340';
+    };
+
+    copyTextBtn.onclick = async () => {
+      const txt = ocrTextarea.value.trim();
+      if (!txt) return;
+      try {
+        await navigator.clipboard.writeText(txt);
+        copyTextBtn.textContent = '✓ تم النسخ!';
+        setTimeout(() => { copyTextBtn.textContent = '📋 نسخ النص'; }, 1500);
+      } catch {}
+    };
+
+    const ocrPanel = el('div.ref-ocr-panel', {},
+      el('div.ref-ocr-head', {},
+        el('div.ref-ocr-thumb-wrap', {},
+          thumbUrl ? el('img.ref-ocr-thumb', { src: thumbUrl, alt: 'Image thumbnail' }) : null,
+          el('h3.ref-ocr-title', {}, '📷 استخراج النص (OCR) ومعرفة المصدر الأكاديمي والصفحة')
+        ),
+        el('div', { style: 'display: flex; gap: 8px; align-items: flex-end;' },
+          el('div', { style: 'min-width: 170px;' }, field('اللغة / Language', ocrLangSelect)),
+          ocrExtractBtn
+        )
+      ),
+      ocrProgressBar,
+      ocrStatus,
+      ocrTextarea,
+      el('div', { style: 'display: flex; gap: 8px; flex-wrap: wrap; align-items: center;' },
+        findSourceBtn,
+        insertTextBtn,
+        copyTextBtn
+      ),
+      sourceResults
+    );
+
     const doi = text('DOI or URL', '', { placeholder: 'e.g. 10.1038/s41586-020-2649-2 or https://doi.org/...' });
     const fetchBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, 'Fetch Metadata');
     const status = el('span.ref-doi-status', { style: 'font-size: 12px; display: inline-block; padding: 2px 0;' });
@@ -380,10 +555,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     sync();
 
     openDialog({
-      title: 'Image Source Reference',
+      title: 'Image Source Reference & OCR',
       className: 'ref-caption-dialog',
       wide: true,
       body: [
+        ocrPanel,
         doiField,
         el('div.ref-two-column.ref-tight', {}, field('Citation style', style), field('Source type', sourceType)),
         el('div.ref-two-column.ref-tight', {}, field('Author(s)', author), field('Year', year)),
@@ -424,7 +600,12 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
         }
       },
     });
-    doi.focus();
+
+    if (options.startOcr) {
+      setTimeout(doOcr, 120);
+    } else {
+      doi.focus();
+    }
   }
 
   /* ---- Ribbon ---- */
@@ -447,10 +628,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     // Captions
     const caption = command('Insert Caption', 'caption', () => captionDialog(), { size: 'large', text: 'Insert Caption' });
     const imgRef = command('Image Reference', 'citation', () => imageReferenceDialog(), { size: 'large', text: 'Image Reference' });
+    const ocrBtn = command('Image OCR & Source', 'text', () => imageReferenceDialog({ startOcr: true }), { text: 'OCR & Source' });
     const figures = command('Insert Table of Figures', 'tableOfFigures', () => toc.figuresDialog(), { text: 'Insert Table of Figures' });
     const updateFigures = command('Update Table of Figures', 'updateTable', () => toc.updateDialog(true), { text: 'Update Table' });
     const xref = command('Cross-reference', 'crossReference', () => crossReferenceDialog(), { text: 'Cross-reference' });
-    when(caption, () => !!ready()); when(imgRef, () => !!ready()); when(figures, bodyReady); when(updateFigures, () => !!ready() && toc.hasFigures()); when(xref, bodyReady);
+    when(caption, () => !!ready()); when(imgRef, () => !!ready()); when(ocrBtn, () => !!ready() && !!editor()?.model.selectedImage); when(figures, bodyReady); when(updateFigures, () => !!ready() && toc.hasFigures()); when(xref, bodyReady);
     // Index
     const markEntry = command('Mark Entry', 'markEntry', () => indexes.markEntryPanel(), { size: 'large', text: 'Mark Entry', shortcut: MOD_KEY === 'Cmd' ? 'Cmd+Option+Shift+X' : 'Alt+Shift+X' });
     const insertIndex = command('Insert Index', 'index', () => indexes.insertIndexDialog(), { text: 'Insert Index' });
@@ -461,11 +643,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     const insertToa = command('Insert Table of Authorities', 'tableOfAuthorities', () => indexes.insertAuthoritiesDialog(), { text: 'Insert Table' });
     const updateToa = command('Update Table of Authorities', 'updateAuthorities', () => indexes.updateAuthorities(), { text: 'Update Table' });
     when(markCitation, bodyReady); when(insertToa, bodyReady); when(updateToa, () => !!ready() && hasField('TOA'));
-    noSteal(smart, manage, caption, imgRef, figures, updateFigures, xref, markEntry, insertIndex, updateIndex, markCitation, insertToa, updateToa);
+    noSteal(smart, manage, caption, imgRef, ocrBtn, figures, updateFigures, xref, markEntry, insertIndex, updateIndex, markCitation, insertToa, updateToa);
     return [
       { id: 'research', label: 'Research', icon: 'smartLookup', priority: 2, after: 'footnotes', items: [smart] },
       { id: 'citations', label: 'Citations & Bibliography', icon: 'citation', priority: 4, after: 'research', items: [citation, rows([manage], [styleWrap], [bibliography])] },
-      { id: 'captions', label: 'Captions', icon: 'caption', priority: 4, after: 'citations', items: [caption, imgRef, rows([figures], [updateFigures], [xref])] },
+      { id: 'captions', label: 'Captions', icon: 'caption', priority: 4, after: 'citations', items: [caption, imgRef, rows([ocrBtn], [figures], [updateFigures], [xref])] },
       { id: 'index', label: 'Index', icon: 'index', priority: 3, after: 'captions', items: [markEntry, rows([insertIndex], [updateIndex])] },
       { id: 'authorities', label: 'Table of Authorities', icon: 'tableOfAuthorities', priority: 1, after: 'index', items: [markCitation, rows([insertToa], [updateToa])] },
     ];
@@ -483,6 +665,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       { label: 'Footnote…', icon: 'footnote', disabled, onSelect: () => notes.notesDialog() },
       { label: 'Caption…', icon: 'caption', disabled, onSelect: () => captionDialog() },
       { label: 'Image Reference…', icon: 'citation', disabled: disabled || !editor()?.model.selectedImage, onSelect: () => imageReferenceDialog() },
+      { label: 'Extract Text (OCR) & Source…', icon: 'text', disabled: disabled || !editor()?.model.selectedImage, onSelect: () => imageReferenceDialog({ startOcr: true }) },
       { label: 'Index and Tables', icon: 'toc', disabled, items: [
         { label: 'Index…', icon: 'index', onSelect: () => indexes.insertIndexDialog() },
         { label: 'Table of Contents…', icon: 'toc', onSelect: () => toc.customDialog() },
@@ -514,6 +697,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       items.push(
         { label: 'Insert Caption…', icon: 'caption', disabled: !ready(), onSelect: () => captionDialog() },
         { label: 'Insert Source Reference…', icon: 'citation', disabled: !ready(), onSelect: () => imageReferenceDialog() },
+        { label: 'Extract Text (OCR) & Find Source…', icon: 'text', disabled: !ready(), onSelect: () => imageReferenceDialog({ startOcr: true }) },
       );
     }
     return items;
@@ -522,6 +706,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
   const commands = {
     captionDialog,
     imageReferenceDialog,
+    imageOcrDialog: (options) => imageReferenceDialog({ startOcr: true, ...options }),
     canInsertImageReference: () => !!ready() && !!editor()?.model.selectedImage,
     insertFootnote: () => notes.insertNote('footnote'),
     insertEndnote: () => notes.insertNote('endnote'),
