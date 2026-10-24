@@ -306,7 +306,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     const location = text('Page / Location', '', { placeholder: 'e.g. pp. 357–362 or p. 42, §3' });
     const publisher = text('Publisher', '', { placeholder: 'e.g. Springer, Oxford Press' });
     const url = text('URL / DOI', '', { placeholder: 'e.g. https://doi.org/...' });
-    const position = select('Position', [['below', 'Below image'], ['above', 'Above image']], 'below');
+    const position = select('Placement / Position', [
+      ['below', 'Below image (أسفل الصورة مباشرة)'],
+      ['above', 'Above image (أعلى الصورة مباشرة)'],
+      ['footnote', 'Bottom of page / Footnote (في حاشية أسفل الصفحة)'],
+    ], 'below', () => sync());
     const preview = el('p.ref-caption-preview', { 'aria-live': 'polite' });
 
     async function doFetch() {
@@ -345,6 +349,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     doi.addEventListener('paste', () => { setTimeout(doFetch, 50); });
 
     function sync() {
+      const isFootnote = position.value === 'footnote';
       const current = {
         style: style.value,
         author: author.value.trim(),
@@ -360,8 +365,9 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
         authorsList,
       };
       const runs = captions.formatImageReferenceRuns(current);
+      const prefixLabel = isFootnote ? 'Footnote: ' : 'Source 1: ';
       preview.replaceChildren(
-        el('strong', {}, 'Source 1: '),
+        el('strong', {}, prefixLabel),
         ...runs.map(r => r.italic ? el('em', {}, r.text) : el('span', {}, r.text))
       );
     }
@@ -387,25 +393,36 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
           el('div.ref-two-column.ref-tight', {}, field('Volume', volume), field('Issue', issue)),
           field('Page / Location', location)
         ),
-        el('div.ref-two-column.ref-tight', {}, field('Publisher', publisher), field('Position', position)),
+        el('div.ref-two-column.ref-tight', {}, field('Publisher', publisher), field('Placement / Position', position)),
         field('URL / DOI', url),
         el('div.ref-section', {}, el('legend', {}, 'Formatted Citation Preview'), preview),
       ],
-      onSubmit: () => runBody((doc, c) => c.insertImageReference(doc, {
-        style: style.value,
-        author: author.value.trim(),
-        title: title.value.trim(),
-        journal: journal.value.trim(),
-        volume: volume.value.trim(),
-        issue: issue.value.trim(),
-        location: location.value.trim(),
-        year: year.value.trim(),
-        sourceType: sourceType.value,
-        publisher: publisher.value.trim(),
-        url: url.value.trim(),
-        above: position.value === 'above',
-        authorsList,
-      }), { modules: ['captions'] }),
+      onSubmit: async () => {
+        if (!author.value.trim() && !title.value.trim()) throw new Error('Enter at least the author or the title of the source.');
+        const current = {
+          style: style.value,
+          author: author.value.trim(),
+          title: title.value.trim(),
+          journal: journal.value.trim(),
+          volume: volume.value.trim(),
+          issue: issue.value.trim(),
+          location: location.value.trim(),
+          year: year.value.trim(),
+          sourceType: sourceType.value,
+          publisher: publisher.value.trim(),
+          url: url.value.trim(),
+          authorsList,
+        };
+        if (position.value === 'footnote') {
+          const runs = captions.formatImageReferenceRuns(current);
+          await notes.insertNote('footnote', { runs, stayInBody: true });
+        } else {
+          await runBody((doc, c) => c.insertImageReference(doc, {
+            ...current,
+            above: position.value === 'above',
+          }), { modules: ['captions'] });
+        }
+      },
     });
     doi.focus();
   }

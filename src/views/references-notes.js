@@ -12,7 +12,7 @@ export function createNoteCommands(ctx) {
   const { editor, pkg, ready, fail, error, onChange } = ctx;
   const settingsKey = kind => `${kind}s`;
 
-  async function insertNote(kind = 'footnote', { customMark = '' } = {}) {
+  async function insertNote(kind = 'footnote', { customMark = '', text = '', runs = null, stayInBody = false } = {}) {
     try {
       const engine = ready(); if (!engine) return;
       engine.finishComposition();
@@ -43,10 +43,19 @@ export function createNoteCommands(ctx) {
         : notes.footnoteOpeningRuns(draft.typingRun(0), referenceStyle, kind);
       for (const run of draft.paragraphs[0].runs) { delete run.revision; delete run.link; }
       if (!textStyle) { draft.select(0, draft.text.length); draft.setRunFormat({ fontSize: 10 }); draft.setParagraphFormat({ spaceBefore: 0, spaceAfter: 0, lineRule: 'auto', lineSpacing: 1 }); }
+      if (runs?.length) {
+        for (const r of runs) {
+          draft.paragraphs[0].runs.push({ ...draft.typingRun(0), text: r.text, ...(r.italic ? { italic: true } : {}) });
+        }
+      } else if (text) {
+        draft.paragraphs[0].runs.push({ ...draft.typingRun(0), text });
+      }
       engine.attachPageStory(note.path, kind, draft.paragraphs, { [settingsKey(kind)]: note.settings, story: { noteId: note.id } });
       const area = [...(engine.layout.footnoteAreas || []), ...(engine.layout.endnoteAreas || [])].find(a => a.notes.some(n => n.path === note.path));
-      engine.editStory(note.path, area?.page ?? 0);
-      engine.model.select(engine.model.text.length);
+      if (!stayInBody) {
+        engine.editStory(note.path, area?.page ?? 0);
+        engine.model.select(engine.model.text.length);
+      }
       engine.focus(); engine.revealCaret?.(); onChange();
     } catch (e) { fail(e); }
   }
