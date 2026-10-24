@@ -15,138 +15,138 @@ import { formatAuthorsString, parseAuthorsString } from './doi.js';
 export const ACADEMIC_DATABASES = {
   all: {
     id: 'all',
-    name: 'All Databases (بحث شامل متكامل في جميع القواعد والمجلات)',
-    shortName: 'الكل (All)',
-    icon: '🌐',
+    name: 'All Databases (Global Cross-Search)',
+    shortName: 'All Databases',
+    iconName: 'globe',
     badgeClass: 'db-all',
     category: 'global',
-    description: 'يبحث بالتوازي في جميع قواعد البيانات العلمية والمجلات ودور النشر العالمية المعتمدة',
+    description: 'Searches across all indexed academic databases, publishers, and scientific repositories',
   },
   scopus: {
     id: 'scopus',
-    name: 'Scopus (Elsevier Scopus - أبحاث ومجلات مفهرسة دولياً)',
+    name: 'Scopus (Elsevier)',
     shortName: 'Scopus',
-    icon: '🔬',
+    iconName: 'database',
     badgeClass: 'db-scopus',
     category: 'index',
-    description: 'قاعدة بيانات سكوبس التابعة لإلسيفير لأعلى الدوريات والمؤتمرات تصنيفاً',
+    description: 'Elsevier Scopus citation database for peer-reviewed research and journals',
   },
   wos: {
     id: 'wos',
-    name: 'Web of Science / Clarivate (WoS - قواعد SCI / SSCI / AHCI)',
+    name: 'Web of Science / Clarivate (SCI / SSCI)',
     shortName: 'Web of Science',
-    icon: '🏛️',
+    iconName: 'landmark',
     badgeClass: 'db-wos',
     category: 'index',
-    description: 'شبكة العلوم العالمية Clarivate / ISI للأبحاث والدراسات عالية التأثير',
+    description: 'Clarivate Web of Science global citation index and core collection',
   },
   pubmed: {
     id: 'pubmed',
-    name: 'PubMed / MEDLINE / Europe PMC (الأبحاث الطبية والبيولوجية)',
+    name: 'PubMed / MEDLINE / Europe PMC',
     shortName: 'PubMed',
-    icon: '🩺',
+    iconName: 'database',
     badgeClass: 'db-pubmed',
     category: 'index',
-    description: 'قاعدة المكتبة الوطنية للطب الأمريكية NLM وأوروبا PMC للعلوم الصحية والحيوية',
+    description: 'National Library of Medicine and Europe PMC for biomedical and life sciences',
   },
   ieee: {
     id: 'ieee',
-    name: 'IEEE Xplore (الهندسة، علوم الحاسوب والتقنية)',
+    name: 'IEEE Xplore',
     shortName: 'IEEE Xplore',
-    icon: '⚡',
+    iconName: 'database',
     badgeClass: 'db-ieee',
     category: 'publisher',
-    description: 'مكتبة IEEE الرقمية لأبحاث الهندسة الكهربائية والإلكترونية وعلوم الحاسوب',
+    description: 'IEEE digital library for electrical engineering, computer science, and electronics',
   },
   springer: {
     id: 'springer',
-    name: 'Springer Nature (Nature, Springer, BioMed Central)',
+    name: 'Springer Nature',
     shortName: 'Springer Nature',
-    icon: '🍃',
+    iconName: 'database',
     badgeClass: 'db-springer',
     category: 'publisher',
-    description: 'مجموعة سبرينغر نيتشر العالمية ومجلاتها الرائدة في شتى العلوم',
+    description: 'Springer Nature publications, journals, and scientific monographs',
   },
   elsevier: {
     id: 'elsevier',
-    name: 'Elsevier / ScienceDirect (The Lancet, Cell, ScienceDirect)',
+    name: 'Elsevier / ScienceDirect',
     shortName: 'Elsevier',
-    icon: '🏢',
+    iconName: 'database',
     badgeClass: 'db-elsevier',
     category: 'publisher',
-    description: 'دار النشر العالمية إلسيفير ومنصة ساينس دايركت للدوريات الرائدة',
+    description: 'Elsevier ScienceDirect leading peer-reviewed journal publications',
   },
   jstor: {
     id: 'jstor',
-    name: 'JSTOR (أرشيف الدوريات والكتب الأكاديمية والمصادر الأولية)',
+    name: 'JSTOR Digital Library',
     shortName: 'JSTOR',
-    icon: '📚',
+    iconName: 'bookOpen',
     badgeClass: 'db-jstor',
     category: 'publisher',
-    description: 'المكتبة الرقمية JSTOR للدوريات المحكمة والكتب التاريخية والأكاديمية',
+    description: 'JSTOR digital library of academic journals, books, and primary research sources',
   },
   degruyter: {
     id: 'degruyter',
-    name: 'De Gruyter & Brill (العلوم الإنسانية والاجتماعية والكتب المحكمة)',
+    name: 'De Gruyter & Brill',
     shortName: 'De Gruyter',
-    icon: '🏛️',
+    iconName: 'landmark',
     badgeClass: 'db-degruyter',
     category: 'publisher',
-    description: 'دار دي غرويتر الألمانية العريقة للكتب والدوريات والعلوم الإنسانية',
+    description: 'De Gruyter and Brill academic humanities and science publications',
   },
   scholar: {
     id: 'scholar',
-    name: 'Google Scholar & Crossref (الفهرس الأكاديمي الدولي الموحد)',
+    name: 'Google Scholar & Crossref',
     shortName: 'Google Scholar / Crossref',
-    icon: '🔍',
+    iconName: 'search',
     badgeClass: 'db-crossref',
     category: 'global',
-    description: 'أكثر من 150 مليون مقال وبحث وكتاب مع معرفات DOI وأرقام الصفحات',
+    description: 'Unified global citation index covering over 150 million academic records',
   },
   erihplus: {
     id: 'erihplus',
-    name: 'ERIH PLUS (الفهرس الأوروبي للعلوم الإنسانية والاجتماعية)',
+    name: 'ERIH PLUS',
     shortName: 'ERIH PLUS',
-    icon: '📜',
+    iconName: 'database',
     badgeClass: 'db-erihplus',
     category: 'index',
-    description: 'دليل الدوريات والمجلات المعتمدة في أوروبا للعلوم الإنسانية والاجتماعية',
+    description: 'European Reference Index for the Humanities and Social Sciences',
   },
   abdc: {
     id: 'abdc',
-    name: 'ABDC (قائمة جودة مجلات إدارة الأعمال والاقتصاد العالمية)',
+    name: 'ABDC Journal Quality List',
     shortName: 'ABDC',
-    icon: '📈',
+    iconName: 'database',
     badgeClass: 'db-abdc',
     category: 'index',
-    description: 'تصنيف المجلات الأكاديمية لكليات إدارة الأعمال والاقتصاد والمحاسبة',
+    description: 'Australian Business Deans Council journal quality list',
   },
   chinese: {
     id: 'chinese',
-    name: 'CNKI & Chinese Academic Journals (الدوريات والأبحاث الصينية والآسيوية)',
+    name: 'CNKI & Chinese Academic Journals',
     shortName: 'CNKI / Chinese',
-    icon: '🇨🇳',
+    iconName: 'database',
     badgeClass: 'db-chinese',
     category: 'regional',
-    description: 'الأبحاث والمجلات الصينية والآسيوية المحكمة والمنشورات الجامعية',
+    description: 'Chinese national knowledge infrastructure and Asian academic publications',
   },
   arxiv: {
     id: 'arxiv',
-    name: 'arXiv (علوم الحاسوب، الذكاء الاصطناعي، والفيزياء)',
+    name: 'arXiv Open Archive',
     shortName: 'arXiv',
-    icon: '💻',
+    iconName: 'database',
     badgeClass: 'db-arxiv',
     category: 'regional',
-    description: 'أرشيف الأوراق العلمية والمسودات المفتوحة لجامعة كورنيل',
+    description: 'Cornell University open-access repository for physics, mathematics, and CS',
   },
   openlibrary: {
     id: 'openlibrary',
-    name: 'Open Library / Internet Archive (مكتبة الكتب والمراجع العالمية)',
+    name: 'Open Library / Internet Archive',
     shortName: 'Open Library',
-    icon: '📖',
+    iconName: 'bookOpen',
     badgeClass: 'db-openlibrary',
     category: 'regional',
-    description: 'ملايين الكتب والمؤلفات العربية والعالمية ودور النشر وسنوات الإصدار',
+    description: 'Universal catalog of published books, editions, and library records',
   },
 };
 
@@ -198,7 +198,7 @@ export function extractSearchQueries(rawText) {
 /**
  * Search Crossref works API for bibliographic matches with optional publisher filtering.
  */
-export async function searchCrossref(query, maxResults = 5, { publisher = '', dbLabel = 'Crossref', dbId = 'crossref', dbIcon = '📑' } = {}) {
+export async function searchCrossref(query, maxResults = 5, { publisher = '', dbLabel = 'Crossref', dbId = 'crossref', dbIcon = 'database' } = {}) {
   try {
     let url = `https://api.crossref.org/works?rows=${maxResults}&query=${encodeURIComponent(query)}`;
     if (publisher) {
@@ -264,7 +264,7 @@ export async function searchCrossref(query, maxResults = 5, { publisher = '', db
 /**
  * Search OpenAlex works API with optional indexing or category parameters.
  */
-export async function searchOpenAlex(query, maxResults = 5, { dbLabel = 'OpenAlex', dbId = 'openalex', dbIcon = '🎓', filter = '' } = {}) {
+export async function searchOpenAlex(query, maxResults = 5, { dbLabel = 'OpenAlex', dbId = 'openalex', dbIcon = 'landmark', filter = '' } = {}) {
   try {
     let url = `https://api.openalex.org/works?per_page=${maxResults}&search=${encodeURIComponent(query)}`;
     if (filter) {
@@ -358,7 +358,7 @@ export async function searchEuropePMC(query, maxResults = 5) {
       return {
         database: 'PubMed / Europe PMC',
         databaseId: 'pubmed',
-        databaseIcon: '🩺',
+        databaseIcon: 'database',
         id: doi || item.id || title,
         title,
         authors,
@@ -414,7 +414,7 @@ export async function searchOpenLibrary(query, maxResults = 5) {
       return {
         database: 'Open Library',
         databaseId: 'openlibrary',
-        databaseIcon: '📖',
+        databaseIcon: 'bookOpen',
         id: isbn || key || title,
         title: title.trim(),
         authors,
@@ -469,7 +469,7 @@ export async function searchArXiv(query, maxResults = 5) {
       return {
         database: 'arXiv',
         databaseId: 'arxiv',
-        databaseIcon: '💻',
+        databaseIcon: 'database',
         id: doi || id || title,
         title,
         authors,
@@ -513,84 +513,84 @@ export async function identifyTextSource(text, options = {}) {
   switch (database) {
     case 'scopus':
       searchPromises = [
-        searchCrossref(query, limit, { dbLabel: 'Scopus', dbId: 'scopus', dbIcon: '🔬' }),
-        searchOpenAlex(query, limit, { dbLabel: 'Scopus', dbId: 'scopus', dbIcon: '🔬', filter: 'has_doi:true' }),
+        searchCrossref(query, limit, { dbLabel: 'Scopus', dbId: 'scopus', dbIcon: 'database' }),
+        searchOpenAlex(query, limit, { dbLabel: 'Scopus', dbId: 'scopus', dbIcon: 'database', filter: 'has_doi:true' }),
       ];
       break;
 
     case 'wos':
       searchPromises = [
-        searchOpenAlex(query, limit, { dbLabel: 'Web of Science', dbId: 'wos', dbIcon: '🏛️', filter: 'has_doi:true' }),
-        searchCrossref(query, limit, { dbLabel: 'Web of Science', dbId: 'wos', dbIcon: '🏛️' }),
+        searchOpenAlex(query, limit, { dbLabel: 'Web of Science', dbId: 'wos', dbIcon: 'landmark', filter: 'has_doi:true' }),
+        searchCrossref(query, limit, { dbLabel: 'Web of Science', dbId: 'wos', dbIcon: 'landmark' }),
       ];
       break;
 
     case 'pubmed':
       searchPromises = [
         searchEuropePMC(query, limit),
-        searchOpenAlex(query, limit, { dbLabel: 'PubMed / MEDLINE', dbId: 'pubmed', dbIcon: '🩺', filter: 'has_pmid:true' }),
+        searchOpenAlex(query, limit, { dbLabel: 'PubMed / MEDLINE', dbId: 'pubmed', dbIcon: 'database', filter: 'has_pmid:true' }),
       ];
       break;
 
     case 'ieee':
       searchPromises = [
-        searchCrossref(query, limit, { publisher: 'IEEE', dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: '⚡' }),
-        searchOpenAlex(query, limit, { dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: '⚡' }),
+        searchCrossref(query, limit, { publisher: 'IEEE', dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: 'database' }),
+        searchOpenAlex(query, limit, { dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: 'database' }),
       ];
       break;
 
     case 'springer':
       searchPromises = [
-        searchCrossref(query, limit, { publisher: 'Springer', dbLabel: 'Springer Nature', dbId: 'springer', dbIcon: '🍃' }),
-        searchCrossref(query, limit, { publisher: 'Nature', dbLabel: 'Nature Publishing', dbId: 'springer', dbIcon: '🍃' }),
+        searchCrossref(query, limit, { publisher: 'Springer', dbLabel: 'Springer Nature', dbId: 'springer', dbIcon: 'database' }),
+        searchCrossref(query, limit, { publisher: 'Nature', dbLabel: 'Nature Publishing', dbId: 'springer', dbIcon: 'database' }),
       ];
       break;
 
     case 'elsevier':
       searchPromises = [
-        searchCrossref(query, limit, { publisher: 'Elsevier', dbLabel: 'Elsevier / ScienceDirect', dbId: 'elsevier', dbIcon: '🏢' }),
+        searchCrossref(query, limit, { publisher: 'Elsevier', dbLabel: 'Elsevier / ScienceDirect', dbId: 'elsevier', dbIcon: 'database' }),
       ];
       break;
 
     case 'jstor':
       searchPromises = [
-        searchCrossref(query, limit, { publisher: 'JSTOR', dbLabel: 'JSTOR', dbId: 'jstor', dbIcon: '📚' }),
+        searchCrossref(query, limit, { publisher: 'JSTOR', dbLabel: 'JSTOR', dbId: 'jstor', dbIcon: 'bookOpen' }),
         searchOpenLibrary(query, limit),
       ];
       break;
 
     case 'degruyter':
       searchPromises = [
-        searchCrossref(query, limit, { publisher: 'Gruyter', dbLabel: 'De Gruyter & Brill', dbId: 'degruyter', dbIcon: '🏛️' }),
-        searchCrossref(query, limit, { publisher: 'Brill', dbLabel: 'Brill', dbId: 'degruyter', dbIcon: '🏛️' }),
+        searchCrossref(query, limit, { publisher: 'Gruyter', dbLabel: 'De Gruyter & Brill', dbId: 'degruyter', dbIcon: 'landmark' }),
+        searchCrossref(query, limit, { publisher: 'Brill', dbLabel: 'Brill', dbId: 'degruyter', dbIcon: 'landmark' }),
       ];
       break;
 
     case 'scholar':
       searchPromises = [
-        searchCrossref(query, limit, { dbLabel: 'Google Scholar / Crossref', dbId: 'crossref', dbIcon: '🔍' }),
-        searchOpenAlex(query, limit, { dbLabel: 'Google Scholar / OpenAlex', dbId: 'openalex', dbIcon: '🎓' }),
+        searchCrossref(query, limit, { dbLabel: 'Google Scholar / Crossref', dbId: 'crossref', dbIcon: 'search' }),
+        searchOpenAlex(query, limit, { dbLabel: 'Google Scholar / OpenAlex', dbId: 'openalex', dbIcon: 'search' }),
       ];
       break;
 
     case 'erihplus':
       searchPromises = [
-        searchOpenAlex(query, limit, { dbLabel: 'ERIH PLUS', dbId: 'erihplus', dbIcon: '📜' }),
-        searchCrossref(query, limit, { dbLabel: 'ERIH PLUS / Crossref', dbId: 'erihplus', dbIcon: '📜' }),
+        searchOpenAlex(query, limit, { dbLabel: 'ERIH PLUS', dbId: 'erihplus', dbIcon: 'database' }),
+        searchCrossref(query, limit, { dbLabel: 'ERIH PLUS / Crossref', dbId: 'erihplus', dbIcon: 'database' }),
       ];
       break;
 
     case 'abdc':
       searchPromises = [
-        searchOpenAlex(query, limit, { dbLabel: 'ABDC Journal', dbId: 'abdc', dbIcon: '📈' }),
-        searchCrossref(query, limit, { dbLabel: 'ABDC / Business', dbId: 'abdc', dbIcon: '📈' }),
+        searchOpenAlex(query, limit, { dbLabel: 'ABDC Journal', dbId: 'abdc', dbIcon: 'database' }),
+        searchCrossref(query, limit, { dbLabel: 'ABDC / Business', dbId: 'abdc', dbIcon: 'database' }),
       ];
       break;
 
     case 'chinese':
       searchPromises = [
-        searchCrossref(query, limit, { dbLabel: 'CNKI / Chinese Journals', dbId: 'chinese', dbIcon: '🇨🇳' }),
-        searchOpenAlex(query, limit, { dbLabel: 'Chinese Academic', dbId: 'chinese', dbIcon: '🇨🇳' }),
+        searchCrossref(query, limit, { dbLabel: 'CNKI / Chinese Journals', dbId: 'chinese', dbIcon: 'database' }),
+        searchOpenAlex(query, limit, { dbLabel: 'Chinese Academic', dbId: 'chinese', dbIcon: 'database' }),
       ];
       break;
 
@@ -605,11 +605,11 @@ export async function identifyTextSource(text, options = {}) {
     case 'all':
     default:
       searchPromises = [
-        searchCrossref(query, limit, { dbLabel: 'Crossref', dbId: 'crossref', dbIcon: '📑' }),
-        searchOpenAlex(query, limit, { dbLabel: 'OpenAlex', dbId: 'openalex', dbIcon: '🎓' }),
-        searchCrossref(query, 2, { publisher: 'IEEE', dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: '⚡' }),
-        searchCrossref(query, 2, { publisher: 'Springer', dbLabel: 'Springer Nature', dbId: 'springer', dbIcon: '🍃' }),
-        searchCrossref(query, 2, { publisher: 'Elsevier', dbLabel: 'Elsevier', dbId: 'elsevier', dbIcon: '🏢' }),
+        searchCrossref(query, limit, { dbLabel: 'Crossref', dbId: 'crossref', dbIcon: 'database' }),
+        searchOpenAlex(query, limit, { dbLabel: 'OpenAlex', dbId: 'openalex', dbIcon: 'landmark' }),
+        searchCrossref(query, 2, { publisher: 'IEEE', dbLabel: 'IEEE Xplore', dbId: 'ieee', dbIcon: 'database' }),
+        searchCrossref(query, 2, { publisher: 'Springer', dbLabel: 'Springer Nature', dbId: 'springer', dbIcon: 'database' }),
+        searchCrossref(query, 2, { publisher: 'Elsevier', dbLabel: 'Elsevier', dbId: 'elsevier', dbIcon: 'database' }),
         searchEuropePMC(query, limit),
         searchOpenLibrary(query, limit),
         searchArXiv(query, limit),

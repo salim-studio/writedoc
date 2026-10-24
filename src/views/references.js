@@ -13,6 +13,7 @@ import { createCitationCommands } from './references-citations.js';
 import { createIndexCommands } from './references-index.js';
 import { createSmartLookup } from './smart-lookup.js';
 import { check, field, openDialog, select, text } from './references-ui.js';
+import { iconEl } from '../ui/icons.js';
 
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
@@ -292,24 +293,47 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     let authorsList = null;
 
     /* OCR & Source Identification Section */
-    const ocrLangSelect = select('Language / لغة النص', Object.entries(ocrModule.OCR_LANGUAGES), 'ara+eng');
-    const ocrExtractBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '⚡ تحويل الصورة إلى كتابة (Extract Text)');
+    const ocrLangSelect = select('Language', Object.entries(ocrModule.OCR_LANGUAGES), 'ara+eng');
+    const ocrExtractBtn = el('button.btn.btn-outline', {
+      type: 'button',
+      style: 'white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;',
+    },
+      iconEl('scanText', 15, 1.8),
+      el('span', {}, 'Extract Text')
+    );
     const ocrProgressBar = el('div.ref-ocr-progress-bar', { style: 'display: none;' }, el('div.ref-ocr-progress-fill', { style: 'width: 0%;' }));
-    const ocrStatus = el('span.ref-ocr-status', { style: 'font-size: 12px; color: var(--ink-2); display: block; padding: 2px 0;' }, 'يمكنك تحويل النص في الصورة إلى كتابة والبحث في قواعد البيانات العلمية عن المرجع والصفحة.');
+    const ocrStatus = el('span.ref-ocr-status', { style: 'font-size: 12px; color: var(--ink-2); display: block; padding: 2px 0;' }, 'Extract text from image to find citations and academic sources.');
     const ocrTextarea = el('textarea.ref-ocr-text.input', {
-      placeholder: 'سيظهر النص المستخرج من الصورة هنا، أو يمكنك لصق أي فقرة للبحث عن مصدرها الأكاديمي ورقم صفحتها...',
+      placeholder: 'Extracted text will appear here. You can also paste text to find its academic source and page number...',
       rows: 3,
-      dir: 'auto',
     });
 
     const dbOptions = Object.values(textSourceModule.ACADEMIC_DATABASES).map(db => [
       db.id,
-      `${db.icon} ${db.name}`
+      db.name
     ]);
-    const dbSelect = select('قاعدة بيانات البحث / Database', dbOptions, 'all');
-    const findSourceBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap; font-weight: 600;' }, '🔍 معرفة المصدر واستيراد المرجع');
-    const insertTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📝 إدراج النص');
-    const copyTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📋 نسخ النص');
+    const dbSelect = select('Search Database', dbOptions, 'all');
+    const findSourceBtn = el('button.btn.btn-primary', {
+      type: 'button',
+      style: 'white-space: nowrap; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;',
+    },
+      iconEl('search', 15, 1.8),
+      el('span', {}, 'Find Source & Citation')
+    );
+    const insertTextBtn = el('button.btn.btn-outline', {
+      type: 'button',
+      style: 'white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;',
+    },
+      iconEl('pencil', 15, 1.8),
+      el('span', {}, 'Insert Text')
+    );
+    const copyTextBtn = el('button.btn.btn-outline', {
+      type: 'button',
+      style: 'white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;',
+    },
+      iconEl('copy', 15, 1.8),
+      el('span', {}, 'Copy Text')
+    );
     const dbChipsContainer = el('div.ref-db-chips', { style: 'display: none;' });
     const sourceResults = el('div.ref-source-results', { style: 'display: none;' });
 
@@ -317,7 +341,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
 
     function renderSourceCards(results) {
       if (!results.length) {
-        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, 'لا توجد نتائج في هذا التصنيف.'));
+        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, 'No results found in this category.'));
         return;
       }
       sourceResults.replaceChildren(
@@ -325,19 +349,24 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
           const card = el('div.ref-source-card', {},
             el('div', { style: 'display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;' },
               el('p.ref-source-card-title', {}, item.title),
-              el('span.ref-source-badge.' + (item.databaseId ? `db-${item.databaseId}` : ''), { style: 'white-space: nowrap; font-size: 11px;' }, `${item.databaseIcon || '📚'} ${item.database || 'Database'}`)
+              el('span.ref-source-badge.' + (item.databaseId ? `db-${item.databaseId}` : ''), {
+                style: 'white-space: nowrap; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;',
+              },
+                iconEl(item.databaseIcon || 'database', 12, 1.8),
+                el('span', {}, item.database || 'Database')
+              )
             ),
             el('div.ref-source-card-meta', {},
-              item.authors ? el('span', {}, `👤 ${item.authors}`) : null,
-              item.year ? el('span', {}, `📅 ${item.year}`) : null,
-              item.journal ? el('span', {}, `🏛️ ${item.journal}`) : null,
-              item.location ? el('span.ref-source-badge.page', {}, `📄 ${item.location}`) : null,
+              item.authors ? el('span', { style: 'display: inline-flex; align-items: center; gap: 4px;' }, iconEl('user', 13, 1.8), el('span', {}, item.authors)) : null,
+              item.year ? el('span', { style: 'display: inline-flex; align-items: center; gap: 4px;' }, iconEl('calendar', 13, 1.8), el('span', {}, item.year)) : null,
+              item.journal ? el('span', { style: 'display: inline-flex; align-items: center; gap: 4px;' }, iconEl('landmark', 13, 1.8), el('span', {}, item.journal)) : null,
+              item.location ? el('span.ref-source-badge.page', { style: 'display: inline-flex; align-items: center; gap: 4px;' }, iconEl('fileText', 12, 1.8), el('span', {}, item.location)) : null,
               item.doi ? el('span.ref-source-badge', {}, `DOI: ${item.doi}`) : null,
             ),
             el('div.ref-source-card-actions', {},
               el('button.btn.btn-outline', {
                 type: 'button',
-                style: 'font-size: 12px; padding: 3px 10px; font-weight: 600;',
+                style: 'font-size: 12px; padding: 4px 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;',
                 onclick: () => {
                   if (item.title) title.value = item.title;
                   if (item.authors) author.value = item.authors;
@@ -352,16 +381,16 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
                   if (item.sourceType && captions.IMAGE_REF_TYPES[item.sourceType]) sourceType.value = item.sourceType;
                   authorsList = item.authorsList || null;
                   sync();
-                  card.style.borderColor = '#1b7340';
-                  card.style.background = '#e6f4ea';
+                  card.style.borderColor = '#107c41';
+                  card.style.background = '#dff6dd';
                 },
-              }, '📥 استيراد هذا المرجع والصفحة (Import Reference & Page)'),
+              }, iconEl('download', 13, 1.8), el('span', {}, 'Import Reference & Page')),
               item.url ? el('a.btn.btn-outline', {
                 href: item.url,
                 target: '_blank',
                 rel: 'noopener noreferrer',
-                style: 'font-size: 11.5px; padding: 3px 8px; text-decoration: none; display: inline-flex; align-items: center;',
-              }, '🔗 فتح المصدر') : null
+                style: 'font-size: 11.5px; padding: 4px 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;',
+              }, iconEl('externalLink', 12, 1.8), el('span', {}, 'Open Source')) : null
             )
           );
           return card;
@@ -403,22 +432,22 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
 
       dbChipsContainer.style.display = 'flex';
       dbChipsContainer.replaceChildren(
-        makeChip('all', `🌐 الكل (${results.length})`, null),
+        makeChip('all', `All (${results.length})`, null),
         ...dbs.map(dbName => makeChip(dbName, `${dbName} (${counts[dbName]})`, r => r.database === dbName))
       );
     }
 
     async function doOcr() {
       if (!imageBlobOrCanvas) {
-        ocrStatus.textContent = '⚠️ Could not read image pixels.';
+        ocrStatus.textContent = 'Could not read image pixels.';
         return;
       }
       ocrExtractBtn.disabled = true;
-      ocrExtractBtn.textContent = 'Processing OCR…';
+      ocrExtractBtn.replaceChildren(iconEl('spinner', 15, 1.8), el('span', {}, 'Processing OCR…'));
       ocrProgressBar.style.display = 'block';
       const fill = ocrProgressBar.firstElementChild;
       fill.style.width = '10%';
-      ocrStatus.textContent = '⏳ جاري تشغيل نموذج التعرف الضوئي (OCR)...';
+      ocrStatus.textContent = 'Running OCR engine...';
       try {
         const res = await ocrModule.recognizeImage(imageBlobOrCanvas, {
           lang: ocrLangSelect.value,
@@ -429,17 +458,17 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
         });
         fill.style.width = '100%';
         ocrTextarea.value = res.text;
-        ocrStatus.textContent = `✓ تم استخراج النص بنجاح (${res.text.length} حرف، دقة: ${Math.round(res.confidence)}%)`;
-        ocrStatus.style.color = '#1b7340';
+        ocrStatus.textContent = `Text extracted successfully (${res.text.length} characters, ${Math.round(res.confidence)}% confidence)`;
+        ocrStatus.style.color = '#107c41';
         if (res.text.trim()) {
           doFindSource();
         }
       } catch (err) {
-        ocrStatus.textContent = `⚠️ خطأ في التعرف الضوئي: ${err.message || 'فشلت المعالجة'}`;
-        ocrStatus.style.color = '#d93025';
+        ocrStatus.textContent = `OCR Error: ${err.message || 'Processing failed'}`;
+        ocrStatus.style.color = '#a80000';
       } finally {
         ocrExtractBtn.disabled = false;
-        ocrExtractBtn.textContent = '⚡ تحويل الصورة إلى كتابة (Extract Text)';
+        ocrExtractBtn.replaceChildren(iconEl('scanText', 15, 1.8), el('span', {}, 'Extract Text'));
       }
     }
     ocrExtractBtn.onclick = doOcr;
@@ -447,19 +476,19 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     async function doFindSource() {
       const textToSearch = ocrTextarea.value.trim();
       if (!textToSearch) {
-        ocrStatus.textContent = '⚠️ يرجى استخراج النص من الصورة أولاً أو كتابة جملة للبحث عن مصدرها.';
-        ocrStatus.style.color = '#d93025';
+        ocrStatus.textContent = 'Please extract text from the image or enter text to search.';
+        ocrStatus.style.color = '#a80000';
         return;
       }
       const selectedDb = dbSelect.value;
       const dbInfo = textSourceModule.ACADEMIC_DATABASES[selectedDb] || textSourceModule.ACADEMIC_DATABASES.all;
 
       findSourceBtn.disabled = true;
-      findSourceBtn.textContent = 'جاري البحث…';
-      ocrStatus.textContent = `⏳ جاري البحث في [${dbInfo.name}] عن المقالات والكتب وأرقام الصفحات…`;
+      findSourceBtn.replaceChildren(iconEl('spinner', 15, 1.8), el('span', {}, 'Searching…'));
+      ocrStatus.textContent = `Searching ${dbInfo.name} for matching publications…`;
       ocrStatus.style.color = 'var(--ink-2)';
       sourceResults.style.display = 'grid';
-      sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `جاري البحث في ${dbInfo.shortName}...`));
+      sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `Searching ${dbInfo.shortName}…`));
 
       try {
         const { queryUsed, results } = await textSourceModule.identifyTextSource(textToSearch, {
@@ -469,24 +498,24 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
 
         if (!results.length) {
           dbChipsContainer.style.display = 'none';
-          sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `لم يتم العثور على مراجع في ${dbInfo.shortName} لعبارة: "${queryUsed.slice(0, 50)}…". يمكنك تجربة اختيار قاعدة أخرى أو البحث الشامل (الكل).`));
-          ocrStatus.textContent = 'لم يتم العثور على نتائج في القاعدة المحددة.';
+          sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `No references found in ${dbInfo.shortName} for "${queryUsed.slice(0, 50)}...". Try selecting All Databases or a different database.`));
+          ocrStatus.textContent = 'No matching results found in the selected database.';
           return;
         }
 
-        ocrStatus.textContent = `✓ تم العثور على ${results.length} مصدر/مرجع أكاديمي من [${dbInfo.shortName}]!`;
-        ocrStatus.style.color = '#1b7340';
+        ocrStatus.textContent = `Found ${results.length} academic sources from [${dbInfo.shortName}].`;
+        ocrStatus.style.color = '#107c41';
 
         renderFilterChips(results);
         renderSourceCards(results);
       } catch (err) {
         dbChipsContainer.style.display = 'none';
-        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: #d93025;' }, `⚠️ ${err.message}`));
-        ocrStatus.textContent = `⚠️ ${err.message}`;
-        ocrStatus.style.color = '#d93025';
+        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: #a80000;' }, err.message));
+        ocrStatus.textContent = `Error: ${err.message}`;
+        ocrStatus.style.color = '#a80000';
       } finally {
         findSourceBtn.disabled = false;
-        findSourceBtn.textContent = '🔍 معرفة المصدر واستيراد المرجع';
+        findSourceBtn.replaceChildren(iconEl('search', 15, 1.8), el('span', {}, 'Find Source & Citation'));
       }
     }
     findSourceBtn.onclick = doFindSource;
@@ -498,8 +527,8 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
         engine.model.select(engine.model.range[1]);
         engine.model.replace('\n' + txt + '\n');
       });
-      ocrStatus.textContent = '✓ تم إدراج النص المستخرج في المستند بنجاح!';
-      ocrStatus.style.color = '#1b7340';
+      ocrStatus.textContent = 'Extracted text inserted into document.';
+      ocrStatus.style.color = '#107c41';
     };
 
     copyTextBtn.onclick = async () => {
@@ -507,8 +536,10 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       if (!txt) return;
       try {
         await navigator.clipboard.writeText(txt);
-        copyTextBtn.textContent = '✓ تم النسخ!';
-        setTimeout(() => { copyTextBtn.textContent = '📋 نسخ النص'; }, 1500);
+        copyTextBtn.replaceChildren(iconEl('check', 15, 1.8), el('span', {}, 'Copied!'));
+        setTimeout(() => {
+          copyTextBtn.replaceChildren(iconEl('copy', 15, 1.8), el('span', {}, 'Copy Text'));
+        }, 1500);
       } catch {}
     };
 
@@ -516,10 +547,13 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       el('div.ref-ocr-head', {},
         el('div.ref-ocr-thumb-wrap', {},
           thumbUrl ? el('img.ref-ocr-thumb', { src: thumbUrl, alt: 'Image thumbnail' }) : null,
-          el('h3.ref-ocr-title', {}, '📷 استخراج النص (OCR) والبحث في قواعد البيانات الأكاديمية')
+          el('h3.ref-ocr-title', {},
+            iconEl('scanText', 18, 1.8),
+            el('span', {}, 'Optical Character Recognition & Academic Source Lookup')
+          )
         ),
         el('div', { style: 'display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;' },
-          el('div', { style: 'min-width: 160px;' }, field('اللغة / Language', ocrLangSelect)),
+          el('div', { style: 'min-width: 160px;' }, field('Language', ocrLangSelect)),
           ocrExtractBtn
         )
       ),
@@ -527,7 +561,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       ocrStatus,
       ocrTextarea,
       el('div.ref-two-column.ref-tight', { style: 'align-items: flex-end;' },
-        field('قاعدة بيانات البحث / Database', dbSelect),
+        field('Search Database', dbSelect),
         el('div', { style: 'display: flex; gap: 6px; flex-wrap: wrap;' },
           findSourceBtn,
           insertTextBtn,
@@ -561,9 +595,9 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     const publisher = text('Publisher', '', { placeholder: 'e.g. Springer, Oxford Press' });
     const url = text('URL / DOI', '', { placeholder: 'e.g. https://doi.org/...' });
     const position = select('Placement / Position', [
-      ['below', 'Below image (أسفل الصورة مباشرة)'],
-      ['above', 'Above image (أعلى الصورة مباشرة)'],
-      ['footnote', 'Bottom of page / Footnote (في حاشية أسفل الصفحة)'],
+      ['below', 'Below image'],
+      ['above', 'Above image'],
+      ['footnote', 'Bottom of page / Footnote'],
     ], 'below', () => sync());
     const preview = el('p.ref-caption-preview', { 'aria-live': 'polite' });
 

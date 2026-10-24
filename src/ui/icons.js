@@ -14,6 +14,7 @@ import {
   TableRowsSplit, TableColumnsSplit, Merge, Split, StretchHorizontal, SpellCheck, Expand,
   TableOfContents, PanelLeft, ArrowUpDown, LayoutGrid, Rows2, PanelTop, PanelBottom, Paintbrush, Bookmark, Star, Volume2, Smile, Crop,
   LogIn, User, SeparatorHorizontal, ArrowRightToLine, FileCog,
+  Globe, Database, Calendar, Landmark, ScanText, GraduationCap, Quote,
 } from 'lucide';
 
 const ICONS = {
@@ -143,6 +144,13 @@ const ICONS = {
   header: PanelTop,
   footer: PanelBottom,
   paint: Paintbrush,
+  globe: Globe,
+  database: Database,
+  calendar: Calendar,
+  landmark: Landmark,
+  scanText: ScanText,
+  graduationCap: GraduationCap,
+  quote: Quote,
 };
 
 /** Render a Lucide icon as an HTML string. */

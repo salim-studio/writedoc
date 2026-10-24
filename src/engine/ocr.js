@@ -5,15 +5,15 @@
  */
 
 export const OCR_LANGUAGES = {
-  'ara+eng': 'العربية + English (مستحسن)',
-  'ara': 'العربية فقط (Arabic)',
-  'eng': 'English only',
-  'fra': 'Français (French)',
-  'spa': 'Español (Spanish)',
-  'deu': 'Deutsch (German)',
-  'tur': 'Türkçe (Turkish)',
-  'fas': 'فارسی (Persian)',
-  'urd': 'اردو (Urdu)',
+  'ara+eng': 'English + Arabic (Multilingual)',
+  'eng': 'English',
+  'ara': 'Arabic',
+  'fra': 'French',
+  'spa': 'Spanish',
+  'deu': 'German',
+  'tur': 'Turkish',
+  'fas': 'Persian',
+  'urd': 'Urdu',
 };
 
 let tesseractLoadPromise = null;
@@ -125,32 +125,32 @@ export async function recognizeImage(imageSource, options = {}) {
   const lang = options.lang || 'ara+eng';
   const onProgress = options.onProgress || (() => {});
 
-  onProgress({ status: 'loading-core', message: 'جاري تحميل محرك التعرف الضوئي (Loading OCR Engine)...', progress: 5 });
+  onProgress({ status: 'loading-core', message: 'Loading OCR engine...', progress: 5 });
 
   const Tesseract = await loadTesseract();
 
-  onProgress({ status: 'initializing', message: `جاري تهيئة نموذج اللغة [${lang}]...`, progress: 15 });
+  onProgress({ status: 'initializing', message: `Initializing language model [${lang}]...`, progress: 15 });
 
   const worker = await Tesseract.createWorker(lang, 1, {
     logger: m => {
       const p = Math.round((m.progress || 0) * 100);
       let msg = m.status || '';
-      if (m.status === 'loading tesseract core') msg = 'تحميل محرك OCR...';
-      else if (m.status === 'loading language traineddata') msg = `تحميل بيانات لغة (${lang})...`;
-      else if (m.status === 'initializing api') msg = 'تهيئة الواجهة...';
-      else if (m.status === 'recognizing text') msg = `التعرف على النص (${p}%)...`;
+      if (m.status === 'loading tesseract core') msg = 'Loading OCR core...';
+      else if (m.status === 'loading language traineddata') msg = `Loading language dataset (${lang})...`;
+      else if (m.status === 'initializing api') msg = 'Initializing engine API...';
+      else if (m.status === 'recognizing text') msg = `Recognizing text (${p}%)...`;
       onProgress({ status: m.status, message: msg, progress: 20 + Math.round(p * 0.75) });
     },
   });
 
   try {
-    onProgress({ status: 'recognizing', message: 'جاري معالجة وقراءة الصورة...', progress: 85 });
+    onProgress({ status: 'recognizing', message: 'Processing image and extracting text...', progress: 85 });
     const ret = await worker.recognize(imageSource);
     const text = (ret.data?.text || '').trim();
     const confidence = ret.data?.confidence || 0;
     const lines = (ret.data?.lines || []).map(l => l.text.trim()).filter(Boolean);
 
-    onProgress({ status: 'done', message: 'اكتمل استخراج النص بنجاح!', progress: 100 });
+    onProgress({ status: 'done', message: 'Text extraction completed successfully!', progress: 100 });
     return { text, confidence, lines };
   } finally {
     await worker.terminate();
