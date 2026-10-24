@@ -9,9 +9,6 @@ import { classicMenus } from '../views/classic-menus.js';
 import { createTitleBar } from '../views/title-bar.js';
 import { ribbonEntries, menuEntries } from './command-index.js';
 import { createRibbonModes } from './ribbon-modes.js';
-import { createMenubar } from './menubar.js';
-import { createLibreDeck } from './libre-deck.js';
-import { getLayoutMode, applyLayoutMode, onLayoutModeChange } from './layout-mode.js';
 
 // Keep the user's pane and tab choices when opening another document in this tab.
 let expandedTools = false;
@@ -39,19 +36,21 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
   const pageSection = el('details.canvas-inspector-details', { open: pageToolsExpanded, ontoggle: () => { pageToolsExpanded = pageSection.open; } }, el('summary', {}, 'Page & document'),
     section('Page & document settings', c.pageBreakBefore, c.insertTab, ...c.paginationTools, field('Outline level', c.outlineLevel), c.unlink));
   const heading = el('h2', {}, 'Paragraph formatting');
-  const deck = createLibreDeck({ c, w, a, focusEditor });
-  const pane = deck.el;
+  const pane = el('aside.canvas-advanced.canvas-inspector', { id: 'canvas-advanced-tools', 'aria-label': 'Formatting Pane', hidden: !expandedTools },
+    el('div.canvas-panel-heading', {}, heading, el('button.icon-btn', { type: 'button', 'aria-label': 'Close Formatting Pane', onclick: () => { setExpanded(false); focusEditor(); } }, iconEl('x', 18))),
+    el('div.canvas-panel-scroll', {}, tableSection, paragraphSection, textSection, pageSection));
   const more = command('Formatting Pane', 'formattingPane', () => setExpanded(!expandedTools), { size: 'large', text: 'Formatting Pane', attrs: { 'aria-expanded': String(expandedTools), 'aria-controls': pane.id } });
   function setExpanded(value) {
     expandedTools = value;
-    deck.setOpen(value);
-    if (value) deck.selectTab('properties');
+    pane.hidden = !value;
     more.setAttribute('aria-expanded', String(value));
-    paneToggle?.setAttribute('aria-pressed', String(value));
+    paneToggle.setAttribute('aria-pressed', String(value));
     if (value && compact.matches) { a.closeOutline?.(); a.closeFind?.(); }
     refresh();
+    if (value) pane.querySelector('button, select')?.focus();
   }
   pane.addEventListener('keydown', e => { if (e.key === 'Escape' && !e.defaultPrevented && !isComposing(e)) { e.preventDefault(); setExpanded(false); focusEditor(); } });
+  for (const button of pane.querySelectorAll('button.canvas-tool')) button.append(el('span.inspector-label', {}, button.getAttribute('aria-label')));
   const compact = window.matchMedia('(max-width: 700px)');
 
   /* ---- Shared building blocks ---- */
@@ -539,30 +538,7 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
   const entries = () => [...ribbonEntries({ ribbon, tabs: allTabs, beforeRun: () => modes?.beforeRun() }), ...menuEntries(menus)];
   titleBar = createTitleBar({ w, c, a, local, title, status, account, menus, focusEditor, entries,
     openShortcuts: menuContext.openShortcuts, keymapShortcut: id => w.shortcutFor?.(id) ?? null });
-
-  /* ---- Dedicated LibreOffice Menu Bar Row ---- */
-  const dedicatedMenubar = createMenubar(menus.map(menu => ({
-    label: menu.label,
-    open: (anchor, { pointer } = {}) => openMenu({
-      anchor,
-      label: menu.label,
-      minWidth: 240,
-      items: menu.items(),
-      pointer,
-      onClose: pointer ? focusEditor : null,
-      align: 'start',
-    }),
-  })), { label: 'LibreOffice Menu Bar' });
-  dedicatedMenubar.el.classList.add('ed-menubar', 'libre-dedicated-menubar');
-  dedicatedMenubar.buttons.forEach((button, i) => {
-    button.dataset.menu = menus[i].id;
-    button.addEventListener('mousedown', e => {
-      if (document.activeElement?.matches?.('.canvas-input')) e.preventDefault();
-    });
-  });
-  const libreMenubarRow = el('div.libre-menubar-row', {}, dedicatedMenubar.el);
-
-  const header = el('header.canvas-header.ed-header', {}, titleBar.el, libreMenubarRow, ribbon.tablist);
+  const header = el('header.canvas-header.ed-header', {}, titleBar.el, ribbon.tablist);
   const toolbar = el('div.ed-ribbon', {}, ribbon.card);
   const navigation = el('div.canvas-navigation', { hidden: true });
 
@@ -589,11 +565,11 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
       if (checked) control.checked = !!checked();
       if (value && document.activeElement !== control) { const v = String(value() ?? ''); if (control.value !== v) control.value = v; }
     }
+    if (!pane.hidden) for (const control of pane.querySelectorAll('button, select, input')) if (control.tabIndex !== 0) control.tabIndex = 0;
     refreshGallery();
     designs?.refresh();
     ribbon.refresh();
     titleBar.refresh();
-    deck.refresh();
   }
 
   // Keyboard chords for the ribbon's own commands, while the keyboard is in the document.
@@ -611,15 +587,11 @@ export function createCanvasChrome({ title, status, account, local, controls: c,
 
   setContext();
   refresh();
-  return { header, toolbar, navigation, inspector: deck.el, refresh, setContext, ribbon, titleBar, menus, entries,
+  return { header, toolbar, navigation, inspector: pane, refresh, setContext, ribbon, titleBar, menus, entries,
     get ribbonModes() { return modes; },
     /** Ribbon display modes and KeyTips need the workspace the chrome sits in. */
-    attach(workspace) {
-      applyLayoutMode(getLayoutMode(), workspace);
-      onLayoutModeChange(mode => applyLayoutMode(mode, workspace));
-      modes ??= createRibbonModes({ workspace, header, toolbar, ribbon, tabs: allTabs, titleBar: titleBar.el, focusEditor });
-    },
+    attach(workspace) { modes ??= createRibbonModes({ workspace, header, toolbar, ribbon, tabs: allTabs, titleBar: titleBar.el, focusEditor }); },
     focusSearch: () => titleBar.focusSearch(), focusMenubar: () => titleBar.focusMenubar(), showKeyTips: () => modes?.showKeyTips(),
-    toggleFormattingPane: () => setExpanded(!deck.isOpen()),
-    closeInspector: () => setExpanded(false), destroy() { keyAbort.abort(); ribbon.destroy(); titleBar.destroy(); dedicatedMenubar.destroy(); deck.destroy(); modes?.destroy(); closeMenu(); } };
+    toggleFormattingPane: () => setExpanded(!expandedTools),
+    closeInspector: () => setExpanded(false), destroy() { keyAbort.abort(); ribbon.destroy(); titleBar.destroy(); modes?.destroy(); closeMenu(); } };
 }

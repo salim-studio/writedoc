@@ -1,0 +1,353 @@
+/* =====================================================================
+   Microsoft Word + LibreOffice Writer Hybrid Skin
+   A refined visual skin blending Microsoft Word's modern elegance
+   with LibreOffice Writer's crisp desktop office styling.
+   ===================================================================== */
+
+:root {
+  /* Brand accents: Word Sapphire Blue + LibreOffice Writer Emerald Green */
+  --ms-word-blue: #185abd;
+  --ms-word-blue-hover: #104c9e;
+  --ms-word-blue-wash: rgba(24, 90, 189, 0.09);
+  --lo-writer-green: #107c41;
+  --lo-writer-green-dark: #0d6234;
+  --lo-writer-green-wash: rgba(16, 124, 65, 0.1);
+  --hybrid-accent: #185abd;
+  --hybrid-accent-wash: rgba(24, 90, 189, 0.08);
+
+  /* Workspace & Chrome colors (Word + LibreOffice blended desk palette) */
+  --ed-frame: #f0f2f5;
+  --ed-card: #ffffff;
+  --ed-ink: #202428;
+  --ed-ink-2: #3d444d;
+  --ed-ink-3: #626c77;
+  --ed-line: #d8dde4;
+  --ed-field: #c2c9d2;
+  --ed-hover: #e8ecf1;
+  --ed-press: #dde3ea;
+  --ed-accent: var(--ms-word-blue);
+  --ed-accent-wash: var(--ms-word-blue-wash);
+  --ed-workspace: #e9ecf0;
+  --ed-page-edge: #ccd2db;
+
+  /* Typography */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Arial", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --ms-word-blue: #7ea6dc;
+    --ms-word-blue-hover: #96baee;
+    --ms-word-blue-wash: rgba(126, 166, 220, 0.16);
+    --lo-writer-green: #34a853;
+    --lo-writer-green-dark: #2b8a44;
+    --lo-writer-green-wash: rgba(52, 168, 83, 0.16);
+    --hybrid-accent: #7ea6dc;
+    --hybrid-accent-wash: rgba(126, 166, 220, 0.14);
+
+    --ed-frame: #1b1e22;
+    --ed-card: #25282e;
+    --ed-ink: #f0f3f6;
+    --ed-ink-2: #d1d7df;
+    --ed-ink-3: #9da7b3;
+    --ed-line: #373c44;
+    --ed-field: #4e5560;
+    --ed-hover: #30353c;
+    --ed-press: #3a4049;
+    --ed-accent: var(--ms-word-blue);
+    --ed-accent-wash: var(--ms-word-blue-wash);
+    --ed-workspace: #15171a;
+    --ed-page-edge: #333840;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ms-word-blue: #7ea6dc;
+  --ms-word-blue-hover: #96baee;
+  --ms-word-blue-wash: rgba(126, 166, 220, 0.16);
+  --lo-writer-green: #34a853;
+  --lo-writer-green-dark: #2b8a44;
+  --lo-writer-green-wash: rgba(52, 168, 83, 0.16);
+  --hybrid-accent: #7ea6dc;
+  --hybrid-accent-wash: rgba(126, 166, 220, 0.14);
+
+  --ed-frame: #1b1e22;
+  --ed-card: #25282e;
+  --ed-ink: #f0f3f6;
+  --ed-ink-2: #d1d7df;
+  --ed-ink-3: #9da7b3;
+  --ed-line: #373c44;
+  --ed-field: #4e5560;
+  --ed-hover: #30353c;
+  --ed-press: #3a4049;
+  --ed-accent: var(--ms-word-blue);
+  --ed-accent-wash: var(--ms-word-blue-wash);
+  --ed-workspace: #15171a;
+  --ed-page-edge: #333840;
+}
+
+/* =====================================================================
+   1. Title Bar Styling (Word Clean Layout + LibreOffice Crisp Details)
+   ===================================================================== */
+.ed-header {
+  background: var(--ed-frame);
+  border-bottom: 1px solid var(--ed-line);
+}
+
+.ed-titlebar {
+  background: var(--ed-frame);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* Document title in the center */
+.ed-header .canvas-title {
+  font-weight: 600;
+  color: var(--ed-ink);
+  border-radius: 5px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.ed-header .canvas-title:hover {
+  background: var(--ed-hover);
+}
+
+.ed-header .canvas-title:focus {
+  background: var(--ed-card);
+  border-color: var(--hybrid-accent);
+}
+
+/* Save status badge (LibreOffice green highlight on saved) */
+.ed-header .canvas-save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lo-writer-green);
+  font-weight: 500;
+}
+
+/* AutoSave switch */
+.ed-autosave .ed-switch {
+  accent-color: var(--ms-word-blue);
+}
+
+/* Search Box: Word Alt+Q style with crisp LibreOffice border */
+.ed-search {
+  border: 1px solid var(--ed-line);
+  background: var(--ed-card);
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.ed-search:hover,
+.ed-search:focus-within {
+  border-color: var(--hybrid-accent);
+  box-shadow: 0 0 0 2px var(--hybrid-accent-wash);
+}
+
+/* =====================================================================
+   2. Menubar & Ribbon Tabs (Word Notebookbar + LibreOffice Precision)
+   ===================================================================== */
+.ed-header .ed-menubar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ed-header .ed-menubar .menu-btn {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ed-ink-2);
+  padding: 0 8px;
+  height: 26px;
+  border-radius: 4px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.ed-header .ed-menubar .menu-btn:hover,
+.ed-header .ed-menubar .menu-btn[aria-expanded="true"] {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+}
+
+/* Ribbon Tabs (Word-style with LibreOffice green/blue accents) */
+.ribbon-tabs {
+  background: var(--ed-frame);
+  border-bottom: 1px solid var(--ed-line);
+  gap: 3px;
+}
+
+.ribbon-tab,
+.ribbon-file {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ed-ink-2);
+  padding: 0 12px 3px;
+  border-radius: 5px 5px 0 0;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.ribbon-tab:hover,
+.ribbon-file:hover {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+}
+
+.ribbon-tab[aria-selected="true"] {
+  color: var(--ms-word-blue);
+  font-weight: 600;
+  background: var(--ed-card);
+}
+
+.ribbon-tab[aria-selected="true"]::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 0;
+  height: 3px;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg, var(--ms-word-blue) 0%, var(--lo-writer-green) 100%);
+}
+
+/* File Tab (Office Blue / LibreOffice Green blend) */
+.ribbon-file {
+  color: var(--ms-word-blue);
+  font-weight: 600;
+}
+
+.ribbon-file:hover {
+  background: var(--ms-word-blue-wash);
+}
+
+/* =====================================================================
+   3. Ribbon Card & Controls (Word Group Cards + LibreOffice Crisp Tools)
+   ===================================================================== */
+.ed-ribbon {
+  background: var(--ed-frame);
+  padding: 2px calc(8px + var(--safe-r)) 6px calc(8px + var(--safe-l));
+}
+
+.ribbon-card {
+  background: var(--ed-card);
+  border: 1px solid var(--ed-line);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.ribbon-group {
+  border-right: 1px solid var(--ed-line);
+  padding: 0 8px;
+}
+
+.ribbon-divider {
+  background: var(--ed-line);
+}
+
+/* Buttons: soft frosted glass with crisp LibreOffice tactile response */
+.ribbon-card button.ribbon-small,
+.ribbon-card button.ribbon-large,
+.ed-quick button.ribbon-small {
+  border-radius: 6px;
+  transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.ribbon-card button:not(:disabled):hover,
+.ed-quick button:not(:disabled):hover {
+  background: var(--ed-hover);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.ribbon-card button[aria-pressed="true"],
+.ribbon-card button[aria-expanded="true"] {
+  background: var(--ms-word-blue-wash);
+  border-color: var(--ms-word-blue);
+  color: var(--ms-word-blue);
+}
+
+/* Dropdown selects in Ribbon (Font Family, Sizes) */
+.canvas-toolbar-shell select,
+.canvas-spacing {
+  border: 1px solid var(--ed-line);
+  border-radius: 5px;
+  background-color: var(--ed-card);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.canvas-toolbar-shell select:hover,
+.canvas-spacing:hover {
+  border-color: var(--hybrid-accent);
+  background-color: var(--ed-hover);
+}
+
+.canvas-toolbar-shell select:focus,
+.canvas-spacing:focus {
+  border-color: var(--hybrid-accent);
+  box-shadow: 0 0 0 2px var(--hybrid-accent-wash);
+}
+
+/* =====================================================================
+   4. Document Workspace & Paper (Elevated Office Sheet on Desk)
+   ===================================================================== */
+.ed-workspace {
+  background: var(--ed-workspace);
+}
+
+.canvas-editor-body {
+  background: var(--ed-workspace);
+}
+
+.canvas-editor-content {
+  background: var(--ed-workspace);
+}
+
+/* The Paper Sheet itself: authentic Microsoft Word & LibreOffice 3D elevation */
+.canvas-sheet {
+  background: #ffffff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 1px;
+}
+
+/* Corner page marks (LibreOffice Writer style) */
+.canvas-sheet::before {
+  border-color: var(--lo-writer-green);
+}
+
+/* Rulers: clean desktop office ruler */
+.canvas-rulers {
+  background: var(--ed-frame);
+  border-color: var(--ed-line);
+  color: var(--ed-ink-3);
+}
+
+/* =====================================================================
+   5. Status Bar (LibreOffice Segmented Look + Word Zoom Controls)
+   ===================================================================== */
+.canvas-statusbar,
+.ed-statusbar {
+  background: var(--ed-frame);
+  border-top: 1px solid var(--ed-line);
+  color: var(--ed-ink-2);
+  font-size: 12px;
+}
+
+.ed-status-item {
+  color: var(--ed-ink-2);
+  border-radius: 4px;
+  transition: background 0.12s ease;
+}
+
+.ed-status-item:hover {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+}
+
+.ed-status-item[aria-pressed="true"] {
+  background: var(--lo-writer-green-wash);
+  color: var(--lo-writer-green);
+  font-weight: 600;
+}
+
+/* Zoom slider styling */
+.canvas-zoom input[type="range"] {
+  accent-color: var(--ms-word-blue);
+}

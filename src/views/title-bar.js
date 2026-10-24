@@ -5,8 +5,6 @@ import { createMenubar } from '../ui/menubar.js';
 import { command, small, commandIconEl } from '../ui/ribbon.js';
 import { searchEntries } from '../ui/command-index.js';
 import { localStore } from '../lib/storage.js';
-import { iconEl } from '../ui/icons.js';
-import { getLayoutMode, setLayoutMode, LAYOUT_MODES, onLayoutModeChange } from '../ui/layout-mode.js';
 
 const QUICK_STORE = 'writedoc:quick-access';
 const RECENT_STORE = 'writedoc:recent-commands';
@@ -211,49 +209,9 @@ export function createTitleBar({ w, c, a, local, title, status, account, menus, 
     onclick: e => openMenu({ anchor: share, label: 'Share', minWidth: 240, align: 'end', pointer: !!e.detail, onClose: e.detail ? focusEditor : null, items: shareItems() }) },
   commandIconEl('share', 16), el('span.ed-pill-label', {}, 'Share'), el('span.ribbon-caret', { 'aria-hidden': 'true' })) : null;
 
-  /* ---- UI Layout Mode Switcher (Word + LibreOffice Hybrid) ---- */
-  const layoutIcon = el('span.ed-layout-icon', {}, iconEl('sparkle', 15));
-  const layoutLabel = el('span.ed-pill-label', {}, '🌟 هجين');
-  const layoutButton = el('button.ed-pill.ed-layout-mode', {
-    type: 'button',
-    'aria-haspopup': 'menu',
-    'aria-label': 'نمط الواجهة: هجين (Word + LibreOffice)',
-    title: 'تغيير نمط الواجهة: هجين (Word + LibreOffice) أو وورد أو ليبر أوفيس',
-    onclick: e => openMenu({
-      anchor: layoutButton,
-      label: 'نمط الواجهة (UI Layout Mode)',
-      minWidth: 260,
-      align: 'end',
-      pointer: !!e.detail,
-      onClose: e.detail ? focusEditor : null,
-      items: LAYOUT_MODES.map(m => ({
-        label: m.label,
-        hint: m.shortLabel,
-        radio: true,
-        checked: getLayoutMode() === m.id,
-        onSelect: () => {
-          setLayoutMode(m.id);
-          refreshLayoutButton();
-          focusEditor();
-        },
-      })),
-    }),
-  }, layoutIcon, layoutLabel, el('span.ribbon-caret', { 'aria-hidden': 'true' }));
-  layoutButton.addEventListener('mousedown', e => e.preventDefault());
-
-  function refreshLayoutButton() {
-    const cur = getLayoutMode();
-    const modeObj = LAYOUT_MODES.find(m => m.id === cur) || LAYOUT_MODES[0];
-    layoutLabel.textContent = modeObj.shortLabel || modeObj.label;
-    layoutIcon.replaceChildren(iconEl(modeObj.icon || 'sparkle', 15));
-    layoutButton.setAttribute('aria-label', `نمط الواجهة: ${modeObj.shortLabel || modeObj.label}`);
-  }
-  refreshLayoutButton();
-  onLayoutModeChange(refreshLayoutButton);
-
   const left = el('div.ed-title-left', {}, autosave, quick, customize, menubar.el, allMenus);
   const middle = el('div.canvas-title-wrap', {}, title, details, status);
-  const right = el('div.canvas-title-actions', {}, search, layoutButton, modeButton, comments, share, local ? c.exportButton : account);
+  const right = el('div.canvas-title-actions', {}, search, modeButton, comments, share, local ? c.exportButton : account);
   const node = el('div.ed-titlebar', {}, left, middle, right);
   renderQuick();
 

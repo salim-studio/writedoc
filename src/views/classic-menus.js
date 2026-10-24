@@ -1,6 +1,5 @@
 import { MOD_KEY, IS_MAC } from '../ui/dom.js';
 import { openMenu } from '../ui/menu.js';
-import { getLayoutMode, setLayoutMode, LAYOUT_MODES } from '../ui/layout-mode.js';
 
 /**
  * The classic menu bar's menus — File, Edit, View, Insert, Format, Tools, Table, Window and Help — laid
@@ -142,12 +141,6 @@ export function classicMenus(ctx) {
         { label: 'Show Tabs Only', radio: true, checked: ribbonMode === 'tabs', onSelect: () => ctx.setRibbonMode('tabs') },
         { label: 'Auto-hide', radio: true, checked: ribbonMode === 'auto', onSelect: () => ctx.setRibbonMode('auto') },
         sep, { label: 'Collapse or Expand the Ribbon', shortcut: sc('view.ribbon'), onSelect: () => ctx.toggleRibbon() }] },
-      sub('Layout Mode (نمط الواجهة)', LAYOUT_MODES.map(m => ({
-        label: m.label,
-        radio: true,
-        checked: getLayoutMode() === m.id,
-        onSelect: () => { setLayoutMode(m.id); ctx.focusEditor(); },
-      }))),
       sub('Sidebar', [
         control(c.outline, 'Navigation', { icon: 'navigationPane', checked: c.outline.getAttribute('aria-expanded') === 'true' }),
         opt(w.toggleReviewingPane, 'Reviewing', { icon: 'reviewingPane', checked: !!w.reviewingPaneShown?.() }),
