@@ -619,6 +619,7 @@ Object.assign(COMMAND_ICONS, {
   lineFocus: r(2.5, 3.5, 15, 13, 'of') + lines(4.5, 6, 11, 1) + r(2.5, 8.2, 15, 3.6, 'bs', 0) + p('M4.5 10h11', 'wh') + lines(4.5, 14, 11, 1),
   textSpacing: t(10, 11.5, 'ab', 9) + p('M2.5 16h15M4.5 14l-2 2 2 2M15.5 14l2 2-2 2', 'b'),
   styleArea: r(2.5, 3.5, 15, 13, 'of') + paneLeft(2.5, 3.5, 5.5, 13) + p('M8 3.5v13', 'o ln') + p('M3.8 6.5h3M3.8 11h3', 'b') + lines(10, 6.5, 5.5, 4, 2.5),
+  addins: r(2.5, 2.5, 6.5, 6.5, 'bf', 1.2) + r(11, 2.5, 6.5, 6.5, 'gf', 1.2) + r(2.5, 11, 6.5, 6.5, 'rf', 1.2) + r(11, 11, 6.5, 6.5, 'yf', 1.2) + plusMark(14.25, 14.25, 1.8, 'wh thick'),
 });
 
 /** Aliases: the editor's existing control icon names that map onto a drawing above. */
@@ -628,6 +629,7 @@ const ALIASES = {
   eraser: 'clearParagraph', fitWidth: 'characterSpacing', expand: 'textWidth', settings: 'tableProperties',
   tab: 'insertTab', merge: 'keepNext', rows: 'keepLines', rowsSplit: 'widowControl', listView: 'contextualSpacing',
   pencil: 'editStyle', plus: 'newStyle', gridView: 'template', fileDown: 'download', cutIcon: 'cut',
+  getAddins: 'addins', myAddins: 'addins', extensionManager: 'addins', requestAddin: 'addins',
 };
 
 export function commandIconBody(name) {

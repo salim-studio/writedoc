@@ -29,6 +29,8 @@ import { ommlToLatex } from '../engine/latex.js';
 import { dropCapState, setDropCap } from '../engine/drop-caps.js';
 import { iconSvg } from '../lib/icon-library.js';
 import { chartCommands } from './insert-chart.js';
+import { openAddinsDialog } from './addins-dialog.js';
+import { getInstalledAddins, executeAddin } from '../engine/addins.js';
 
 const OBJECT = '\uFFFC';
 const TWIP_EMU = 635;
@@ -604,6 +606,24 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     openSymbolDialog({ onClose: () => queueMicrotask(() => editor()?.focus()), onInsert: (ch, font) => placeSymbol(ch, font) });
   }
 
+  function openAddins(tab = 'store') {
+    return openAddinsDialog({ editor, pkg, onChange, run, insertDrawing, base, docName }, { initialTab: tab });
+  }
+  function addinItems() {
+    const installed = getInstalledAddins();
+    const items = installed.map(item => ({
+      label: item.name,
+      hint: item.badge,
+      onSelect: () => executeAddin(item, { editor, pkg, onChange, run, insertDrawing, base }),
+    }));
+    return [
+      ...(items.length ? items : [{ label: 'لا توجد إضافات مثبتة', disabled: true }]),
+      { separator: true },
+      { label: 'Get Add-ins (مكتبة الإضافات)…', icon: 'addins', onSelect: () => openAddins('store') },
+      { label: 'Request New Add-in (طلب إضافة أداة جديدة)…', icon: 'addins', onSelect: () => openAddins('request') },
+    ];
+  }
+
   /* ---- Ribbon ---- */
   const asSmall = (control, icon, label) => { control.classList.remove('ribbon-large'); control.replaceChildren(); return small(control, { icon, label }); };
   function insertRibbon(kit) {
@@ -621,6 +641,9 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const icons = command('Icons', 'icons', () => insertIcons(), { text: 'Icons' });
     const diagram = menuButton('Diagram', 'smartArt', diagramItems, { size: 'small', text: 'Diagram' });
     const chart = command('Chart', 'chart', () => commands.insertChart?.(), { text: 'Chart' });
+    const getAddins = command('Get Add-ins', 'addins', () => openAddins('store'), { size: 'large', text: 'Add-ins' });
+    const myAddins = menuButton('My Add-ins', 'addins', addinItems, { size: 'small', text: 'My Add-ins' });
+    const requestAddinBtn = command('Request Add-in', 'addins', () => openAddins('request'), { size: 'small', text: 'Request' });
     // Screenshot is in the Pictures menu (only where the browser can capture the screen).
     const screenshotButton = null;
     const header = menuButton('Header', 'header', () => headerItems('header'));
@@ -637,12 +660,13 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const equation = kit.split(equationMain, { label: 'Equation gallery', size: 'large', open: (anchor, e) => openMenu({ anchor, label: 'Equations', minWidth: 300, pointer: !!e?.detail, onClose: e?.detail ? () => editor()?.focus() : null, items: equationItems() }) });
     const latexBtn = command('LaTeX', 'latex', () => insertLatex(), { text: 'LaTeX', shortcut: latexShortcut });
     const symbol = menuButton('Symbol', 'symbol', symbolItems, { size: 'small', text: 'Symbol' });
-    noSteal(blankPage, shapes, icons, chart, signature, dateTime, equationMain, latexBtn, ...(screenshotButton ? [screenshotButton] : []));
+    noSteal(blankPage, shapes, icons, chart, getAddins, requestAddinBtn, signature, dateTime, equationMain, latexBtn, ...(screenshotButton ? [screenshotButton] : []));
     when(coverPage, can); when(blankPage, () => can() && !ready()?.model.selectedParagraphs[0]?.cellId); if (!kit.pageBreak) when(pageBreak, () => can() && !ready()?.model.selectedParagraphs[0]?.cellId);
-    for (const control of [pictures, shapes, icons, diagram, chart, header, footer, pageNumber, textBox, quickParts, wordArt, dropCap, signature, dateTime, object, equationMain, equation.arrow, latexBtn, symbol, ...(screenshotButton ? [screenshotButton] : [])]) when(control, can);
+    for (const control of [pictures, shapes, icons, diagram, chart, getAddins, myAddins, requestAddinBtn, header, footer, pageNumber, textBox, quickParts, wordArt, dropCap, signature, dateTime, object, equationMain, equation.arrow, latexBtn, symbol, ...(screenshotButton ? [screenshotButton] : [])]) when(control, can);
     return {
       pages: [rows([coverPage], [blankPage], [pageBreak])],
       illustrations: [pictures, shapes, rows([icons], [diagram], [chart])],
+      addins: [getAddins, rows([myAddins], [requestAddinBtn])],
       headerFooter: [header, footer, pageNumber],
       text: [textBox, rows([quickParts], [wordArt], [dropCap]), rows([signature], [dateTime], [object])],
       symbols: [equation, rows([latexBtn], [symbol])],
@@ -659,6 +683,10 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
       { label: 'Chart…', icon: 'chart', disabled: disabled || !commands.insertChart, onSelect: () => commands.insertChart?.() },
       { label: 'Icons…', icon: 'icons', disabled, onSelect: insertIcons },
       ...(canCapture() ? [{ label: 'Screenshot…', icon: 'screenshot', disabled, onSelect: screenshot }] : []),
+      { separator: true },
+      { label: 'Add-ins Store (مكتبة الإضافات)…', icon: 'addins', disabled, onSelect: () => openAddins('store') },
+      { label: 'My Add-ins (إضافاتي)', icon: 'addins', disabled, items: addinItems() },
+      { label: 'Request New Add-in (طلب إضافة جديدة)…', icon: 'addins', disabled, onSelect: () => openAddins('request') },
       { separator: true },
       { label: 'Cover Page', icon: 'coverPage', disabled, items: coverPageItems() },
       { label: 'Header', icon: 'header', disabled, items: headerItems('header') },
@@ -722,6 +750,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     textBoxItems, insertTextBox: () => insertTextBoxDesign(TEXT_BOX_DESIGNS[0]), wordArtItems, insertWordArt, insertSignatureLine,
     dropCapItems, dropCapOptions, insertDateTime, insertField, quickPartsItems, saveAutoText, objectItems, insertTextFromFile,
     equationItems, insertEquation, insertLatex, convertDocumentLatex: () => convertDocumentLatex(ready()), symbolItems, insertSymbol: moreSymbols, moreSymbols,
+    openAddins, openAddinStore: () => openAddins('store'), openMyAddins: () => openAddins('installed'), requestAddin: () => openAddins('request'), addinItems,
     extendMenu, contextMenuItems,
   };
   Object.assign(commands, chartCommands({ hub: { ready, fail, insertDrawing, textWidth }, pkg, editor }));

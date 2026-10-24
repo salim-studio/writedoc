@@ -1,0 +1,420 @@
+/* ==========================================================================
+   Add-ins Store & Library Styles (Office & LibreOffice Hybrid Aesthetic)
+   ========================================================================== */
+
+.addins-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 860px;
+  min-height: 520px;
+  max-height: 80vh;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: var(--ink, #1f2937);
+}
+
+.addins-tabs-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--hairline-strong, #e5e7eb);
+  padding: 0 4px 8px 4px;
+  margin-bottom: 16px;
+}
+
+.addins-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-2, #4b5563);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.addins-tab-btn:hover {
+  background: var(--surface-hover, rgba(0, 0, 0, 0.05));
+  color: var(--ink, #111827);
+}
+
+.addins-tab-btn.active {
+  background: var(--accent-wash, #e0ecfd);
+  color: var(--accent, #1b365d);
+  box-shadow: inset 0 -2px 0 var(--accent, #1b365d);
+}
+
+.addins-tab-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--accent, #1b365d);
+  color: #fff;
+}
+
+.addins-body-container {
+  flex: 1;
+  overflow-y: auto;
+  padding-inline-end: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Store Controls: Search & Category Chips */
+.addins-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.addins-search-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.addins-search-input {
+  flex: 1;
+  padding: 8px 14px;
+  border: 1px solid var(--hairline-strong, #d1d5db);
+  border-radius: 6px;
+  font-size: 13.5px;
+  background: var(--surface, #ffffff);
+  color: inherit;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.addins-search-input:focus {
+  border-color: var(--accent, #1b365d);
+  box-shadow: 0 0 0 3px rgba(27, 54, 93, 0.15);
+}
+
+.addins-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.addin-cat-chip {
+  padding: 4px 12px;
+  border: 1px solid var(--hairline-strong, #e5e7eb);
+  border-radius: 16px;
+  background: var(--surface, #f9fafb);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2, #4b5563);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.addin-cat-chip:hover {
+  background: var(--surface-hover, #f3f4f6);
+  color: var(--ink, #111827);
+}
+
+.addin-cat-chip.active {
+  background: var(--accent, #1b365d);
+  border-color: var(--accent, #1b365d);
+  color: #ffffff;
+}
+
+/* Add-in Cards Grid */
+.addins-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.addin-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--hairline-strong, #e5e7eb);
+  border-radius: 8px;
+  background: var(--surface, #ffffff);
+  padding: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s;
+  position: relative;
+}
+
+.addin-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  border-color: var(--accent, #1b365d);
+}
+
+.addin-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.addin-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  background: var(--accent-wash, #f0f4f9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+.addin-card-title-box {
+  flex: 1;
+  min-width: 0;
+}
+
+.addin-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  color: var(--ink, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.addin-card-subtitle {
+  font-size: 11px;
+  color: var(--ink-2, #6b7280);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.addin-card-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  background: #f3f4f6;
+  color: #374151;
+  align-self: flex-start;
+}
+
+.addin-card-badge.official {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.addin-card-badge.custom {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.addin-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink-2, #6b7280);
+  margin-bottom: 8px;
+}
+
+.addin-card-rating {
+  color: #d97706;
+  font-weight: 700;
+}
+
+.addin-card-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-2, #4b5563);
+  margin: 0 0 14px 0;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.addin-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  border-top: 1px solid var(--hairline, #f3f4f6);
+  padding-top: 10px;
+}
+
+.addin-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.addin-btn-primary {
+  background: var(--accent, #1b365d);
+  color: #ffffff;
+}
+
+.addin-btn-primary:hover {
+  background: #142844;
+}
+
+.addin-btn-secondary {
+  background: var(--surface, #ffffff);
+  border-color: var(--hairline-strong, #d1d5db);
+  color: var(--ink, #1f2937);
+}
+
+.addin-btn-secondary:hover {
+  background: var(--surface-hover, #f9fafb);
+  border-color: #9ca3af;
+}
+
+.addin-btn-danger {
+  background: transparent;
+  color: #dc2626;
+  border-color: #fca5a5;
+  padding: 6px 8px;
+  flex: 0 0 auto;
+}
+
+.addin-btn-danger:hover {
+  background: #fef2f2;
+}
+
+/* Request / Add New Add-in Form */
+.addin-request-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--hairline-strong, #e5e7eb);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.addin-request-banner {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e6f0fa 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.addin-request-banner-icon {
+  font-size: 28px;
+}
+
+.addin-request-banner-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  color: #1e3a8a;
+}
+
+.addin-request-banner-text p {
+  margin: 0;
+  font-size: 12px;
+  color: #3b82f6;
+  line-height: 1.4;
+}
+
+.addin-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.addin-form-col-full {
+  grid-column: 1 / -1;
+}
+
+.addin-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.addin-form-group label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink, #111827);
+}
+
+.addin-form-group input,
+.addin-form-group select,
+.addin-form-group textarea {
+  padding: 8px 12px;
+  border: 1px solid var(--hairline-strong, #d1d5db);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface, #ffffff);
+  color: inherit;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.addin-form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.addin-form-group input:focus,
+.addin-form-group select:focus,
+.addin-form-group textarea:focus {
+  border-color: var(--accent, #1b365d);
+  box-shadow: 0 0 0 3px rgba(27, 54, 93, 0.12);
+}
+
+.addin-form-hint {
+  font-size: 11px;
+  color: var(--ink-2, #6b7280);
+}
+
+.addin-form-submit-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--hairline, #e5e7eb);
+  padding-top: 14px;
+  margin-top: 6px;
+}
+
+/* Tool Runner Modals */
+.addin-runner-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 520px;
+}
+
+.addin-runner-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border: 1px dashed var(--hairline-strong, #d1d5db);
+  border-radius: 6px;
+  background: var(--surface-wash, #f8fafc);
+  min-height: 140px;
+}

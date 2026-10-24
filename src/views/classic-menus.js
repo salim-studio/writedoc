@@ -205,6 +205,9 @@ export function classicMenus(ctx) {
     opt(w.insertTextBox, 'Text Box', { icon: 'textBox', disabled: !editable() }),
     opt(w.insertDateTime, 'Date and Time…', { icon: 'dateTime', disabled: !editable() }),
     opt(w.insertSymbol, 'Symbol…', { icon: 'symbol', disabled: !editable() }),
+    sep,
+    opt(w.openAddins && (() => w.openAddins('store')), 'Add-ins Store (مكتبة الإضافات)…', { icon: 'addins', disabled: !editable() }),
+    opt(w.openAddins && (() => w.openAddins('request')), 'Request New Add-in (طلب إضافة أداة جديدة)…', { icon: 'addins', disabled: !editable() }),
   ]);
 
   const format = () => withExt('format', [
@@ -266,6 +269,8 @@ export function classicMenus(ctx) {
     sep,
     opt(w.customizeKeyboard, 'Customize Keyboard…', { icon: 'keyboard' }),
     opt(w.customizeQuickAccess, 'Customize Quick Access…'),
+    sep,
+    opt(w.openAddins && (() => w.openAddins('store')), 'Extension Manager & Add-ins (مدير الإضافات والامتدادات)…', { icon: 'addins', shortcut: 'Ctrl+Alt+E' }),
     opt(w.preferences, 'Preferences…', { icon: 'preferences' }),
   ]);
 
