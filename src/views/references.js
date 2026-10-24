@@ -279,45 +279,135 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     if (!engine.model.selectedImage) throw new Error('Select an image first.');
     if (engine.session.path !== null) engine.editStory(null);
     const captions = await import('../engine/captions.js');
+    const doiModule = await import('../engine/doi.js');
     const sourceTypes = Object.entries(captions.IMAGE_REF_TYPES).map(([id, name]) => [id, name]);
-    const author = text('Author', '', { placeholder: 'e.g. Smith, J.' });
-    const title = text('Title', '', { placeholder: 'e.g. Introduction to Computing' });
-    const location = text('Page / paragraph / section', '', { placeholder: 'e.g. p. 42, §3.2, Fig. 5' });
+    const citationStyles = Object.entries(captions.IMAGE_CITATION_STYLES).map(([id, name]) => [id, name]);
+
+    let authorsList = null;
+    const doi = text('DOI or URL', '', { placeholder: 'e.g. 10.1038/s41586-020-2649-2 or https://doi.org/...' });
+    const fetchBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, 'Fetch Metadata');
+    const status = el('span.ref-doi-status', { style: 'font-size: 12px; display: inline-block; padding: 2px 0;' });
+    const doiField = el('div.ref-column', {},
+      el('div', { style: 'display: flex; gap: 8px; align-items: flex-end;' },
+        el('div', { style: 'flex: 1;' }, field('Lookup from DOI (Auto-fill)', doi)),
+        fetchBtn
+      ),
+      status
+    );
+
+    const style = select('Citation style', citationStyles, 'apa', () => sync());
+    const sourceType = select('Source type', sourceTypes, 'article', () => sync());
+    const author = text('Author(s)', '', { placeholder: 'e.g. Smith, J.; Doe, A.' });
     const year = text('Year', '', { placeholder: 'e.g. 2024', maxLength: 10 });
-    const sourceType = select('Source type', sourceTypes, 'book', () => sync());
-    const publisher = text('Publisher', '', { placeholder: 'e.g. Oxford University Press' });
+    const title = text('Title', '', { placeholder: 'e.g. Array programming with NumPy' });
+    const journal = text('Journal / Publication / Book', '', { placeholder: 'e.g. Nature, or Book title' });
+    const volume = text('Volume', '', { placeholder: 'e.g. 585' });
+    const issue = text('Issue', '', { placeholder: 'e.g. 7825' });
+    const location = text('Page / Location', '', { placeholder: 'e.g. pp. 357–362 or p. 42, §3' });
+    const publisher = text('Publisher', '', { placeholder: 'e.g. Springer, Oxford Press' });
     const url = text('URL / DOI', '', { placeholder: 'e.g. https://doi.org/...' });
     const position = select('Position', [['below', 'Below image'], ['above', 'Above image']], 'below');
     const preview = el('p.ref-caption-preview', { 'aria-live': 'polite' });
-    function sync() {
-      const parts = [];
-      if (author.value.trim()) parts.push(author.value.trim());
-      if (year.value.trim()) parts.push(`(${year.value.trim()})`);
-      const authorPart = parts.join(' ');
-      const details = [];
-      if (title.value.trim()) details.push(title.value.trim());
-      if (location.value.trim()) details.push(location.value.trim());
-      if (publisher.value.trim()) details.push(publisher.value.trim());
-      if (url.value.trim()) details.push(url.value.trim());
-      const detailText = details.join('. ');
-      const typeLabel = captions.IMAGE_REF_TYPES[sourceType.value] || sourceType.value;
-      preview.textContent = `Source 1: ${authorPart}${authorPart && detailText ? '. ' : ''}${detailText}${detailText ? '.' : ''} [${typeLabel}]`;
+
+    async function doFetch() {
+      const raw = doi.value.trim();
+      if (!raw) return;
+      fetchBtn.disabled = true;
+      fetchBtn.textContent = 'Fetching…';
+      status.textContent = '⏳ Fetching metadata from Crossref / DOI…';
+      status.style.color = 'var(--ink-2, #666)';
+      try {
+        const data = await doiModule.fetchDoiMetadata(raw);
+        if (data.title) title.value = data.title;
+        if (data.author) author.value = data.author;
+        if (data.year) year.value = data.year;
+        if (data.journal) journal.value = data.journal;
+        if (data.volume) volume.value = data.volume;
+        if (data.issue) issue.value = data.issue;
+        if (data.location) location.value = data.location;
+        if (data.publisher) publisher.value = data.publisher;
+        if (data.sourceType && captions.IMAGE_REF_TYPES[data.sourceType]) sourceType.value = data.sourceType;
+        if (data.url) url.value = data.url;
+        authorsList = data.authorsList || null;
+        status.textContent = `✓ Loaded: ${data.title ? (data.title.slice(0, 45) + (data.title.length > 45 ? '…' : '')) : 'Metadata found'}`;
+        status.style.color = '#1b7340';
+        sync();
+      } catch (err) {
+        status.textContent = `⚠️ ${err.message || 'Failed to fetch DOI'}`;
+        status.style.color = '#d93025';
+      } finally {
+        fetchBtn.disabled = false;
+        fetchBtn.textContent = 'Fetch Metadata';
+      }
     }
-    for (const input of [author, title, location, year, publisher, url]) input.addEventListener('input', sync);
+    fetchBtn.onclick = doFetch;
+    doi.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doFetch(); } });
+    doi.addEventListener('paste', () => { setTimeout(doFetch, 50); });
+
+    function sync() {
+      const current = {
+        style: style.value,
+        author: author.value.trim(),
+        title: title.value.trim(),
+        journal: journal.value.trim(),
+        volume: volume.value.trim(),
+        issue: issue.value.trim(),
+        location: location.value.trim(),
+        year: year.value.trim(),
+        sourceType: sourceType.value,
+        publisher: publisher.value.trim(),
+        url: url.value.trim(),
+        authorsList,
+      };
+      const runs = captions.formatImageReferenceRuns(current);
+      preview.replaceChildren(
+        el('strong', {}, 'Source 1: '),
+        ...runs.map(r => r.italic ? el('em', {}, r.text) : el('span', {}, r.text))
+      );
+    }
+    for (const input of [author, title, journal, volume, issue, location, year, publisher, url]) {
+      input.addEventListener('input', () => {
+        if (input === author) authorsList = null;
+        sync();
+      });
+    }
     sync();
-    openDialog({ title: 'Image Source Reference', className: 'ref-caption-dialog', body: [
-      el('div.ref-two-column.ref-tight', {}, field('Author', author), field('Year', year)),
-      field('Title', title),
-      el('div.ref-two-column.ref-tight', {}, field('Page / Location', location), field('Source type', sourceType)),
-      el('div.ref-two-column.ref-tight', {}, field('Publisher', publisher), field('Position', position)),
-      field('URL / DOI', url),
-      el('div.ref-section', {}, el('legend', {}, 'Preview'), preview),
-    ], onSubmit: () => runBody((doc, c) => c.insertImageReference(doc, {
-      author: author.value.trim(), title: title.value.trim(), location: location.value.trim(),
-      year: year.value.trim(), sourceType: sourceType.value, url: url.value.trim(),
-      above: position.value === 'above', publisher: publisher.value.trim(),
-    }), { modules: ['captions'] }) });
-    author.focus();
+
+    openDialog({
+      title: 'Image Source Reference',
+      className: 'ref-caption-dialog',
+      wide: true,
+      body: [
+        doiField,
+        el('div.ref-two-column.ref-tight', {}, field('Citation style', style), field('Source type', sourceType)),
+        el('div.ref-two-column.ref-tight', {}, field('Author(s)', author), field('Year', year)),
+        field('Title', title),
+        field('Journal / Publication / Book', journal),
+        el('div.ref-two-column.ref-tight', {},
+          el('div.ref-two-column.ref-tight', {}, field('Volume', volume), field('Issue', issue)),
+          field('Page / Location', location)
+        ),
+        el('div.ref-two-column.ref-tight', {}, field('Publisher', publisher), field('Position', position)),
+        field('URL / DOI', url),
+        el('div.ref-section', {}, el('legend', {}, 'Formatted Citation Preview'), preview),
+      ],
+      onSubmit: () => runBody((doc, c) => c.insertImageReference(doc, {
+        style: style.value,
+        author: author.value.trim(),
+        title: title.value.trim(),
+        journal: journal.value.trim(),
+        volume: volume.value.trim(),
+        issue: issue.value.trim(),
+        location: location.value.trim(),
+        year: year.value.trim(),
+        sourceType: sourceType.value,
+        publisher: publisher.value.trim(),
+        url: url.value.trim(),
+        above: position.value === 'above',
+        authorsList,
+      }), { modules: ['captions'] }),
+    });
+    doi.focus();
   }
 
   /* ---- Ribbon ---- */

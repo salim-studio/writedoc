@@ -19,7 +19,7 @@
 .ref-style-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ref-level-input.input { padding: 4px 8px; }
 .ref-caption-preview { margin: 0; padding: 8px 10px; border-radius: 6px; background: #fff; color: #44546a; font-style: italic; font-size: 13px; border: 1px solid var(--hairline-strong); }
-@media (min-width: 641px) { .modal-panel.wide:has(.ref-toc-dialog), .modal-panel.wide:has(.ref-source-dialog), .modal-panel.wide:has(.ref-manage-dialog) { width: 720px; max-width: calc(100vw - 40px); } }
+@media (min-width: 641px) { .modal-panel.wide:has(.ref-toc-dialog), .modal-panel.wide:has(.ref-source-dialog), .modal-panel.wide:has(.ref-manage-dialog), .modal-panel.wide:has(.ref-caption-dialog) { width: 720px; max-width: calc(100vw - 40px); } }
 @media (max-width: 560px) { .ref-two-column, .ref-two-column.ref-tight { grid-template-columns: minmax(0, 1fr); } .ref-location-row { grid-template-columns: minmax(0, 1fr); } }
 
 /* ---- Paper previews (galleries and dialogs) ---- */

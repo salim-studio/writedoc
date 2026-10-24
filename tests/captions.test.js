@@ -58,10 +58,11 @@ describe('captions and cross-references', () => {
     expect(d.paragraphs.find(p => p.runs.map(r => r.text).join('') === 'Table 1: Results').cellId).toBeFalsy();
   });
 
-  it('inserts an image source reference citation with SEQ field and source details', async () => {
+  it('inserts an image source reference citation with SEQ field and standard source details', async () => {
     const { pkg, d } = await setup();
     d.select(d.text.indexOf('Chart two'));
     insertImageReference(d, {
+      style: 'standard',
       author: 'Doe, J.',
       title: 'Historical Atlas',
       location: 'p. 105, para. 3',
@@ -74,5 +75,39 @@ describe('captions and cross-references', () => {
     expect(fields.some(f => f.field.type === 'SEQ' && f.field.instruction.includes('Source'))).toBe(true);
     const xml = strFromU8(unzipSync(await save(pkg, d))['word/document.xml']);
     expect(xml.match(/SEQ Source \\\* ARABIC/g)).toHaveLength(1);
+  });
+
+  it('formats image source reference with APA citation style', async () => {
+    const { d } = await setup();
+    d.select(d.text.indexOf('Conclusion'));
+    insertImageReference(d, {
+      style: 'apa',
+      author: 'Harris, C. R.',
+      title: 'Array programming with NumPy',
+      journal: 'Nature',
+      volume: '585',
+      issue: '7825',
+      location: '357-362',
+      year: '2020',
+      url: 'https://doi.org/10.1038/s41586-020-2649-2',
+    });
+    expect(d.text).toContain('Source 1: Harris, C. R. (2020). Array programming with NumPy. Nature, 585(7825), 357–362. https://doi.org/10.1038/s41586-020-2649-2');
+  });
+
+  it('formats image source reference with MLA citation style', async () => {
+    const { d } = await setup();
+    d.select(d.text.indexOf('Conclusion'));
+    insertImageReference(d, {
+      style: 'mla',
+      author: 'Harris, C. R.',
+      title: 'Array programming with NumPy',
+      journal: 'Nature',
+      volume: '585',
+      issue: '7825',
+      location: '357-362',
+      year: '2020',
+      url: 'https://doi.org/10.1038/s41586-020-2649-2',
+    });
+    expect(d.text).toContain('Source 1: Harris, C. R. “Array programming with NumPy.” Nature, vol. 585, no. 7825, 2020, pp. 357–362. https://doi.org/10.1038/s41586-020-2649-2.');
   });
 });

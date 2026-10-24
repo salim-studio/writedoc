@@ -8,6 +8,8 @@ import { hyperlinkId } from './hyperlinks.js';
 import { newBodyField, nextMarkerOrder } from './generated-fields.js';
 import { sequenceInstruction, updateSequenceFields } from './field-update.js';
 import { noteReferences } from './footnotes.js';
+import { formatBibliography } from './citation-styles.js';
+import { parseAuthorsString } from './doi.js';
 
 export const CAPTION_LABELS = ['Figure', 'Table', 'Equation'];
 /** Caption number formats and their SEQ general-formatting switch (§17.16.4.3). */
@@ -78,27 +80,115 @@ export function insertCaption(doc, { label = 'Figure', text = '', above = false,
 
 /** Source types for image references. */
 export const IMAGE_REF_TYPES = {
-  book: 'Book', bookSection: 'Book section', article: 'Journal article',
-  website: 'Website', report: 'Report', thesis: 'Thesis', other: 'Other',
+  article: 'Journal article', book: 'Book', bookSection: 'Book section',
+  report: 'Report', website: 'Website', thesis: 'Thesis / Dissertation', other: 'Other',
 };
+
+/** Supported citation styles for image source references. */
+export const IMAGE_CITATION_STYLES = {
+  apa: 'APA (7th ed.)',
+  mla: 'MLA (9th ed.)',
+  chicago: 'Chicago (Author-Date)',
+  harvard: 'Harvard',
+  ieee: 'IEEE',
+  standard: 'Standard',
+};
+
+/**
+ * Format image reference runs with typography and styling (e.g. italic journal/book titles).
+ * @returns {Array<{ text: string, italic?: boolean }>}
+ */
+export function formatImageReferenceRuns({
+  style = 'apa',
+  author = '',
+  title = '',
+  journal = '',
+  volume = '',
+  issue = '',
+  location = '',
+  year = '',
+  sourceType = 'article',
+  publisher = '',
+  url = '',
+  authorsList = null,
+} = {}) {
+  if (style === 'standard') {
+    const parts = [];
+    if (author) parts.push(author);
+    if (year) parts.push(`(${year})`);
+    const afterAuthor = parts.join(' ');
+    const details = [];
+    if (title) details.push(title);
+    if (journal) details.push(journal);
+    if (volume || issue) details.push([volume ? `Vol. ${volume}` : '', issue ? `No. ${issue}` : ''].filter(Boolean).join(', '));
+    if (location) details.push(location);
+    if (publisher) details.push(publisher);
+    if (url) details.push(url);
+    const detailText = details.join('. ');
+    const typeLabel = IMAGE_REF_TYPES[sourceType] || sourceType;
+    const body = `${afterAuthor}${afterAuthor && detailText ? '. ' : ''}${detailText}${detailText ? '.' : ''} [${typeLabel}]`;
+    return [{ text: body, italic: false }];
+  }
+
+  const typeMap = {
+    article: 'JournalArticle',
+    book: 'Book',
+    bookSection: 'BookSection',
+    report: 'Report',
+    website: 'InternetSite',
+    thesis: 'Report',
+    other: 'Misc',
+  };
+  const type = typeMap[sourceType] || 'JournalArticle';
+  const names = {
+    Author: Array.isArray(authorsList) && authorsList.length
+      ? authorsList.map(a => ({ first: a.given || a.first || '', last: a.family || a.last || a.name || '', corporate: a.corporate || '' }))
+      : parseAuthorsString(author),
+  };
+  const fields = {
+    Title: title,
+    Year: year,
+    Publisher: publisher,
+    URL: url,
+    Pages: location,
+    Volume: volume,
+    Issue: issue,
+  };
+  if (type === 'JournalArticle') fields.JournalName = journal;
+  else if (type === 'BookSection') fields.BookTitle = journal;
+  else if (type === 'InternetSite') fields.InternetSiteTitle = journal;
+  else fields.PublicationTitle = journal;
+
+  try {
+    const [entry] = formatBibliography(style, [{ tag: 's1', type, names, fields }]);
+    if (entry?.runs?.length) {
+      const runs = entry.runs.map(r => ({ ...r }));
+      if (style === 'ieee' && runs[0]?.text) {
+        runs[0].text = runs[0].text.replace(/^\[\d+\]\s*/, '');
+      }
+      return runs;
+    }
+  } catch (e) {
+    console.warn('Citation style formatting fallback:', e);
+  }
+  return [{ text: `${author} (${year}). ${title}. ${journal ? `${journal}. ` : ''}${url}`, italic: false }];
+}
+
+/** Formats image reference into plain text. */
+export function formatImageReferenceText(options) {
+  return formatImageReferenceRuns(options).map(r => r.text).join('');
+}
 
 /**
  * Insert a source reference paragraph below (or above) the selected picture. The reference
  * is a formatted citation identifying where the image originally appeared (a paragraph, a page
  * of a book, an article, etc.). It uses a SEQ field for automatic "Source" numbering.
- *
- * `options.author`    — author or creator name
- * `options.title`     — title of the book, article or document
- * `options.location`  — page, paragraph, figure number or section identifier
- * `options.year`      — publication year
- * `options.sourceType` — one of IMAGE_REF_TYPES keys
- * `options.url`       — optional URL or DOI
- * `options.above`     — insert above instead of below the image
- * `options.publisher` — optional publisher name
  */
 export function insertImageReference(doc, {
-  author = '', title = '', location = '', year = '', sourceType = 'book',
-  url = '', above = false, publisher = '',
+  style = 'apa',
+  author = '', title = '', journal = '', volume = '', issue = '',
+  location = '', year = '', sourceType = 'article',
+  url = '', above = false, publisher = '', authorsList = null,
 } = {}) {
   if (!author && !title) throw new Error('Enter at least the author or the title of the source.');
   const id = 'Source';
@@ -114,19 +204,12 @@ export function insertImageReference(doc, {
   const captionStyle = Object.values(styles).find(s => s.type === 'paragraph' && s.name?.toLowerCase() === 'caption')?.id;
   if (captionStyle) doc.setParagraphStyle(captionStyle);
   else if (doc.styles?.defaultParagraph) doc.setParagraphStyle(doc.styles.defaultParagraph);
-  // Build the reference text: "Source N: Author (Year). Title, Location. Publisher. URL"
-  const parts = [];
-  if (author) parts.push(author);
-  if (year) parts.push(`(${year})`);
-  const afterAuthor = parts.join(' ');
-  const details = [];
-  if (title) details.push(title);
-  if (location) details.push(location);
-  if (publisher) details.push(publisher);
-  if (url) details.push(url);
-  const detailText = details.join('. ');
-  const typeLabel = IMAGE_REF_TYPES[sourceType] || sourceType;
-  const body = `Source 1: ${afterAuthor}${afterAuthor && detailText ? '. ' : ''}${detailText}${detailText ? '.' : ''} [${typeLabel}]`;
+
+  const runs = formatImageReferenceRuns({
+    style, author, title, journal, volume, issue, location, year, sourceType, publisher, url, authorsList,
+  });
+  const refText = runs.map(r => r.text).join('');
+  const body = `Source 1: ${refText}`;
   doc.select(start);
   doc.replaceUntracked(body, { checkpoint: false });
   if (!captionStyle) {
@@ -134,6 +217,7 @@ export function insertImageReference(doc, {
     doc.setRunFormat({ italic: true, fontSize: 9, color: '44546A' });
     doc.setParagraphFormat({ spaceBefore: 2, spaceAfter: 10, keepNext: above });
   }
+
   // Make "Source N" a SEQ field for automatic numbering.
   const p = doc.paragraphs[index];
   addFieldMarkers(p, newBodyField(` SEQ ${id} \\\\* ARABIC `, { simple: true }), 'Source '.length, 'Source '.length + 1);
