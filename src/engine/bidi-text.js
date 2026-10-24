@@ -19,6 +19,11 @@ export const bidiRtlSpace = c => c.text === ' ' && c.style.rtl && c.style.bidiLe
 
 export function bidiCharacters(chars, baseDir = 'ltr') {
   if (!chars.length) return chars;
+  chars = chars.map(c => {
+    if (c.style?.rtl) return c;
+    const isArabic = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}]/u.test(c.text);
+    return isArabic ? { ...c, style: { ...c.style, rtl: true } } : c;
+  });
   chars=rtlFontCharacters(chars,text=>bidi.getBidiCharTypeName(text));
   let proxy = '', rtl = false;
   const indices = [];

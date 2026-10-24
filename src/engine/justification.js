@@ -4,7 +4,7 @@ import { UnsupportedDocumentError } from './errors.js';
 // Native Canvas word-spacing expands U+0020 and U+00A0 without breaking shaping.
 export const justificationSpace = text => text === ' ' || text === '\u00a0';
 export function checkJustificationText(text, alignment) {
-  if (alignment === 'both' && /\p{Script=Arabic}/u.test(text)) throw new UnsupportedDocumentError('Arabic kashida justification');
+  // Allow Arabic text with standard word-spacing justification without kashida error
 }
 
 export function justificationRange(span, measured, right, tab) {

@@ -493,6 +493,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     const patch = { bidi: false };
     if (currentAlign === 'right') patch.alignment = 'left';
     engine.setParagraphFormat(patch);
+    if (engine.model?.typingFormat) engine.model.typingFormat = { ...engine.model.typingFormat, rtl: false, cs: false };
     queueMicrotask(() => engine?.focus());
   }, { 'aria-pressed': 'false', shortcut: 'Ctrl+Left Shift' });
   const rtlDirection = tool('Right-to-Left Text Direction', 'dirRtl', () => {
@@ -502,6 +503,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     const patch = { bidi: true };
     if (currentAlign === 'left') patch.alignment = 'right';
     engine.setParagraphFormat(patch);
+    if (engine.model?.typingFormat) engine.model.typingFormat = { ...engine.model.typingFormat, rtl: true, cs: true };
     queueMicrotask(() => engine?.focus());
   }, { 'aria-pressed': 'false', shortcut: 'Ctrl+Right Shift' });
   const lineSpacing = el('select', { disabled: true, 'aria-label': 'Line spacing', onchange: () => {

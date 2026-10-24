@@ -42,12 +42,14 @@ export function keyboardShortcuts({ editor, pkg, applyStyleLevel, focusFont, foc
       return paragraph(engine => {
         const currentAlign = format().alignment;
         engine.setParagraphFormat({ bidi: false, ...(currentAlign === 'right' ? { alignment: 'left' } : {}) });
+        if (engine.model?.typingFormat) engine.model.typingFormat = { ...engine.model.typingFormat, rtl: false, cs: false };
       });
     }
     if (code === 'ShiftRight' || (e.shiftKey && e.location === 2)) {
       return paragraph(engine => {
         const currentAlign = format().alignment;
         engine.setParagraphFormat({ bidi: true, ...(currentAlign === 'left' ? { alignment: 'right' } : {}) });
+        if (engine.model?.typingFormat) engine.model.typingFormat = { ...engine.model.typingFormat, rtl: true, cs: true };
       });
     }
     if (!e.shiftKey && code === 'KeyQ') return paragraph(engine => engine.clearDirectParagraphFormatting());

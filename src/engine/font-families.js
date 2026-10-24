@@ -55,5 +55,6 @@ export function textFontStyle(text, style) {
 export const cssFontString = value => '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
 export const canvasFontFamily = style => {
   const family = (style.fontFamily || style.fontAscii || 'Noto Sans').trim();
-  return isBundledFont(family) ? '"Canvas Noto Sans"' : `${cssFontString(family)}, "Canvas Noto Sans"`;
+  const fallbacks = '"Canvas Noto Sans", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif';
+  return isBundledFont(family) ? fallbacks : `${cssFontString(family)}, ${fallbacks}`;
 };

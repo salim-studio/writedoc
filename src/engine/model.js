@@ -1594,7 +1594,6 @@ export class TextDocument {
   setRunFormat(patch) {
     const pass = this.blockCellPass(() => this.setRunFormat(patch));
     if (pass !== undefined) return pass;
-    if (patch.cs || patch.rtl) throw new Error('Active complex-script and RTL editing is not supported yet.');
     const legacyUnderline = 'underline' in patch && !('underlineStyle' in patch);
     patch = { ...underlineDeclaration(patch) };
     if (legacyUnderline && !('underlineColor' in patch)) patch.underlineColor = 'auto';

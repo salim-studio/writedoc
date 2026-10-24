@@ -6,6 +6,7 @@ const complex = /[\p{Script=Devanagari}\p{Script=Bengali}\p{Script=Gurmukhi}\p{S
 // Phoenician uses ordinary input formatting, including with a font
 // that contains its glyphs. Do not change its Unicode R class during layout.
 const ordinaryScript = /\p{Script=Phoenician}/u;
+const rtlScript = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}]/u;
 const representatives = { L:'A', R:'א', AL:'ا', EN:'0', AN:'٠', NSM:'\u0300', ON:'\ufffc', BN:'\u00ad', WS:' ', ES:'+', ET:'$', CS:',', B:'\u2029', S:'\t' };
 const strongType = type => type === 'L' || type === 'R' || type === 'AL';
 
@@ -47,7 +48,7 @@ function precedingComplexScript(text) {
 
 export function typedScriptRuns(text, format, precedingText = '') {
   // Ordinary text and inserted objects keep their existing path and metadata.
-  if (!text || !(format.cs || format.rtl) || format.image || format.noteMark || format.bodySymbol) return [{ ...format, text }];
+  if (!text || (!format.cs && !format.rtl && !rtlScript.test(text) && !complex.test(text)) || format.image || format.noteMark || format.bodySymbol) return [{ ...format, text }];
   const chars = [...text], types = chars.map(c => ordinaryScript.test(c) ? 'L' : bidiCharacterType(c));
   // The preceding complex script carries into leading neutral input,
   // but a following ordinary LTR character in this batch takes those neutrals.
@@ -57,7 +58,8 @@ export function typedScriptRuns(text, format, precedingText = '') {
   const neutral = neutralBracketItems(chars, types);
   // One proxy code unit per code point; actual text and UTF-16 offsets are kept.
   const proxy = chars.map((c,i) => neutral[i] ? '\ufffc' : c.length === 1 ? c : representatives[types[i]] || 'A').join('');
-  const levels = bidiEmbeddingLevels(proxy, format.rtl ? 'rtl' : 'ltr');
+  const baseDir = format.rtl ? 'rtl' : types.some(t => t === 'R' || t === 'AL') ? 'rtl' : 'ltr';
+  const levels = bidiEmbeddingLevels(proxy, baseDir);
   const runs = []; let strong = format.rtl ? 'R' : 'L', lastCs = false;
   for (let i = 0; i < chars.length; i++) {
     const c = chars[i], type = types[i]; let cs = false, rtl = false;

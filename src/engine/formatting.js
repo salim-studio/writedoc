@@ -30,7 +30,6 @@ export function resolvedFormat(properties) {
   const s = properties.spacing || {}, ind = properties.ind || {};
   const outlineLevel = properties.outlineLevel ?? 9;
   if (!Number.isInteger(outlineLevel) || outlineLevel < 0 || outlineLevel > 9) throw new UnsupportedDocumentError('outline levels outside 0–9');
-  if (properties.bidi && (ind.left || ind.right || ind.firstLine || ind.hanging)) throw new UnsupportedDocumentError('right-to-left paragraph indents');
   if (Object.keys(ind).some(k => k.endsWith('Chars') && ind[k] !== 0)) throw new UnsupportedDocumentError('character-unit paragraph indents');
   const geometry = { indentLeft: ind.left ?? 0, indentRight: ind.right ?? 0, firstLine: ind.hanging !== undefined ? -ind.hanging : ind.firstLine ?? 0 };
   try {

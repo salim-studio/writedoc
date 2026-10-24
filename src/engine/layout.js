@@ -789,8 +789,7 @@ function measureParagraph(p, documentOffset, measure, page, listMarker, numberin
   // Active RTL import/editing remains guarded while interaction is verified.
   // Do not alter the existing unmarked-text path during that rollout.
   const isBidiPara = format.bidi === true;
-  if (chars.some(c => c.style.rtl) || isBidiPara) {
-    if (isBidiPara) chars = chars.map(c => ({ ...c, style: { ...c.style, rtl: true } }));
+  if (chars.some(c => c.style.rtl || /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}]/u.test(c.text)) || isBidiPara) {
     chars = bidiCharacters(chars, isBidiPara ? 'rtl' : 'ltr');
   }
   // Leading page/column breaks move the first text line without consuming its
