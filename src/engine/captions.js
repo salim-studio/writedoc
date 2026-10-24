@@ -76,6 +76,76 @@ export function insertCaption(doc, { label = 'Figure', text = '', above = false,
   return index;
 }
 
+/** Source types for image references. */
+export const IMAGE_REF_TYPES = {
+  book: 'Book', bookSection: 'Book section', article: 'Journal article',
+  website: 'Website', report: 'Report', thesis: 'Thesis', other: 'Other',
+};
+
+/**
+ * Insert a source reference paragraph below (or above) the selected picture. The reference
+ * is a formatted citation identifying where the image originally appeared (a paragraph, a page
+ * of a book, an article, etc.). It uses a SEQ field for automatic "Source" numbering.
+ *
+ * `options.author`    — author or creator name
+ * `options.title`     — title of the book, article or document
+ * `options.location`  — page, paragraph, figure number or section identifier
+ * `options.year`      — publication year
+ * `options.sourceType` — one of IMAGE_REF_TYPES keys
+ * `options.url`       — optional URL or DOI
+ * `options.above`     — insert above instead of below the image
+ * `options.publisher` — optional publisher name
+ */
+export function insertImageReference(doc, {
+  author = '', title = '', location = '', year = '', sourceType = 'book',
+  url = '', above = false, publisher = '',
+} = {}) {
+  if (!author && !title) throw new Error('Enter at least the author or the title of the source.');
+  const id = 'Source';
+  let index;
+  const at = doc.range[0];
+  let i = 0, pos = 0;
+  while (i < doc.paragraphs.length - 1 && pos + length(doc.paragraphs[i]) < at) pos += length(doc.paragraphs[i++]) + 1;
+  if (above) { doc.select(pos); doc.replaceUntracked('\n', { checkpoint: false }); index = i; }
+  else { doc.select(pos + length(doc.paragraphs[i])); doc.replaceUntracked('\n', { checkpoint: false }); index = i + 1; }
+  const start = offsetOf(doc, index);
+  doc.select(start, start + length(doc.paragraphs[index]));
+  const styles = doc.styles?.definitions || {};
+  const captionStyle = Object.values(styles).find(s => s.type === 'paragraph' && s.name?.toLowerCase() === 'caption')?.id;
+  if (captionStyle) doc.setParagraphStyle(captionStyle);
+  else if (doc.styles?.defaultParagraph) doc.setParagraphStyle(doc.styles.defaultParagraph);
+  // Build the reference text: "Source N: Author (Year). Title, Location. Publisher. URL"
+  const parts = [];
+  if (author) parts.push(author);
+  if (year) parts.push(`(${year})`);
+  const afterAuthor = parts.join(' ');
+  const details = [];
+  if (title) details.push(title);
+  if (location) details.push(location);
+  if (publisher) details.push(publisher);
+  if (url) details.push(url);
+  const detailText = details.join('. ');
+  const typeLabel = IMAGE_REF_TYPES[sourceType] || sourceType;
+  const body = `Source 1: ${afterAuthor}${afterAuthor && detailText ? '. ' : ''}${detailText}${detailText ? '.' : ''} [${typeLabel}]`;
+  doc.select(start);
+  doc.replaceUntracked(body, { checkpoint: false });
+  if (!captionStyle) {
+    doc.select(start, start + body.length);
+    doc.setRunFormat({ italic: true, fontSize: 9, color: '44546A' });
+    doc.setParagraphFormat({ spaceBefore: 2, spaceAfter: 10, keepNext: above });
+  }
+  // Make "Source N" a SEQ field for automatic numbering.
+  const p = doc.paragraphs[index];
+  addFieldMarkers(p, newBodyField(` SEQ ${id} \\\\* ARABIC `, { simple: true }), 'Source '.length, 'Source '.length + 1);
+  doc.hasBodyFields = true;
+  bodyFieldRanges(doc.paragraphs);
+  updateSequenceFields(doc);
+  const after = offsetOf(doc, index) + length(doc.paragraphs[index]);
+  doc.select(after);
+  doc.didChange();
+  return index;
+}
+
 /**
  * What can be cross-referenced: headings, captions, named bookmarks and note references.
  * `notes` lists note texts and numbers: [{ kind: 'footnote'|'endnote', id, display, text }].

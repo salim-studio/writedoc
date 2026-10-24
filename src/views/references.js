@@ -273,6 +273,53 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     fill(); type.focus();
   }
 
+  /* ---- Image Source Reference ---- */
+  async function imageReferenceDialog() {
+    const engine = ready(); if (!engine) return;
+    if (!engine.model.selectedImage) throw new Error('Select an image first.');
+    if (engine.session.path !== null) engine.editStory(null);
+    const captions = await import('../engine/captions.js');
+    const sourceTypes = Object.entries(captions.IMAGE_REF_TYPES).map(([id, name]) => [id, name]);
+    const author = text('Author', '', { placeholder: 'e.g. Smith, J.' });
+    const title = text('Title', '', { placeholder: 'e.g. Introduction to Computing' });
+    const location = text('Page / paragraph / section', '', { placeholder: 'e.g. p. 42, §3.2, Fig. 5' });
+    const year = text('Year', '', { placeholder: 'e.g. 2024', maxLength: 10 });
+    const sourceType = select('Source type', sourceTypes, 'book', () => sync());
+    const publisher = text('Publisher', '', { placeholder: 'e.g. Oxford University Press' });
+    const url = text('URL / DOI', '', { placeholder: 'e.g. https://doi.org/...' });
+    const position = select('Position', [['below', 'Below image'], ['above', 'Above image']], 'below');
+    const preview = el('p.ref-caption-preview', { 'aria-live': 'polite' });
+    function sync() {
+      const parts = [];
+      if (author.value.trim()) parts.push(author.value.trim());
+      if (year.value.trim()) parts.push(`(${year.value.trim()})`);
+      const authorPart = parts.join(' ');
+      const details = [];
+      if (title.value.trim()) details.push(title.value.trim());
+      if (location.value.trim()) details.push(location.value.trim());
+      if (publisher.value.trim()) details.push(publisher.value.trim());
+      if (url.value.trim()) details.push(url.value.trim());
+      const detailText = details.join('. ');
+      const typeLabel = captions.IMAGE_REF_TYPES[sourceType.value] || sourceType.value;
+      preview.textContent = `Source 1: ${authorPart}${authorPart && detailText ? '. ' : ''}${detailText}${detailText ? '.' : ''} [${typeLabel}]`;
+    }
+    for (const input of [author, title, location, year, publisher, url]) input.addEventListener('input', sync);
+    sync();
+    openDialog({ title: 'Image Source Reference', className: 'ref-caption-dialog', body: [
+      el('div.ref-two-column.ref-tight', {}, field('Author', author), field('Year', year)),
+      field('Title', title),
+      el('div.ref-two-column.ref-tight', {}, field('Page / Location', location), field('Source type', sourceType)),
+      el('div.ref-two-column.ref-tight', {}, field('Publisher', publisher), field('Position', position)),
+      field('URL / DOI', url),
+      el('div.ref-section', {}, el('legend', {}, 'Preview'), preview),
+    ], onSubmit: () => runBody((doc, c) => c.insertImageReference(doc, {
+      author: author.value.trim(), title: title.value.trim(), location: location.value.trim(),
+      year: year.value.trim(), sourceType: sourceType.value, url: url.value.trim(),
+      above: position.value === 'above', publisher: publisher.value.trim(),
+    }), { modules: ['captions'] }) });
+    author.focus();
+  }
+
   /* ---- Ribbon ---- */
   const noSteal = (...buttons) => { for (const b of buttons) b.addEventListener('mousedown', e => e.preventDefault()); };
   function extendTab(tabId, kit) {
@@ -292,10 +339,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     when(style.control, () => { style.sync(); return !!ready(); });
     // Captions
     const caption = command('Insert Caption', 'caption', () => captionDialog(), { size: 'large', text: 'Insert Caption' });
+    const imgRef = command('Image Reference', 'citation', () => imageReferenceDialog(), { size: 'large', text: 'Image Reference' });
     const figures = command('Insert Table of Figures', 'tableOfFigures', () => toc.figuresDialog(), { text: 'Insert Table of Figures' });
     const updateFigures = command('Update Table of Figures', 'updateTable', () => toc.updateDialog(true), { text: 'Update Table' });
     const xref = command('Cross-reference', 'crossReference', () => crossReferenceDialog(), { text: 'Cross-reference' });
-    when(caption, () => !!ready()); when(figures, bodyReady); when(updateFigures, () => !!ready() && toc.hasFigures()); when(xref, bodyReady);
+    when(caption, () => !!ready()); when(imgRef, () => !!ready()); when(figures, bodyReady); when(updateFigures, () => !!ready() && toc.hasFigures()); when(xref, bodyReady);
     // Index
     const markEntry = command('Mark Entry', 'markEntry', () => indexes.markEntryPanel(), { size: 'large', text: 'Mark Entry', shortcut: MOD_KEY === 'Cmd' ? 'Cmd+Option+Shift+X' : 'Alt+Shift+X' });
     const insertIndex = command('Insert Index', 'index', () => indexes.insertIndexDialog(), { text: 'Insert Index' });
@@ -306,11 +354,11 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     const insertToa = command('Insert Table of Authorities', 'tableOfAuthorities', () => indexes.insertAuthoritiesDialog(), { text: 'Insert Table' });
     const updateToa = command('Update Table of Authorities', 'updateAuthorities', () => indexes.updateAuthorities(), { text: 'Update Table' });
     when(markCitation, bodyReady); when(insertToa, bodyReady); when(updateToa, () => !!ready() && hasField('TOA'));
-    noSteal(smart, manage, caption, figures, updateFigures, xref, markEntry, insertIndex, updateIndex, markCitation, insertToa, updateToa);
+    noSteal(smart, manage, caption, imgRef, figures, updateFigures, xref, markEntry, insertIndex, updateIndex, markCitation, insertToa, updateToa);
     return [
       { id: 'research', label: 'Research', icon: 'smartLookup', priority: 2, after: 'footnotes', items: [smart] },
       { id: 'citations', label: 'Citations & Bibliography', icon: 'citation', priority: 4, after: 'research', items: [citation, rows([manage], [styleWrap], [bibliography])] },
-      { id: 'captions', label: 'Captions', icon: 'caption', priority: 4, after: 'citations', items: [caption, rows([figures], [updateFigures], [xref])] },
+      { id: 'captions', label: 'Captions', icon: 'caption', priority: 4, after: 'citations', items: [caption, imgRef, rows([figures], [updateFigures], [xref])] },
       { id: 'index', label: 'Index', icon: 'index', priority: 3, after: 'captions', items: [markEntry, rows([insertIndex], [updateIndex])] },
       { id: 'authorities', label: 'Table of Authorities', icon: 'tableOfAuthorities', priority: 1, after: 'index', items: [markCitation, rows([insertToa], [updateToa])] },
     ];
@@ -327,6 +375,7 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       { separator: true },
       { label: 'Footnote…', icon: 'footnote', disabled, onSelect: () => notes.notesDialog() },
       { label: 'Caption…', icon: 'caption', disabled, onSelect: () => captionDialog() },
+      { label: 'Image Reference…', icon: 'citation', disabled: disabled || !editor()?.model.selectedImage, onSelect: () => imageReferenceDialog() },
       { label: 'Index and Tables', icon: 'toc', disabled, items: [
         { label: 'Index…', icon: 'index', onSelect: () => indexes.insertIndexDialog() },
         { label: 'Table of Contents…', icon: 'toc', onSelect: () => toc.customDialog() },
@@ -354,10 +403,19 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       items.push(...citations.contextItems());
       if (context === 'field' && ready()) items.push({ label: 'Update Field', icon: 'updateFields', shortcut: 'F9', onSelect: () => updateAllFields() });
     }
+    if (context === 'image') {
+      items.push(
+        { label: 'Insert Caption…', icon: 'caption', disabled: !ready(), onSelect: () => captionDialog() },
+        { label: 'Insert Source Reference…', icon: 'citation', disabled: !ready(), onSelect: () => imageReferenceDialog() },
+      );
+    }
     return items;
   }
 
   const commands = {
+    captionDialog,
+    imageReferenceDialog,
+    canInsertImageReference: () => !!ready() && !!editor()?.model.selectedImage,
     insertFootnote: () => notes.insertNote('footnote'),
     insertEndnote: () => notes.insertNote('endnote'),
     nextNoteItems: () => notes.nextNoteItems(),

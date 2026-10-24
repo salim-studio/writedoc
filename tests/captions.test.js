@@ -4,7 +4,7 @@ import { unzipSync, strFromU8 } from 'fflate';
 import { DocxPackage, createDocx, WRITING_STYLES } from '../src/engine/docx.js';
 import { TextDocument, paragraph } from '../src/engine/model.js';
 import { bodyFieldRanges } from '../src/engine/body-fields.js';
-import { insertCaption, referenceTargets, insertCrossReference } from '../src/engine/captions.js';
+import { insertCaption, referenceTargets, insertCrossReference, insertImageReference } from '../src/engine/captions.js';
 import { updateSequenceFields } from '../src/engine/field-update.js';
 
 let dom;
@@ -56,5 +56,23 @@ describe('captions and cross-references', () => {
     const text = d.text;
     expect(text.indexOf('Table 1: Results')).toBeGreaterThan(-1);
     expect(d.paragraphs.find(p => p.runs.map(r => r.text).join('') === 'Table 1: Results').cellId).toBeFalsy();
+  });
+
+  it('inserts an image source reference citation with SEQ field and source details', async () => {
+    const { pkg, d } = await setup();
+    d.select(d.text.indexOf('Chart two'));
+    insertImageReference(d, {
+      author: 'Doe, J.',
+      title: 'Historical Atlas',
+      location: 'p. 105, para. 3',
+      year: '2021',
+      sourceType: 'book',
+      publisher: 'Academic Press',
+    });
+    expect(d.text).toContain('Source 1: Doe, J. (2021). Historical Atlas. p. 105, para. 3. Academic Press. [Book]');
+    const fields = bodyFieldRanges(d.paragraphs);
+    expect(fields.some(f => f.field.type === 'SEQ' && f.field.instruction.includes('Source'))).toBe(true);
+    const xml = strFromU8(unzipSync(await save(pkg, d))['word/document.xml']);
+    expect(xml.match(/SEQ Source \\\* ARABIC/g)).toHaveLength(1);
   });
 });

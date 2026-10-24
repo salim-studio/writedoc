@@ -186,6 +186,8 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     const imageItems=()=>{
       if(!image) return [];
       const items=[{label:'Image properties…',icon:'pictures',disabled:!editable,onSelect:()=>imageProperties.click()},
+        {label:'Insert Caption…',icon:'caption',disabled:!editable,onSelect:()=>editorCommands.captionDialog?.()},
+        {label:'Insert Source Reference…',icon:'citation',disabled:!editable,onSelect:()=>editorCommands.imageReferenceDialog?.()},
         {label:'Arrange',icon:'wrapText',disabled:!editable || !image.anchor,items:[
           {label:'Bring forward',onSelect:()=>arrange('forward')},{label:'Send backward',onSelect:()=>arrange('backward')},
           {label:'Bring to front',onSelect:()=>arrange('front')},{label:'Send to back',onSelect:()=>arrange('back')},
