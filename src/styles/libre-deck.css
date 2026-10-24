@@ -1,0 +1,661 @@
+/* =====================================================================
+   Microsoft Word + LibreOffice Writer Hybrid UI Styles
+   Blends Word's modern tabbed ribbon with LibreOffice's dedicated
+   menubar, iconic collapsible right sidebar deck, and unified aesthetics.
+   ===================================================================== */
+
+:root {
+  --lo-writer-green: #107c41;
+  --lo-writer-green-dark: #0b582e;
+  --lo-writer-green-wash: rgba(16, 124, 65, 0.12);
+  --ms-word-blue: #185abd;
+  --ms-word-blue-wash: rgba(24, 90, 189, 0.1);
+  --libre-deck-width: 310px;
+  --libre-tabstrip-width: 44px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --lo-writer-green: #34a853;
+    --lo-writer-green-dark: #1e7e34;
+    --lo-writer-green-wash: rgba(52, 168, 83, 0.2);
+    --ms-word-blue: #7ea6dc;
+    --ms-word-blue-wash: rgba(126, 166, 220, 0.18);
+  }
+}
+
+:root[data-theme="dark"] {
+  --lo-writer-green: #34a853;
+  --lo-writer-green-dark: #1e7e34;
+  --lo-writer-green-wash: rgba(52, 168, 83, 0.2);
+  --ms-word-blue: #7ea6dc;
+  --ms-word-blue-wash: rgba(126, 166, 220, 0.18);
+}
+
+/* ---- Title Bar Layout Mode Pill ---- */
+.ed-pill.ed-layout-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  background: var(--ed-card);
+  color: var(--ed-ink);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ed-pill.ed-layout-mode:hover {
+  background: var(--ed-hover);
+  border-color: var(--lo-writer-green);
+  color: var(--lo-writer-green);
+}
+
+.ed-layout-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--lo-writer-green);
+}
+
+/* ---- Dedicated LibreOffice Menubar Row ---- */
+.libre-menubar-row {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 calc(12px + var(--safe-r)) 0 calc(12px + var(--safe-l));
+  background: var(--ed-frame);
+  border-bottom: 1px solid var(--ed-line);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.libre-menubar-row::-webkit-scrollbar {
+  display: none;
+}
+
+.libre-menubar-row .libre-dedicated-menubar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 100%;
+}
+
+.libre-menubar-row .libre-dedicated-menubar .menu-btn {
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ed-ink-2);
+  border: 1px solid transparent;
+  transition: all 0.12s ease;
+}
+
+.libre-menubar-row .libre-dedicated-menubar .menu-btn:hover,
+.libre-menubar-row .libre-dedicated-menubar .menu-btn[aria-expanded="true"] {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+  border-color: var(--ed-line);
+}
+
+/* ---- Mode Switches: Hybrid vs Word vs Libre ---- */
+/* In Hybrid Mode: Show dedicated menubar, hide duplicate titlebar menubar */
+.ui-mode-hybrid .libre-menubar-row {
+  display: flex;
+}
+.ui-mode-hybrid .ed-title-left .ed-menubar {
+  display: none !important;
+}
+
+/* In Pure Word Mode: Hide dedicated row, show titlebar menubar */
+.ui-mode-word .libre-menubar-row {
+  display: none !important;
+}
+.ui-mode-word .ed-title-left .ed-menubar {
+  display: flex;
+}
+.ui-mode-word .libre-deck-container {
+  display: none !important;
+}
+
+/* In LibreOffice Mode: Show dedicated row, simplify ribbon */
+.ui-mode-libre .libre-menubar-row {
+  display: flex;
+}
+.ui-mode-libre .ed-title-left .ed-menubar {
+  display: none !important;
+}
+
+/* =====================================================================
+   LibreOffice Right Sidebar Deck ("The Deck")
+   ===================================================================== */
+.libre-deck-container {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  flex-shrink: 0;
+  z-index: 20;
+  border-left: 1px solid var(--ed-line);
+  background: var(--ed-card);
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* Divider edge toggle button (expand/collapse arrow) */
+.libre-deck-edge-toggle {
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 48px;
+  background: var(--ed-card);
+  border: 1px solid var(--ed-line);
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: var(--ed-ink-3);
+  z-index: 30;
+  box-shadow: -2px 0 6px rgba(0, 0, 0, 0.04);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.libre-deck-edge-toggle:hover {
+  background: var(--ed-hover);
+  color: var(--lo-writer-green);
+}
+
+.libre-deck-edge-arrow {
+  width: 0;
+  height: 0;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-right: 5px solid currentColor;
+  transition: transform 0.2s ease;
+}
+
+.libre-deck-container.is-collapsed .libre-deck-edge-arrow {
+  transform: rotate(180deg);
+}
+
+/* Deck Panel (Left side of deck) */
+.libre-deck-panel {
+  display: flex;
+  flex-direction: column;
+  width: var(--libre-deck-width);
+  height: 100%;
+  background: var(--ed-card);
+  border-right: 1px solid var(--ed-line);
+  overflow: hidden;
+  transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), opacity 0.15s ease;
+}
+
+.libre-deck-container.is-collapsed .libre-deck-panel {
+  width: 0;
+  border-right: none;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Deck Header */
+.libre-deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--ed-frame);
+  border-bottom: 1px solid var(--ed-line);
+  flex-shrink: 0;
+}
+
+.libre-deck-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ed-ink);
+}
+
+.libre-deck-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ed-ink-3);
+  cursor: pointer;
+}
+
+.libre-deck-close-btn:hover {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+}
+
+/* Deck Body */
+.libre-deck-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px;
+}
+
+/* Vertical Tabstrip (Right edge of deck) */
+.libre-deck-tabstrip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: var(--libre-tabstrip-width);
+  height: 100%;
+  background: var(--ed-frame);
+  padding: 8px 0;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.libre-deck-tab-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 48px;
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ed-ink-2);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.libre-deck-tab-btn:hover {
+  background: var(--ed-hover);
+  color: var(--ed-ink);
+}
+
+.libre-deck-tab-btn[aria-selected="true"],
+.libre-deck-tab-btn.is-active {
+  background: var(--ed-card);
+  color: var(--lo-writer-green);
+  border-color: var(--ed-line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.libre-deck-tab-btn[aria-selected="true"]::before,
+.libre-deck-tab-btn.is-active::before {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--lo-writer-green);
+}
+
+.libre-deck-tab-name {
+  font-size: 9.5px;
+  font-weight: 500;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 34px;
+}
+
+/* ---- Deck Sections and Fields ---- */
+.libre-deck-section {
+  background: var(--ed-card);
+  border: 1px solid var(--ed-line);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.libre-deck-sec-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ed-ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px dashed var(--ed-line);
+}
+
+.libre-deck-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.libre-prop-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.libre-prop-row.tools-row {
+  gap: 4px;
+}
+
+.libre-field-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.libre-field-wrap.flex-1 {
+  flex: 1;
+  min-width: 120px;
+}
+
+.libre-field-wrap.size-wrap {
+  width: 65px;
+}
+
+.libre-field-lbl {
+  font-size: 11px;
+  color: var(--ed-ink-3);
+}
+
+.libre-mini-lbl {
+  font-size: 10px;
+  color: var(--ed-ink-3);
+}
+
+.libre-color-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.libre-select {
+  width: 100%;
+  height: 28px;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+.libre-btn-group {
+  display: flex;
+  gap: 4px;
+}
+
+.libre-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid var(--ed-line);
+  border-radius: 4px;
+  background: var(--ed-frame);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.libre-toggle-btn.is-active {
+  background: var(--lo-writer-green-wash);
+  border-color: var(--lo-writer-green);
+  color: var(--lo-writer-green);
+  font-weight: 600;
+}
+
+.libre-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  background: var(--ed-card);
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.libre-action-btn:hover {
+  background: var(--ed-hover);
+  border-color: var(--lo-writer-green);
+  color: var(--lo-writer-green);
+}
+
+.libre-quick-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Styles Gallery inside Styles Deck */
+.libre-styles-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.libre-style-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid var(--ed-line);
+  border-radius: 6px;
+  background: var(--ed-card);
+  text-align: right;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.libre-style-card:hover {
+  background: var(--ed-hover);
+  border-color: var(--lo-writer-green);
+}
+
+.libre-style-card[aria-selected="true"] {
+  background: var(--lo-writer-green-wash);
+  border-color: var(--lo-writer-green);
+}
+
+.libre-style-sample {
+  flex: 1;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.libre-style-badge {
+  font-size: 10.5px;
+  color: var(--ed-ink-3);
+  background: var(--ed-frame);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Navigator Deck */
+.libre-nav-summary {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px;
+  background: var(--ed-frame);
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.libre-nav-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.libre-nav-stat .stat-num {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--lo-writer-green);
+}
+
+.libre-nav-stat .stat-lbl {
+  font-size: 11px;
+  color: var(--ed-ink-3);
+}
+
+.libre-nav-tree {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.libre-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  text-align: right;
+  font-size: 12px;
+  color: var(--ed-ink);
+  cursor: pointer;
+}
+
+.libre-nav-item:hover {
+  background: var(--ed-hover);
+  border-color: var(--ed-line);
+}
+
+.libre-empty-hint {
+  font-size: 12px;
+  color: var(--ed-ink-3);
+  line-height: 1.5;
+  padding: 8px;
+  text-align: center;
+}
+
+/* Tools & LaTeX Deck */
+.libre-tool-card {
+  border: 1px solid var(--ed-line);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 12px;
+  background: var(--ed-card);
+}
+
+.libre-tool-card.latex-card {
+  border-color: #2b579a;
+  background: linear-gradient(to bottom, var(--ms-word-blue-wash), var(--ed-card));
+}
+
+.libre-tool-card.ocr-card {
+  border-color: var(--lo-writer-green);
+  background: linear-gradient(to bottom, var(--lo-writer-green-wash), var(--ed-card));
+}
+
+.libre-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.libre-card-icon {
+  flex-shrink: 0;
+  color: var(--lo-writer-green);
+  margin-top: 2px;
+}
+
+.libre-tool-card.latex-card .libre-card-icon {
+  color: var(--ms-word-blue);
+}
+
+.libre-card-text h3 {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+  color: var(--ed-ink);
+}
+
+.libre-card-text p {
+  font-size: 11px;
+  color: var(--ed-ink-3);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.libre-presets-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.libre-preset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border: 1px solid var(--ed-line);
+  border-radius: 5px;
+  background: var(--ed-card);
+  cursor: pointer;
+  text-align: right;
+  transition: all 0.12s ease;
+}
+
+.libre-preset-btn:hover {
+  background: var(--ed-hover);
+  border-color: var(--ms-word-blue);
+}
+
+.libre-preset-name {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ed-ink);
+}
+
+.libre-preset-code {
+  font-size: 11px;
+  color: var(--ms-word-blue);
+  direction: ltr;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.libre-sub-btn {
+  background: var(--ed-card);
+  border: 1px solid var(--ed-line);
+  font-size: 12px;
+}
+
+.libre-sub-btn:hover {
+  border-color: var(--lo-writer-green);
+  color: var(--lo-writer-green);
+}
+
+.mt-8 {
+  margin-top: 8px;
+}
+
+.w-full {
+  width: 100%;
+}
