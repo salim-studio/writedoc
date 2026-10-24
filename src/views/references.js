@@ -295,16 +295,118 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
     const ocrLangSelect = select('Language / لغة النص', Object.entries(ocrModule.OCR_LANGUAGES), 'ara+eng');
     const ocrExtractBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '⚡ تحويل الصورة إلى كتابة (Extract Text)');
     const ocrProgressBar = el('div.ref-ocr-progress-bar', { style: 'display: none;' }, el('div.ref-ocr-progress-fill', { style: 'width: 0%;' }));
-    const ocrStatus = el('span.ref-ocr-status', { style: 'font-size: 12px; color: var(--ink-2); display: block; padding: 2px 0;' }, 'يمكنك تحويل النص في الصورة إلى كتابة والبحث التلقائي عن المرجع ورقم الصفحة.');
+    const ocrStatus = el('span.ref-ocr-status', { style: 'font-size: 12px; color: var(--ink-2); display: block; padding: 2px 0;' }, 'يمكنك تحويل النص في الصورة إلى كتابة والبحث في قواعد البيانات العلمية عن المرجع والصفحة.');
     const ocrTextarea = el('textarea.ref-ocr-text.input', {
       placeholder: 'سيظهر النص المستخرج من الصورة هنا، أو يمكنك لصق أي فقرة للبحث عن مصدرها الأكاديمي ورقم صفحتها...',
       rows: 3,
       dir: 'auto',
     });
-    const findSourceBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '🔍 معرفة المصدر واستيراد المرجع والصفحة');
-    const insertTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📝 إدراج النص في المستند');
+
+    const dbOptions = Object.values(textSourceModule.ACADEMIC_DATABASES).map(db => [
+      db.id,
+      `${db.icon} ${db.name}`
+    ]);
+    const dbSelect = select('قاعدة بيانات البحث / Database', dbOptions, 'all');
+    const findSourceBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap; font-weight: 600;' }, '🔍 معرفة المصدر واستيراد المرجع');
+    const insertTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📝 إدراج النص');
     const copyTextBtn = el('button.btn.btn-outline', { type: 'button', style: 'white-space: nowrap;' }, '📋 نسخ النص');
+    const dbChipsContainer = el('div.ref-db-chips', { style: 'display: none;' });
     const sourceResults = el('div.ref-source-results', { style: 'display: none;' });
+
+    let lastSearchResults = [];
+
+    function renderSourceCards(results) {
+      if (!results.length) {
+        sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, 'لا توجد نتائج في هذا التصنيف.'));
+        return;
+      }
+      sourceResults.replaceChildren(
+        ...results.map(item => {
+          const card = el('div.ref-source-card', {},
+            el('div', { style: 'display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;' },
+              el('p.ref-source-card-title', {}, item.title),
+              el('span.ref-source-badge.' + (item.databaseId ? `db-${item.databaseId}` : ''), { style: 'white-space: nowrap; font-size: 11px;' }, `${item.databaseIcon || '📚'} ${item.database || 'Database'}`)
+            ),
+            el('div.ref-source-card-meta', {},
+              item.authors ? el('span', {}, `👤 ${item.authors}`) : null,
+              item.year ? el('span', {}, `📅 ${item.year}`) : null,
+              item.journal ? el('span', {}, `🏛️ ${item.journal}`) : null,
+              item.location ? el('span.ref-source-badge.page', {}, `📄 ${item.location}`) : null,
+              item.doi ? el('span.ref-source-badge', {}, `DOI: ${item.doi}`) : null,
+            ),
+            el('div.ref-source-card-actions', {},
+              el('button.btn.btn-outline', {
+                type: 'button',
+                style: 'font-size: 12px; padding: 3px 10px; font-weight: 600;',
+                onclick: () => {
+                  if (item.title) title.value = item.title;
+                  if (item.authors) author.value = item.authors;
+                  if (item.year) year.value = item.year;
+                  if (item.journal) journal.value = item.journal;
+                  if (item.volume) volume.value = item.volume;
+                  if (item.issue) issue.value = item.issue;
+                  if (item.location) location.value = item.location;
+                  else if (item.rawPage) location.value = item.rawPage.includes('-') ? `pp. ${item.rawPage}` : `p. ${item.rawPage}`;
+                  if (item.publisher) publisher.value = item.publisher;
+                  if (item.url) url.value = item.url;
+                  if (item.sourceType && captions.IMAGE_REF_TYPES[item.sourceType]) sourceType.value = item.sourceType;
+                  authorsList = item.authorsList || null;
+                  sync();
+                  card.style.borderColor = '#1b7340';
+                  card.style.background = '#e6f4ea';
+                },
+              }, '📥 استيراد هذا المرجع والصفحة (Import Reference & Page)'),
+              item.url ? el('a.btn.btn-outline', {
+                href: item.url,
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                style: 'font-size: 11.5px; padding: 3px 8px; text-decoration: none; display: inline-flex; align-items: center;',
+              }, '🔗 فتح المصدر') : null
+            )
+          );
+          return card;
+        })
+      );
+    }
+
+    function renderFilterChips(results) {
+      if (!results.length) {
+        dbChipsContainer.style.display = 'none';
+        return;
+      }
+      const counts = {};
+      for (const r of results) {
+        const db = r.database || 'Other';
+        counts[db] = (counts[db] || 0) + 1;
+      }
+      const dbs = Object.keys(counts);
+      if (dbs.length <= 1) {
+        dbChipsContainer.style.display = 'none';
+        return;
+      }
+
+      let activeChip = 'all';
+      const chipButtons = [];
+
+      const makeChip = (id, label, filterFn) => {
+        const btn = el('button.ref-db-chip' + (id === activeChip ? '.active' : ''), {
+          type: 'button',
+          onclick: () => {
+            activeChip = id;
+            for (const b of chipButtons) b.classList.toggle('active', b === btn);
+            renderSourceCards(filterFn ? results.filter(filterFn) : results);
+          },
+        }, label);
+        chipButtons.push(btn);
+        return btn;
+      };
+
+      dbChipsContainer.style.display = 'flex';
+      dbChipsContainer.replaceChildren(
+        makeChip('all', `🌐 الكل (${results.length})`, null),
+        ...dbs.map(dbName => makeChip(dbName, `${dbName} (${counts[dbName]})`, r => r.database === dbName))
+      );
+    }
 
     async function doOcr() {
       if (!imageBlobOrCanvas) {
@@ -349,69 +451,42 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
         ocrStatus.style.color = '#d93025';
         return;
       }
+      const selectedDb = dbSelect.value;
+      const dbInfo = textSourceModule.ACADEMIC_DATABASES[selectedDb] || textSourceModule.ACADEMIC_DATABASES.all;
+
       findSourceBtn.disabled = true;
       findSourceBtn.textContent = 'جاري البحث…';
-      ocrStatus.textContent = '⏳ جاري البحث في قواعد البيانات الأكاديمية (Crossref & OpenAlex) عن المقالات والكتب وأرقام الصفحات…';
+      ocrStatus.textContent = `⏳ جاري البحث في [${dbInfo.name}] عن المقالات والكتب وأرقام الصفحات…`;
       ocrStatus.style.color = 'var(--ink-2)';
       sourceResults.style.display = 'grid';
-      sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, 'جاري البحث عن المراجع العلمية المطابقة...'));
+      sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `جاري البحث في ${dbInfo.shortName}...`));
 
       try {
-        const { queryUsed, results } = await textSourceModule.identifyTextSource(textToSearch);
+        const { queryUsed, results } = await textSourceModule.identifyTextSource(textToSearch, {
+          database: selectedDb,
+        });
+        lastSearchResults = results;
+
         if (!results.length) {
-          sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `لم يتم العثور على توثيق مباشر لعبارة: "${queryUsed.slice(0, 50)}…". يمكنك إدخال DOI أو البيانات يدوياً أدناه.`));
-          ocrStatus.textContent = 'لم يتم العثور على مرجع أكاديمي مباشر.';
+          dbChipsContainer.style.display = 'none';
+          sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: var(--ink-2);' }, `لم يتم العثور على مراجع في ${dbInfo.shortName} لعبارة: "${queryUsed.slice(0, 50)}…". يمكنك تجربة اختيار قاعدة أخرى أو البحث الشامل (الكل).`));
+          ocrStatus.textContent = 'لم يتم العثور على نتائج في القاعدة المحددة.';
           return;
         }
 
-        ocrStatus.textContent = `✓ تم العثور على ${results.length} مصدر/مرجع أكاديمي مطابق!`;
+        ocrStatus.textContent = `✓ تم العثور على ${results.length} مصدر/مرجع أكاديمي من [${dbInfo.shortName}]!`;
         ocrStatus.style.color = '#1b7340';
 
-        sourceResults.replaceChildren(
-          ...results.map(item => {
-            const card = el('div.ref-source-card', {},
-              el('p.ref-source-card-title', {}, item.title),
-              el('div.ref-source-card-meta', {},
-                item.authors ? el('span', {}, `👤 ${item.authors}`) : null,
-                item.year ? el('span', {}, `📅 ${item.year}`) : null,
-                item.journal ? el('span', {}, `🏛️ ${item.journal}`) : null,
-                item.location ? el('span.ref-source-badge.page', {}, `📄 ${item.location}`) : null,
-                item.doi ? el('span.ref-source-badge', {}, `DOI: ${item.doi}`) : null,
-              ),
-              el('div.ref-source-card-actions', {},
-                el('button.btn.btn-outline', {
-                  type: 'button',
-                  style: 'font-size: 12px; padding: 3px 10px; font-weight: 600;',
-                  onclick: () => {
-                    if (item.title) title.value = item.title;
-                    if (item.authors) author.value = item.authors;
-                    if (item.year) year.value = item.year;
-                    if (item.journal) journal.value = item.journal;
-                    if (item.volume) volume.value = item.volume;
-                    if (item.issue) issue.value = item.issue;
-                    if (item.location) location.value = item.location;
-                    else if (item.rawPage) location.value = item.rawPage.includes('-') ? `pp. ${item.rawPage}` : `p. ${item.rawPage}`;
-                    if (item.publisher) publisher.value = item.publisher;
-                    if (item.url) url.value = item.url;
-                    if (item.sourceType && captions.IMAGE_REF_TYPES[item.sourceType]) sourceType.value = item.sourceType;
-                    authorsList = item.authorsList || null;
-                    sync();
-                    card.style.borderColor = '#1b7340';
-                    card.style.background = '#e6f4ea';
-                  },
-                }, '📥 استيراد هذا المرجع والصفحة (Import Reference & Page)')
-              )
-            );
-            return card;
-          })
-        );
+        renderFilterChips(results);
+        renderSourceCards(results);
       } catch (err) {
+        dbChipsContainer.style.display = 'none';
         sourceResults.replaceChildren(el('div', { style: 'padding: 8px; font-size: 12.5px; color: #d93025;' }, `⚠️ ${err.message}`));
         ocrStatus.textContent = `⚠️ ${err.message}`;
         ocrStatus.style.color = '#d93025';
       } finally {
         findSourceBtn.disabled = false;
-        findSourceBtn.textContent = '🔍 معرفة المصدر واستيراد المرجع والصفحة';
+        findSourceBtn.textContent = '🔍 معرفة المصدر واستيراد المرجع';
       }
     }
     findSourceBtn.onclick = doFindSource;
@@ -441,21 +516,25 @@ export function createReferences({ editor, pkg, error, base = {}, onChange = () 
       el('div.ref-ocr-head', {},
         el('div.ref-ocr-thumb-wrap', {},
           thumbUrl ? el('img.ref-ocr-thumb', { src: thumbUrl, alt: 'Image thumbnail' }) : null,
-          el('h3.ref-ocr-title', {}, '📷 استخراج النص (OCR) ومعرفة المصدر الأكاديمي والصفحة')
+          el('h3.ref-ocr-title', {}, '📷 استخراج النص (OCR) والبحث في قواعد البيانات الأكاديمية')
         ),
-        el('div', { style: 'display: flex; gap: 8px; align-items: flex-end;' },
-          el('div', { style: 'min-width: 170px;' }, field('اللغة / Language', ocrLangSelect)),
+        el('div', { style: 'display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;' },
+          el('div', { style: 'min-width: 160px;' }, field('اللغة / Language', ocrLangSelect)),
           ocrExtractBtn
         )
       ),
       ocrProgressBar,
       ocrStatus,
       ocrTextarea,
-      el('div', { style: 'display: flex; gap: 8px; flex-wrap: wrap; align-items: center;' },
-        findSourceBtn,
-        insertTextBtn,
-        copyTextBtn
+      el('div.ref-two-column.ref-tight', { style: 'align-items: flex-end;' },
+        field('قاعدة بيانات البحث / Database', dbSelect),
+        el('div', { style: 'display: flex; gap: 6px; flex-wrap: wrap;' },
+          findSourceBtn,
+          insertTextBtn,
+          copyTextBtn
+        )
       ),
+      dbChipsContainer,
       sourceResults
     );
 

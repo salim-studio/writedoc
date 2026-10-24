@@ -55,4 +55,28 @@ describe('OCR & Text Source Identification', () => {
     expect(text).toContain('Smith, John.');
     expect(text).toContain('pp. 45–52');
   });
+
+  it('defines academic databases dictionary with selection metadata', async () => {
+    const { ACADEMIC_DATABASES } = await import('../src/engine/text-source.js');
+    expect(ACADEMIC_DATABASES.all).toBeDefined();
+    expect(ACADEMIC_DATABASES.scopus).toBeDefined();
+    expect(ACADEMIC_DATABASES.wos).toBeDefined();
+    expect(ACADEMIC_DATABASES.pubmed).toBeDefined();
+    expect(ACADEMIC_DATABASES.ieee).toBeDefined();
+    expect(ACADEMIC_DATABASES.springer).toBeDefined();
+    expect(ACADEMIC_DATABASES.elsevier).toBeDefined();
+    expect(ACADEMIC_DATABASES.jstor).toBeDefined();
+    expect(ACADEMIC_DATABASES.degruyter).toBeDefined();
+    expect(ACADEMIC_DATABASES.scholar).toBeDefined();
+    expect(ACADEMIC_DATABASES.erihplus).toBeDefined();
+    expect(ACADEMIC_DATABASES.abdc).toBeDefined();
+    expect(ACADEMIC_DATABASES.chinese).toBeDefined();
+    expect(ACADEMIC_DATABASES.arxiv).toBeDefined();
+    expect(ACADEMIC_DATABASES.openlibrary).toBeDefined();
+    expect(ACADEMIC_DATABASES.scopus.name).toContain('Scopus');
+    expect(ACADEMIC_DATABASES.wos.name).toContain('Web of Science');
+    expect(ACADEMIC_DATABASES.ieee.name).toContain('IEEE Xplore');
+    expect(ACADEMIC_DATABASES.springer.name).toContain('Springer');
+    expect(ACADEMIC_DATABASES.elsevier.name).toContain('Elsevier');
+  });
 });
