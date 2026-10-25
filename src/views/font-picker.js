@@ -8,8 +8,51 @@ import { browseLocalFonts } from '../engine/local-fonts.js';
 import { fileFontNames, fileFontFamily } from '../engine/file-fonts.js';
 import { fontFileControls } from './font-files.js';
 
+const FAMOUS_ARABIC = [
+  'Amiri',
+  'Cairo',
+  'Tajawal',
+  'Almarai',
+  'Traditional Arabic',
+  'Simplified Arabic',
+  'Tahoma',
+  'Sakkal Majalla',
+  'Arabic Typesetting',
+  'Dubai',
+  'Scheherazade New',
+  'Lateef',
+  'Noto Naskh Arabic',
+  'Noto Kufi Arabic',
+];
+
+const FAMOUS_WORD = [
+  'Calibri',
+  'Calibri Light',
+  'Arial',
+  'Times New Roman',
+  'Segoe UI',
+  'Algerian',
+  'Cambria',
+  'Georgia',
+  'Verdana',
+  'Comic Sans MS',
+  'Impact',
+  'Trebuchet MS',
+  'Courier New',
+  'Century Gothic',
+  'Garamond',
+  'Book Antiqua',
+  'Franklin Gothic Medium',
+  'Palatino Linotype',
+  'Baskerville',
+  'Consolas',
+  'Candara',
+  'Constantia',
+  'Corbel',
+];
+
 const BUNDLED = ['Noto Sans', 'Open Sans', 'Oswald', 'Bebas Neue'];
-const COMMON = ['Arial', 'Calibri', 'Cambria', 'Courier New', 'Georgia', 'Helvetica', 'Times New Roman', 'Trebuchet MS', 'Verdana'];
+const COMMON = [...new Set([...FAMOUS_ARABIC, ...FAMOUS_WORD])];
 const recent = [];
 let installed = [];
 
@@ -36,8 +79,7 @@ export function openFontPicker({ anchor, value, alternatives, apply, onFontsAvai
     const request = ++selectionRequest;
     await prepareCanvasFont(name);
     if (!popup?.menu?.isConnected || request !== selectionRequest) return;
-    if (documentFontAvailable(name, alternatives) !== true) { notice.textContent = `${name} could not be loaded on this device. Choose another font.`; return; }
-    recent.splice(0, recent.length, name, ...recent.filter(n => n !== name).slice(0, 4));
+    recent.splice(0, recent.length, name, ...recent.filter(n => n !== name).slice(0, 5));
     closeMenu(); apply(name);
   }
   const useName = el('button.btn', { type: 'button', hidden: true, onclick: () => choose(search.value.trim()) });
@@ -72,7 +114,7 @@ export function openFontPicker({ anchor, value, alternatives, apply, onFontsAvai
   } }, search, notice, installedButton || el('p.field-hint', {}, 'To use an installed font, enter its full name.'), fontFileControls({ onFontsAvailable, onLoaded: render, status: notice }), useName, list);
   function render() {
     const focused = list.contains(document.activeElement) ? document.activeElement.dataset.font : null;
-    const names = [...new Map([...recent, ...BUNDLED, ...(value && documentFontAvailable(value, alternatives) === true ? [value] : []), ...COMMON.filter(name => fontAvailable(name) === true), ...installed, ...fileFontNames()].map(name => [name.toLowerCase(), name])).values()];
+    const names = [...new Map([...recent, ...BUNDLED, ...(value ? [value] : []), ...COMMON, ...installed, ...fileFontNames()].map(name => [name.toLowerCase(), name])).values()];
     const typed = search.value.trim();
     useName.hidden = !typed || names.some(name => name.toLowerCase() === typed.toLowerCase());
     useName.textContent = `Use “${typed}”`;
@@ -80,7 +122,7 @@ export function openFontPicker({ anchor, value, alternatives, apply, onFontsAvai
     list.replaceChildren(...matches.map(name => el('button.font-choice', {
       type: 'button', dataset: { font: name }, 'aria-pressed': String(value === name), style: { fontFamily: canvasFontFamily({ fontFamily: displayedFont({ fontFamily: name }, alternatives) }) },
       onclick: () => choose(name),
-    }, el('span', {}, name), el('small', {}, fileFontFamily(name) ? 'Loaded for this session' : isEmbeddedFont(displayedFont({ fontFamily: name }, alternatives)) ? 'In this document' : recent.includes(name) ? 'Recent' : BUNDLED.includes(name) ? 'Included' : 'On this device'))));
+    }, el('span', {}, name), el('small', {}, fileFontFamily(name) ? 'Loaded for this session' : isEmbeddedFont(displayedFont({ fontFamily: name }, alternatives)) ? 'In this document' : recent.includes(name) ? 'Recent' : BUNDLED.includes(name) ? 'Included' : FAMOUS_ARABIC.includes(name) ? 'Arabic' : 'Word Font'))));
     if (focused) [...list.querySelectorAll('button')].find(button => button.dataset.font === focused)?.focus();
     if (!matches.length) list.append(el('p.field-hint', {}, 'No matching fonts. Try another name.'));
   }

@@ -40,21 +40,20 @@ export function fontSlot(text, style) {
   return 'fontHAnsi';
 }
 export function textFontStyle(text, style) {
-  const result = { ...style, fontFamily: style[fontSlot(text, style)] || 'Noto Sans' };
+  const slot = fontSlot(text, style);
+  const family = style[slot] || (slot === 'fontCs' ? (style.fontAscii || style.fontHAnsi) : null) || 'Noto Sans';
+  const result = { ...style, fontFamily: family };
   if (style.cs || style.rtl) {
-    result.bold = style.boldCs ?? false;
-    result.italic = style.italicCs ?? false;
-    result.fontSize = style.fontSizeCs ?? 12;
-    // Native RTL controls use the upright face with a 1/3 shear even when a
-    // real italic face exists. Plain cs uses ordinary face matching instead.
-    // Keep this a display property; source i/iCs declarations remain separate.
+    result.bold = style.boldCs ?? style.bold ?? false;
+    result.italic = style.italicCs ?? style.italic ?? false;
+    result.fontSize = style.fontSizeCs ?? style.fontSize ?? 12;
     if (style.rtl && result.italic) { result.italic = false; result.syntheticItalic = true; }
   }
   return result;
 }
 export const cssFontString = value => '"' + value.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
 export const canvasFontFamily = style => {
-  const family = (style.fontFamily || style.fontAscii || 'Noto Sans').trim();
-  const fallbacks = '"Canvas Noto Sans", "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif';
+  const family = (style.fontFamily || style.fontAscii || style.fontCs || 'Noto Sans').trim();
+  const fallbacks = '"Canvas Noto Sans", "Amiri", "Traditional Arabic", "Simplified Arabic", "Segoe UI", Tahoma, Arial, sans-serif';
   return isBundledFont(family) ? fallbacks : `${cssFontString(family)}, ${fallbacks}`;
 };

@@ -126,18 +126,19 @@ export const canvasFontSources = name => (faceSources.get(name.trim().toLowerCas
 const exactFamilies = new Map();
 function familyIsSelectable(name) {
   if (typeof document === 'undefined') return false;
-  // local() matches full/PostScript names; a native CSS family may have a
-  // different name. Check registered faces, then ask the actual CSS shaper.
   for (const face of document.fonts || []) if (face.status === 'loaded' && face.family.replace(/^['"]|['"]$/g, '').toLowerCase() === name.toLowerCase()) return true;
   const ctx = document.createElement('canvas').getContext('2d');
   if (!ctx) return false;
-  const sample = 'BESbswyMWil0123456789 éΩЖאבشअก漢かな한';
-  const signature = family => {
+  const sampleLatin = 'BESbswyMWil0123456789';
+  const sampleArabic = 'العلم نور وقوة وفصاحة وتبيان';
+  const sig = (family, text) => {
     ctx.font = `32px ${family}`;
-    const m = ctx.measureText(sample);
+    const m = ctx.measureText(text);
     return [m.width, m.fontBoundingBoxAscent, m.fontBoundingBoxDescent].join('/');
   };
-  return ['"Canvas Noto Sans"', 'monospace'].some(fallback => signature(`${cssFontString(name)}, ${fallback}`) !== signature(fallback));
+  const diffs = (sample, fallback) => sig(`${cssFontString(name)}, ${fallback}`, sample) !== sig(fallback, sample);
+  return diffs(sampleLatin, '"Canvas Noto Sans"') || diffs(sampleLatin, 'monospace') ||
+         diffs(sampleArabic, '"Canvas Noto Sans"') || diffs(sampleArabic, 'monospace');
 }
 export const fontAvailable = name => fileFontFamily(name) || fileFontSources(name) || isBundledFont(name) ? true : availability.get(name.trim().toLowerCase());
 export const displayedFont = (style, alternatives) => {

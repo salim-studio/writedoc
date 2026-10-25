@@ -26,7 +26,7 @@ export function openFontDialog({ format: f, sample = '', apply, onClose, setDefa
   const fontName = f.fontAscii === f.fontHAnsi ? f.fontAscii : '';
   const fonts = el('datalist', { id: 'ed-font-dialog-fonts' }, ...fontChoices().map(name => el('option', { value: name })));
   const font = el('input.input', { type: 'text', value: fontName || '', placeholder: fontName ? '' : 'Mixed', list: fonts.id, 'aria-label': 'Font', autocomplete: 'off',
-    oninput: () => { const name = font.value.trim(); if (name) set({ fontAscii: name, fontHAnsi: name }); else { delete patch.fontAscii; delete patch.fontHAnsi; preview(); } } });
+    oninput: () => { const name = font.value.trim(); if (name) set({ fontAscii: name, fontHAnsi: name, fontCs: name }); else { delete patch.fontAscii; delete patch.fontHAnsi; delete patch.fontCs; preview(); } } });
   const style = el('select.input', { 'aria-label': 'Font style', onchange: () => set({ bold: style.value.startsWith('bold'), italic: /italic/i.test(style.value) }) },
     ...(fontStyle(f) ? [] : [el('option', { value: '', disabled: true }, 'Mixed')]), ...STYLES.map(([value, label]) => el('option', { value }, label)));
   style.value = fontStyle(f);

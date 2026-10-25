@@ -369,14 +369,22 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     showNotices();
     update();
   }
-  const fontFamily = el('button.canvas-font-label', { type: 'button', disabled: true, 'aria-label': 'Latin font family', 'aria-haspopup': 'dialog', onclick: () => fontFamily.openPopover(fontFamily) }, 'Noto Sans');
+  const fontFamily = el('button.canvas-font-label', { type: 'button', disabled: true, 'aria-label': 'Font family', 'aria-haspopup': 'dialog', onclick: () => fontFamily.openPopover(fontFamily) }, 'Noto Sans');
   fontFamily.openPopover = (anchor, options) => {
     if (!engine) return; engine.finishComposition();
     const fontEditor = engine;
     const run = engine.model.runFormatting;
-    fontPopover = openFontPicker({ anchor, ...options, value: run.fontAscii === run.fontHAnsi ? run.fontAscii : null,
+    const currentVal = (run.cs || run.rtl ? run.fontCs : null) || (run.fontAscii === run.fontHAnsi ? run.fontAscii : null) || run.fontCs || run.fontAscii;
+    fontPopover = openFontPicker({ anchor, ...options, value: currentVal,
       onFontsAvailable: () => refreshAvailableFonts(fontEditor),
-      alternatives: engine.model.styles.fontAlternatives, apply: name => engine?.setRunFormat({ fontAscii: name, fontHAnsi: name }) });
+      alternatives: engine.model.styles.fontAlternatives,
+      apply: name => {
+        engine?.setRunFormat({ fontAscii: name, fontHAnsi: name, fontCs: name });
+        if (engine?.model.typingFormat) {
+          engine.model.typingFormat = { ...engine.model.typingFormat, fontAscii: name, fontHAnsi: name, fontCs: name };
+        }
+      }
+    });
   };
   let fontSizeDraftCancelled = false;
   function applyFontSize() {
@@ -1283,11 +1291,11 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       indicator.classList.toggle('is-none', control === highlight && value === 'none');
     }
     fontSize.disabled = fontSizeMenu.disabled = fontFamily.disabled = false;
-    const family = run.fontAscii === run.fontHAnsi ? run.fontAscii : null;
+    const family = (run.cs || run.rtl ? run.fontCs : null) || (run.fontAscii === run.fontHAnsi ? run.fontAscii : null) || run.fontCs || run.fontAscii;
     const substituted = family && documentFontAvailable(family, engine.model.styles.fontAlternatives) === false;
     const replacement = substituted ? displayedFont({ fontFamily: family }, engine.model.styles.fontAlternatives) : family;
     fontFamily.textContent = !family ? 'Mixed fonts' : substituted ? `${family} → ${replacement}` : family;
-    fontFamily.title = substituted ? `${family} is unavailable in this browser. Displaying ${replacement}; the original font is retained in the DOCX.` : !family ? 'The selection uses different Latin font declarations.' : `Latin font: ${family}`;
+    fontFamily.title = substituted ? `${family} is unavailable in this browser. Displaying ${replacement}; the original font is retained in the DOCX.` : !family ? 'The selection uses different font declarations.' : `Font: ${family}`;
     if (document.activeElement !== fontSize) fontSize.value = run.fontSize ?? '';
     for (const control of [pageSetup, pageBreak, pageBreakBefore, outdent, indent, ltrDirection, rtlDirection, paragraphGeometry, insertTab, lineSpacingOptions, lineSpacingMenu, ...alignmentButtons]) control.disabled = false;
     pageBreak.disabled = !!engine.model.selectedParagraphs[0]?.cellId;
