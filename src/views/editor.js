@@ -652,7 +652,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const zoom = el('select', { 'aria-label': 'Zoom', onchange: () => { singlePages(); if (zoom.value === 'fit') fitWidth(); else engine?.setZoom(Number(zoom.value)); syncZoom(); } },
     el('option', { value: 'fit' }, 'Fit width'),
     ...[0.5, 0.75, 1, 1.25, 1.5, 2].map(n => el('option', { value: n, selected: n === 1 }, `${n * 100}%`)));
-  if (window.matchMedia('(max-width: 700px)').matches) zoom.value = 'fit';
+  if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 700px)').matches) zoom.value = 'fit';
   // A zoom from the slider or the Zoom dialog that is not a preset shows as one more choice.
   const customZoom = el('option', { value: 'custom', hidden: true });
   zoom.append(customZoom);

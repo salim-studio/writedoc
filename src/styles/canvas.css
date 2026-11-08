@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'Canvas Noto Sans';
-  src: url('/fonts/NotoSans.ttf') format('truetype');
+  src: url('/fonts/NotoSans.ttf') format('truetype'), url('./fonts/NotoSans.ttf') format('truetype'), local('Noto Sans');
   font-weight: 100 900;
   font-style: normal;
   font-display: block;
@@ -72,7 +72,7 @@
 
 @font-face {
   font-family: 'Canvas Noto Sans';
-  src: url('/fonts/NotoSans-Italic.ttf') format('truetype');
+  src: url('/fonts/NotoSans-Italic.ttf') format('truetype'), url('./fonts/NotoSans-Italic.ttf') format('truetype'), local('Noto Sans Italic');
   font-weight: 100 900;
   font-style: italic;
   font-display: block;

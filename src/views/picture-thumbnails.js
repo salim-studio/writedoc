@@ -79,7 +79,7 @@ export function styleThumb(source, style, theme, { width = 64, height = 48 } = {
   const path = new Path2D();
   const r = Math.min(box.width, box.height);
   if (style.geometry === 'ellipse') path.ellipse(box.x + box.width / 2, box.y + box.height / 2, box.width / 2, box.height / 2, 0, 0, Math.PI * 2);
-  else if (style.geometry === 'roundRect') path.roundRect(box.x, box.y, box.width, box.height, r * 0.18);
+  else if (style.geometry === 'roundRect') { if (path.roundRect) path.roundRect(box.x, box.y, box.width, box.height, r * 0.18); else path.rect(box.x, box.y, box.width, box.height); }
   else if (style.geometry === 'hexagon') { const q = box.width * 0.22; path.moveTo(box.x + q, box.y); path.lineTo(box.x + box.width - q, box.y); path.lineTo(box.x + box.width, box.y + box.height / 2); path.lineTo(box.x + box.width - q, box.y + box.height); path.lineTo(box.x + q, box.y + box.height); path.lineTo(box.x, box.y + box.height / 2); path.closePath(); }
   else if (style.geometry === 'snip2DiagRect') { const q = r * 0.2; path.moveTo(box.x + q, box.y); path.lineTo(box.x + box.width, box.y); path.lineTo(box.x + box.width, box.y + box.height - q); path.lineTo(box.x + box.width - q, box.y + box.height); path.lineTo(box.x, box.y + box.height); path.lineTo(box.x, box.y + q); path.closePath(); }
   else path.rect(box.x, box.y, box.width, box.height);
@@ -133,11 +133,11 @@ export function shapeStyleThumb(style, theme, { width = 44, height = 32, text = 
   ctx.save();
   const shadow = style.effects?.shadow;
   if (shadow) { ctx.shadowColor = `rgba(0,0,0,${shadow.alpha ?? 0.4})`; ctx.shadowBlur = 3; ctx.shadowOffsetY = 1.5; }
-  ctx.beginPath(); ctx.roundRect(x, y, bw, bh, 3);
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 3); else ctx.rect(x, y, bw, bh);
   ctx.fillStyle = paint; ctx.fill();
   ctx.restore();
   const line = style.outline;
-  if (line && line.color !== 'none') { ctx.lineWidth = Math.max(1, Math.min(3, (line.width || 12700) / 12700)); ctx.strokeStyle = `#${resolveColor(line.color, theme)}`; ctx.beginPath(); ctx.roundRect(x, y, bw, bh, 3); ctx.stroke(); }
+  if (line && line.color !== 'none') { ctx.lineWidth = Math.max(1, Math.min(3, (line.width || 12700) / 12700)); ctx.strokeStyle = `#${resolveColor(line.color, theme)}`; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, bw, bh, 3); else ctx.rect(x, y, bw, bh); ctx.stroke(); }
   if (text) {
     ctx.fillStyle = fill?.type === 'solid' && luminance(resolveColor(fill.color, theme)) < 0.5 ? '#fff' : '#222';
     ctx.font = '600 10px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, w / 2, h / 2 + 0.5);

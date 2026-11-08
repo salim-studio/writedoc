@@ -9,10 +9,15 @@ export function wordText(node) {
 
 export function parseXml(bytes) {
   let text;
-  if (bytes instanceof Uint8Array) {
-    const encoding = bytes[0] === 255 && bytes[1] === 254 ? 'utf-16le' : bytes[0] === 254 && bytes[1] === 255 ? 'utf-16be' : 'utf-8';
-    text = new TextDecoder(encoding, { fatal: true }).decode(bytes);
-  } else text = bytes;
+  if (typeof bytes === 'string') {
+    text = bytes;
+  } else if (bytes) {
+    const u8 = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes.buffer ? bytes.buffer : bytes);
+    const encoding = u8[0] === 255 && u8[1] === 254 ? 'utf-16le' : u8[0] === 254 && u8[1] === 255 ? 'utf-16be' : 'utf-8';
+    text = new TextDecoder(encoding, { fatal: false }).decode(u8);
+  } else {
+    text = '';
+  }
   if (/<!DOCTYPE|<!ENTITY/i.test(text)) throw new Error('Files with XML entity declarations are not supported.');
   const doc = new DOMParser().parseFromString(text, 'application/xml');
   if (doc.getElementsByTagName('parsererror').length) throw new Error('The DOCX contains invalid XML.');

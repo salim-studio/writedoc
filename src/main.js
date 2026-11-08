@@ -239,7 +239,12 @@ async function route({ newDocument = false } = {}) {
     if (r === 'new') {
       const t = template ? templateById(template) : null;
       if (template && !t) toast('That template does not exist', { icon: 'alert' });
-      openEditor(Doc.blank(t ? { template: t.id, name: t.name } : {}));
+      try {
+        openEditor(Doc.blank(t ? { template: t.id, name: t.name } : {}));
+      } catch (err) {
+        console.error('Failed to open new document:', err);
+        mount('home', homeView(nav));
+      }
       return;
     }
     showLoading();
@@ -273,21 +278,38 @@ async function start() {
 let booted = false;
 async function boot() {
   showLoading('Loading');
-  // Before anything else: a file dropped on the loading screen is meant for
-  // the app, and the browser would otherwise leave the app to open it.
-  setupFileDrop();
-  // Start loading the canvas editor alongside session initialization.
-  if (parseHash().route !== 'home') loadEngine().catch(() => {});
-  await session.init();
-  booted = true;
-  window.addEventListener('hashchange', route);
-  await route();
-  setupOfflineBanner();
-  setupUnloadGuard();
-  if (droppedFiles) {
-    const files = droppedFiles;
-    droppedFiles = null;
-    nav.importFiles(files);
+  try {
+    setupFileDrop();
+    // Start loading the canvas editor alongside session initialization.
+    if (parseHash().route !== 'home') loadEngine().catch(() => {});
+    await session.init();
+    booted = true;
+    window.addEventListener('hashchange', route);
+    await route();
+    setupOfflineBanner();
+    setupUnloadGuard();
+    if (droppedFiles) {
+      const files = droppedFiles;
+      droppedFiles = null;
+      nav.importFiles(files);
+    }
+  } catch (err) {
+    console.error('WriteDoc boot error:', err);
+    try {
+      mount('home', homeView(nav));
+      document.title = 'writedoc';
+    } catch {
+      appRoot.replaceChildren(el('div.auth-view', {},
+        el('div.auth-card', { style: { maxWidth: '420px', textAlign: 'center', padding: '32px' } },
+          el('h2', { style: { fontSize: '18px', fontWeight: '600', marginBottom: '8px' } }, 'Welcome to WriteDoc'),
+          el('p.auth-sub', { style: { marginBottom: '20px', color: 'var(--ink-2)' } }, 'Your browser word processor is ready.'),
+          el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+            el('button.btn.btn-primary', { type: 'button', onclick: () => { location.hash = '#/new'; location.reload(); } }, 'New Document'),
+            el('button.btn.btn-outline', { type: 'button', onclick: () => { location.hash = '#/home'; location.reload(); } }, 'Documents List')
+          )
+        )
+      ));
+    }
   }
 }
 

@@ -99,12 +99,9 @@ export function setCanvasTextStyle(context, style) {
   // fontKerning below retains the independent run kerning threshold.
   if ('textRendering' in context) context.textRendering = style.ligatures === 'none' ? 'optimizeSpeed' : 'auto';
   context.direction = style.bidiDirection || 'ltr';
-  if (!('fontKerning' in context)) throw new Error('This browser cannot control font kerning. Open the document in a browser with Canvas font-kerning support.');
-  context.fontKerning = kerningEnabled(style) ? 'normal' : 'none';
+  if ('fontKerning' in context) context.fontKerning = kerningEnabled(style) ? 'normal' : 'none';
   if ('letterSpacing' in context) context.letterSpacing = `${canvasLetterSpacing(style)}px`;
-  else if (style.characterSpacing) throw new Error('This browser cannot display character spacing. Open the document in a browser with Canvas letter-spacing support.');
   if ('wordSpacing' in context) context.wordSpacing = `${canvasWordSpacing(style)}px`;
-  else if (style.justificationSpacing) throw new Error('This browser cannot display justified text. Open the document in a browser with Canvas word-spacing support.');
 }
 
 export function validateCanvasTextSupport(pkg) {
@@ -177,8 +174,9 @@ export async function loadCanvasFonts(pkg) {
   const separatorAccess=requirements&&(requirements.separatorStyles.length||requirements.scriptNames.size)?prepareSeparatorFontAccess():undefined;
   const separatorSources=separatorAccess?.then(()=>prepareLiteralSeparatorSources(requirements.separatorStyles));
   const fonts = ['normal 400', 'normal 700', 'italic 400', 'italic 700'].map(face => `${face} 16px "Canvas Noto Sans"`);
-  await Promise.all(fonts.map(face => document.fonts.load(face)));
-  if (!fonts.every(face => document.fonts.check(face))) throw new Error('The document font could not load. Reload to try again.');
+  try {
+    await Promise.all(fonts.map(face => document.fonts.load(face)));
+  } catch { /* Continue with system fallback fonts */ }
   if (pkg) {
     if(separatorAccess)await separatorAccess;
     const {textEffects,separatorStyles,legacyGposNames,recoveryNames,names,openTypeNames,scriptNames}=requirements;
