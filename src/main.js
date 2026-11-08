@@ -205,7 +205,7 @@ function openEditor(doc) {
     }
   });
   if (doc.path) history.replaceState(null, '', `#/edit/${encodeURIComponent(doc.path)}`);
-  else if (doc.importInfo) history.replaceState(null, '', '#/new');
+  else history.replaceState(null, '', doc.template ? `#/new/${encodeURIComponent(doc.template)}` : '#/new');
 }
 
 let routing = false;
@@ -243,6 +243,7 @@ async function route({ newDocument = false } = {}) {
         openEditor(Doc.blank(t ? { template: t.id, name: t.name } : {}));
       } catch (err) {
         console.error('Failed to open new document:', err);
+        toast(`Could not open document: ${err?.message || err}`, { icon: 'alert', duration: 8000 });
         mount('home', homeView(nav));
       }
       return;
