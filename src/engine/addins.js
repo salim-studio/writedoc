@@ -5,32 +5,28 @@
  * All text and interface specifications follow Microsoft Office standards in English.
  */
 import { generateQrPngBlob, generateQrSvg } from './qr-encoder.js';
+import { localStore } from '../lib/storage.js';
 
 const STORAGE_INSTALLED_KEY = 'writedoc:addins:installed';
 const STORAGE_CUSTOM_KEY = 'writedoc:addins:custom';
 
-const memoryStore = new Map();
 const safeStorage = {
   getItem(key) {
     try {
-      if (typeof localStorage !== 'undefined') return localStorage.getItem(key);
-    } catch {}
-    return memoryStore.get(key) ?? null;
+      return localStore()?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
   },
   setItem(key, val) {
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(key, val);
-        return;
-      }
+      localStore()?.setItem(key, val);
     } catch {}
-    memoryStore.set(key, String(val));
   },
   clear() {
     try {
-      if (typeof localStorage !== 'undefined') localStorage.clear();
+      localStore()?.clear();
     } catch {}
-    memoryStore.clear();
   },
 };
 

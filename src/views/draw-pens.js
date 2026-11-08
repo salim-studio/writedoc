@@ -8,6 +8,8 @@ import { openMenu, closeMenu } from '../ui/menu.js';
 import { PX_PER_MM } from '../engine/ink-geometry.js';
 import { icon } from '../ui/icons.js';
 
+import { localStore } from '../lib/storage.js';
+
 const check = () => icon('check', 16, 2.2);
 
 const STORAGE_KEY = 'writedoc.draw.pens.v1';
@@ -35,14 +37,14 @@ export const DEFAULT_PENS = Object.freeze([
 const valid = pen => pen && TOOL_LABELS[pen.tool] && /^[0-9A-F]{6}$/.test(pen.color) && Number.isFinite(pen.width) && pen.width > 0 && pen.width <= 20 && typeof pen.id === 'string';
 
 /** The saved gallery, or the defaults. Storage can be unavailable (private windows, previews). */
-export function loadPens(storage = globalThis.localStorage) {
+export function loadPens(storage = localStore()) {
   try {
     const saved = JSON.parse(storage?.getItem(STORAGE_KEY) || 'null');
     if (Array.isArray(saved?.pens) && saved.pens.length && saved.pens.every(valid)) return { pens: saved.pens.slice(0, MAX_PENS), active: saved.active };
   } catch { /* fall through to the defaults */ }
   return { pens: DEFAULT_PENS.map(p => ({ ...p })), active: DEFAULT_PENS[0].id };
 }
-export function savePens(state, storage = globalThis.localStorage) {
+export function savePens(state, storage = localStore()) {
   try { storage?.setItem(STORAGE_KEY, JSON.stringify({ pens: state.pens, active: state.active })); } catch { /* storage is a convenience */ }
 }
 

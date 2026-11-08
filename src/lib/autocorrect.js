@@ -9,35 +9,35 @@
  * switched off from the account menu.
  */
 
+import { localStore } from './storage.js';
+
 const KEY = 'writedoc:autocorrect';
 const CAP_KEY = 'writedoc:autocapitalize';
 const HINTED_KEY = 'writedoc:autocorrect-hinted';
 
-const storage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
-
 /** Whether autocorrect is on (it is, until turned off). */
 export function autocorrectEnabled() {
-  try { return storage()?.getItem(KEY) !== '0'; } catch { return true; }
+  try { return localStore()?.getItem(KEY) !== '0'; } catch { return true; }
 }
 
 export function setAutocorrectEnabled(on) {
-  try { on ? storage()?.removeItem(KEY) : storage()?.setItem(KEY, '0'); } catch { /* private mode */ }
+  try { on ? localStore()?.removeItem(KEY) : localStore()?.setItem(KEY, '0'); } catch { /* private mode */ }
 }
 
 /** Whether capitalizing the first letter of a sentence is on (it is, until turned off). */
 export function capitalizeSentencesEnabled() {
-  try { return storage()?.getItem(CAP_KEY) !== '0'; } catch { return true; }
+  try { return localStore()?.getItem(CAP_KEY) !== '0'; } catch { return true; }
 }
 
 export function setCapitalizeSentencesEnabled(on) {
-  try { on ? storage()?.removeItem(CAP_KEY) : storage()?.setItem(CAP_KEY, '0'); } catch { /* private mode */ }
+  try { on ? localStore()?.removeItem(CAP_KEY) : localStore()?.setItem(CAP_KEY, '0'); } catch { /* private mode */ }
 }
 
 /** Whether the one-time note about autocorrect has been shown; marks it shown. */
 export function autocorrectHinted() {
   try {
-    if (storage()?.getItem(HINTED_KEY) === '1') return true;
-    storage()?.setItem(HINTED_KEY, '1');
+    if (localStore()?.getItem(HINTED_KEY) === '1') return true;
+    localStore()?.setItem(HINTED_KEY, '1');
   } catch { /* fine */ }
   return false;
 }

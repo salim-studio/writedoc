@@ -32,6 +32,58 @@
           }
         } catch {}
 
+        // Safe Storage polyfill: In iframes with partitioned cookies, sandboxed environments,
+        // or private browsing modes, accessing window.localStorage or window.sessionStorage
+        // throws "SecurityError: Access is denied for this document".
+        // Polyfill them with an in-memory storage fallback so the application works seamlessly.
+        const createMemoryStorage = () => {
+          let store = {};
+          return {
+            getItem: (k) => (Object.prototype.hasOwnProperty.call(store, k) ? store[k] : null),
+            setItem: (k, v) => { store[k] = String(v); },
+            removeItem: (k) => { delete store[k]; },
+            clear: () => { store = {}; },
+            key: (i) => Object.keys(store)[i] ?? null,
+            get length() { return Object.keys(store).length; }
+          };
+        };
+
+        const polyfillStorage = (prop) => {
+          let accessible = false;
+          try {
+            const s = window[prop];
+            if (s) {
+              s.getItem('__test__');
+              accessible = true;
+            }
+          } catch {}
+
+          if (!accessible) {
+            const mem = createMemoryStorage();
+            try {
+              Object.defineProperty(window, prop, {
+                get() { return mem; },
+                set() {},
+                configurable: true,
+                enumerable: true
+              });
+            } catch {}
+            try {
+              if (typeof Window !== 'undefined' && Window.prototype) {
+                Object.defineProperty(Window.prototype, prop, {
+                  get() { return mem; },
+                  set() {},
+                  configurable: true,
+                  enumerable: true
+                });
+              }
+            } catch {}
+          }
+        };
+
+        polyfillStorage('localStorage');
+        polyfillStorage('sessionStorage');
+
         // Prevent external extension errors from breaking application lifecycle
         window.addEventListener('error', (event) => {
           if (

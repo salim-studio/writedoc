@@ -16,6 +16,7 @@ import * as D from './drive.js';
 import { session } from './session.js';
 import { snapshotIfDue, saveVersion, renameVersions, deleteVersions } from './versions.js';
 import { HANWORD_IMPORTABLE, decodeTextFile, importHanword, importKind, toInsertPayload } from './importers.js';
+import { localStore } from './storage.js';
 
 export const AUTOSAVE_MS = 1500;
 export const MAX_AUTOSAVE_MS = 30000;
@@ -33,10 +34,10 @@ export const versioning = { enabled: true };
 const AUTOSAVE_KEY = 'writedoc:autosave';
 /** Whether edits save themselves (they do, until AutoSave is turned off on this device). */
 export function autosaveEnabled() {
-  try { return globalThis.localStorage?.getItem(AUTOSAVE_KEY) !== '0'; } catch { return true; }
+  try { return localStore()?.getItem(AUTOSAVE_KEY) !== '0'; } catch { return true; }
 }
 export function setAutosaveEnabled(on) {
-  try { if (on) globalThis.localStorage?.removeItem(AUTOSAVE_KEY); else globalThis.localStorage?.setItem(AUTOSAVE_KEY, '0'); } catch { /* storage unavailable */ }
+  try { if (on) localStore()?.removeItem(AUTOSAVE_KEY); else localStore()?.setItem(AUTOSAVE_KEY, '0'); } catch { /* storage unavailable */ }
 }
 
 export function needsUnloadWarning(doc) {

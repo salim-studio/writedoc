@@ -11,17 +11,17 @@
 
 import { paragraphText } from './autocorrect.js';
 import { textAnchor } from './hyperlink-target.js';
+import { localStore } from './storage.js';
 
 const KEY = 'writedoc:autolink';
-const storage = () => (typeof localStorage !== 'undefined' ? localStorage : null);
 
 /** Whether linking as you type is on (it is, until turned off). */
 export function autolinkEnabled() {
-  try { return storage()?.getItem(KEY) !== '0'; } catch { return true; }
+  try { return localStore()?.getItem(KEY) !== '0'; } catch { return true; }
 }
 
 export function setAutolinkEnabled(on) {
-  try { on ? storage()?.removeItem(KEY) : storage()?.setItem(KEY, '0'); } catch { /* private mode */ }
+  try { on ? localStore()?.removeItem(KEY) : localStore()?.setItem(KEY, '0'); } catch { /* private mode */ }
 }
 
 // Hosts whose last label is one of these are linked without a scheme.
