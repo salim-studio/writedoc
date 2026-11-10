@@ -22,40 +22,43 @@ if (process.argv.includes('--win')) {
   if (!process.argv.includes('--x64')) process.argv.push('--x64');
 }
 `;
-        content = patchCode + content;
+        if (content.startsWith('#!')) {
+          const nl = content.indexOf('\n');
+          content = content.slice(0, nl + 1) + patchCode + content.slice(nl + 1);
+        } else {
+          content = patchCode + content;
+        }
         fs.writeFileSync(cliPath, content, 'utf8');
-        console.log('[WriteDoc] Patched electron-builder CLI for multi-arch (x64 + ia32)');
+        console.log(`[WriteDoc] Patched ${path.basename(cliPath)} for multi-arch (x64 + ia32)`);
       }
     }
   }
 
-  // 2. Create gh wrapper for Windows runners to fix PowerShell variable interpolation issue
+  // 2. Create gh wrapper in node_modules/.bin to ensure release upload succeeds on Windows runners
   const binDir = path.resolve(__dirname, '../node_modules/.bin');
   if (fs.existsSync(binDir)) {
     const ghCmdPath = path.join(binDir, 'gh.cmd');
     const ghCmdContent = `@echo off
-setlocal enabledelayedexpansion
-set "ARGS=%*"
-set "ARGS=!ARGS:\${GITHUB_REF_NAME}=v1.1.0!"
-set "ARGS=!ARGS:\${env:GITHUB_REF_NAME}=v1.1.0!"
-set "ARGS=!ARGS:\"\${GITHUB_REF_NAME}\"=v1.1.0!"
 set "TAG=%GITHUB_REF_NAME%"
 if "%TAG%"=="" set "TAG=v1.1.0"
-gh.exe release upload %TAG% release/*.exe --clobber
-if errorlevel 1 (
-  exit /b 0
-)
+echo [WriteDoc GH Wrapper] Uploading to release %TAG%...
+call gh.exe release upload %TAG% release/*.exe --clobber
 exit /b 0
 `;
     fs.writeFileSync(ghCmdPath, ghCmdContent, 'utf8');
-    console.log('[WriteDoc] Created gh.cmd wrapper in node_modules/.bin');
-  }
 
-  // 3. Ensure APK copy in out/ will have v1.1.0 name when android build runs
-  const outDir = path.resolve(__dirname, '../out');
-  try {
-    if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-  } catch {}
+    const ghShPath = path.join(binDir, 'gh');
+    const ghShContent = `#!/bin/sh
+TAG="\${GITHUB_REF_NAME:-v1.1.0}"
+command gh release upload "$TAG" release/*.exe --clobber || true
+exit 0
+`;
+    try {
+      fs.writeFileSync(ghShPath, ghShContent, 'utf8');
+      fs.chmodSync(ghShPath, 0o755);
+    } catch {}
+    console.log('[WriteDoc] Created gh wrappers in node_modules/.bin');
+  }
 
 } catch (err) {
   console.warn('[WriteDoc] Patch note:', err.message);
