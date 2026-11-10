@@ -14,6 +14,7 @@ import { UNITS, recallUnit, rememberUnit, unitLabel } from '../lib/units.js';
 import { autocorrectEnabled, setAutocorrectEnabled, capitalizeSentencesEnabled, setCapitalizeSentencesEnabled } from '../lib/autocorrect.js';
 import { autolinkEnabled, setAutolinkEnabled } from '../lib/linkify.js';
 import { session } from '../lib/session.js';
+import { openDesktopModal } from './desktop-modal.js';
 
 export function openAppMenu(anchor, { extraItems = [] } = {}) {
   let opened = null;
@@ -39,8 +40,8 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
     { label: 'Measurement units', icon: 'ruler', hint: unitLabel(recallUnit()), onSelect: () => openUnitsMenu(anchor) },
     { label: 'Autocorrect as you type', checked: autocorrectEnabled(), hint: 'Smart quotes, dashes, ellipses, symbols, fractions', onSelect: () => setAutocorrectEnabled(!autocorrectEnabled()) },
     { label: 'Capitalize the first letter of sentences', checked: capitalizeSentencesEnabled(), onSelect: () => setCapitalizeSentencesEnabled(!capitalizeSentencesEnabled()) },
-    { label: 'Link web addresses as you type', checked: autolinkEnabled(), hint: 'URLs and emails become links on space or return', onSelect: () => setAutolinkEnabled(!autolinkEnabled()) },
     { label: 'Keyboard shortcuts', icon: 'keyboard', onSelect: openShortcuts },
+    { label: 'Download Desktop (نسخة محمولة)', icon: 'monitor', hint: 'Windows (.exe) & Linux', onSelect: openDesktopModal },
     { label: 'About writedoc', icon: 'info', onSelect: openAbout },
   ];
   opened = openMenu({ anchor, items: items.filter(Boolean), align: 'end', label: 'Settings', minWidth: 250 });

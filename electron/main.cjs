@@ -3,7 +3,24 @@
 // in a browser, and keeps the window on the app's own pages.
 const { app, BrowserWindow, Menu, protocol, net, shell } = require('electron');
 const path = require('node:path');
+const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
+
+// Portable Mode: If running portably and a 'data' directory exists next to the executable,
+// or if running the portable binary, isolate user storage inside that local folder
+try {
+  const exeDir = path.dirname(process.execPath);
+  const exeName = path.basename(process.execPath).toLowerCase();
+  const portableData = path.join(exeDir, 'data');
+  if (fs.existsSync(portableData) || exeName.includes('portable')) {
+    if (!fs.existsSync(portableData)) {
+      try { fs.mkdirSync(portableData, { recursive: true }); } catch {}
+    }
+    if (fs.existsSync(portableData)) {
+      app.setPath('userData', portableData);
+    }
+  }
+} catch {}
 
 const ROOT = path.join(__dirname, '..', 'dist');
 const ORIGIN = 'app://writedoc';
@@ -13,20 +30,22 @@ protocol.registerSchemesAsPrivileged([
 ]);
 
 function insideRoot(pathname) {
-  const file = path.join(ROOT, decodeURIComponent(pathname));
+  const clean = pathname.replace(/^\/+/, '');
+  const file = path.join(ROOT, decodeURIComponent(clean));
   const relative = path.relative(ROOT, file);
-  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? file : null;
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? file : (clean === '' ? path.join(ROOT, 'index.html') : null);
 }
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1280,
+    width: 1300,
     height: 900,
     minWidth: 720,
     minHeight: 520,
     backgroundColor: '#ffffff',
+    title: 'WriteDoc - Word Processor & DOCX Editor',
     icon: path.join(__dirname, '..', 'icon.png'),
-    autoHideMenuBar: true,
+    autoHideMenuBar: false,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -39,6 +58,7 @@ function createWindow() {
     if (/^https?:/i.test(url)) shell.openExternal(url);
     return { action: 'deny' };
   });
+
   win.webContents.on('will-navigate', (event, url) => {
     if (!url.startsWith(ORIGIN)) {
       event.preventDefault();
@@ -52,7 +72,7 @@ function createWindow() {
     win.webContents.once('did-finish-load', async () => {
       try {
         const state = await win.webContents.executeJavaScript(
-          "JSON.stringify({ app: !!document.querySelector('#app'), nodes: document.querySelector('#app').children.length, text: document.body.innerText.replace(/s+/g, ' ').slice(0, 120), hash: location.hash })",
+          "JSON.stringify({ app: !!document.querySelector('#app'), nodes: document.querySelector('#app').children.length, text: document.body.innerText.replace(/\\s+/g, ' ').slice(0, 120), hash: location.hash })",
         );
         console.log('SMOKE', state);
       } catch (error) {
@@ -61,6 +81,7 @@ function createWindow() {
       setTimeout(() => app.quit(), 1500);
     });
   }
+
   return win;
 }
 
@@ -83,26 +104,70 @@ if (!app.requestSingleInstanceLock()) {
       return net.fetch(pathToFileURL(file).toString());
     });
 
+    const isMac = process.platform === 'darwin';
     Menu.setApplicationMenu(Menu.buildFromTemplate([
       {
         label: 'File',
-        submenu: [{ role: 'quit' }],
+        submenu: [
+          {
+            label: 'New Document',
+            accelerator: 'CmdOrCtrl+N',
+            click: (item, win) => { if (win) win.webContents.executeJavaScript('location.hash = "#new"'); }
+          },
+          {
+            label: 'Home',
+            accelerator: 'CmdOrCtrl+H',
+            click: (item, win) => { if (win) win.webContents.executeJavaScript('location.hash = "#home"'); }
+          },
+          { type: 'separator' },
+          {
+            label: 'Print',
+            accelerator: 'CmdOrCtrl+P',
+            click: (item, win) => { if (win) win.webContents.print(); }
+          },
+          { type: 'separator' },
+          isMac ? { role: 'close' } : { role: 'quit' }
+        ],
       },
       {
         label: 'Edit',
         submenu: [
-          { role: 'undo' }, { role: 'redo' }, { type: 'separator' },
-          { role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' },
+          { role: 'undo' },
+          { role: 'redo' },
+          { type: 'separator' },
+          { role: 'cut' },
+          { role: 'copy' },
+          { role: 'paste' },
+          { role: 'selectAll' },
         ],
       },
       {
         label: 'View',
         submenu: [
-          { role: 'reload' }, { role: 'toggleDevTools' }, { type: 'separator' },
-          { role: 'resetZoom' }, { role: 'zoomIn' }, { role: 'zoomOut' }, { type: 'separator' },
+          { role: 'reload' },
+          { role: 'forceReload' },
+          { role: 'toggleDevTools' },
+          { type: 'separator' },
+          { role: 'resetZoom' },
+          { role: 'zoomIn' },
+          { role: 'zoomOut' },
+          { type: 'separator' },
           { role: 'togglefullscreen' },
         ],
       },
+      {
+        label: 'Help',
+        submenu: [
+          {
+            label: 'WriteDoc on GitHub',
+            click: () => shell.openExternal('https://github.com/salim-studio/writedoc')
+          },
+          {
+            label: 'Releases & Updates',
+            click: () => shell.openExternal('https://github.com/salim-studio/writedoc/releases')
+          }
+        ]
+      }
     ]));
 
     createWindow();

@@ -1,6 +1,6 @@
 {
   "name": "writedoc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "writedoc: a fast, private word processor. Real .docx files, kept in your browser.",
   "author": "salim-slimani",
   "type": "module",
@@ -20,7 +20,8 @@
     "desktop:dist": "npm run build && electron-builder --win --x64",
     "desktop:dist:all": "npm run build && electron-builder --win --mac --linux",
     "android:sync": "vite build && cap sync android",
-    "android:apk": "npm run android:sync && cd android && gradlew assembleRelease"
+    "android:apk": "npm run android:sync && cd android && gradlew assembleRelease",
+    "desktop:portable": "npm run build && electron-builder --win portable --x64"
   },
   "repository": {
     "type": "git",
@@ -76,13 +77,13 @@
     "win": {
       "target": [
         {
-          "target": "nsis",
+          "target": "portable",
           "arch": [
             "x64"
           ]
         },
         {
-          "target": "portable",
+          "target": "nsis",
           "arch": [
             "x64"
           ]
@@ -94,10 +95,11 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "writedoc-1.0.0-setup.exe"
+      "artifactName": "writedoc-${version}-setup.exe"
     },
     "portable": {
-      "artifactName": "writedoc-1.0.0-portable.exe"
+      "artifactName": "writedoc-${version}-portable.exe",
+      "requestExecutionLevel": "user"
     },
     "mac": {
       "target": "dmg",
@@ -109,7 +111,8 @@
         "AppImage"
       ],
       "category": "Office",
-      "icon": "icon.png"
+      "icon": "icon.png",
+      "artifactName": "writedoc-${version}-portable.AppImage"
     }
   }
 }

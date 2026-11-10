@@ -20,6 +20,7 @@ import { moveGoal, rememberGoal } from '../lib/goal.js';
 import { movePosition, forgetPosition } from '../lib/position.js';
 import { isStarred, toggleStar, moveStar, forgetStar, pruneStars, starredFirst, starredPaths } from '../lib/starred.js';
 import { openModal } from '../ui/modal.js';
+import { openDesktopModal } from '../ui/desktop-modal.js';
 import { HANWORD_IMPORTABLE } from '../lib/importers.js';
 import { importFiles, nothingImportable } from '../lib/importfiles.js';
 import { documentPathKey } from '../lib/document-paths.js';
@@ -125,7 +126,8 @@ export function homeView({ openPath, newDoc, newFromTemplate, importFile }) {
       el('div.home-actions', {},
         el('button.btn.btn-primary.btn-lg', { type: 'button', html: icon('plus', 18, 2.2), onclick: newDoc }, el('span', {}, 'New document')),
         el('button.btn.btn-outline.btn-lg', { type: 'button', 'aria-haspopup': 'menu', 'aria-expanded': 'false', html: icon('gridView', 18), onclick: (e) => openTemplateMenu(e.currentTarget) }, el('span', {}, 'Templates')),
-        el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('upload', 18), onclick: pickDevice, title: 'Import DOCX, Hanword (.hwp, .hwpx), Markdown, HTML, or text files' }, el('span', {}, 'Import'))),
+        el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('upload', 18), onclick: pickDevice, title: 'Import DOCX, Hanword (.hwp, .hwpx), Markdown, HTML, or text files' }, el('span', {}, 'Import')),
+        el('button.btn.btn-outline.btn-lg', { type: 'button', html: icon('monitor', 18), onclick: openDesktopModal, title: 'Download Portable Desktop version (نسخة محمولة)' }, el('span', {}, 'Desktop App'))),
       el('div.home-list-head', {},
         el('h2.home-h2', {}, 'Your documents'),
         el('div.home-list-tools', {}, sortBtn, search)),
