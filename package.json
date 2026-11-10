@@ -17,11 +17,12 @@
     "check:conformance": "python3 tools/check-docx-schema.py",
     "desktop": "npm run build && electron .",
     "desktop:dev": "electron .",
-    "desktop:dist": "npm run build && electron-builder --win --x64",
+    "desktop:dist": "npm run build && electron-builder --win --x64 --ia32",
     "desktop:dist:all": "npm run build && electron-builder --win --mac --linux",
     "android:sync": "vite build && cap sync android",
     "android:apk": "npm run android:sync && cd android && gradlew assembleRelease",
-    "desktop:portable": "npm run build && electron-builder --win portable --x64"
+    "desktop:portable": "npm run build && electron-builder --win portable --x64 --ia32",
+    "postinstall": "node tools/patch-builder.cjs"
   },
   "repository": {
     "type": "git",
@@ -79,13 +80,15 @@
         {
           "target": "portable",
           "arch": [
-            "x64"
+            "x64",
+            "ia32"
           ]
         },
         {
           "target": "nsis",
           "arch": [
-            "x64"
+            "x64",
+            "ia32"
           ]
         }
       ],
@@ -95,10 +98,10 @@
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "artifactName": "writedoc-${version}-setup.exe"
+      "artifactName": "writedoc-${version}-setup-${arch}.exe"
     },
     "portable": {
-      "artifactName": "writedoc-${version}-portable.exe",
+      "artifactName": "writedoc-${version}-portable-${arch}.exe",
       "requestExecutionLevel": "user"
     },
     "mac": {
@@ -113,6 +116,7 @@
       "category": "Office",
       "icon": "icon.png",
       "artifactName": "writedoc-${version}-portable.AppImage"
-    }
+    },
+    "afterAllArtifactBuild": "tools/upload-release.cjs"
   }
 }
