@@ -11,13 +11,13 @@ export function openDesktopModal() {
     
     el('div', { style: 'display: flex; flex-direction: column; gap: 8px;' },
       el('a.btn.btn-primary', {
-        href: 'https://github.com/salim-studio/writedoc/releases/download/v1.0.0/writedoc-1.0.0-portable.exe',
+        href: 'https://github.com/salim-studio/writedoc/releases/download/v1.1.0/writedoc-1.1.0-portable.exe',
         target: '_blank',
         rel: 'noopener noreferrer',
         style: 'display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px 18px; font-size: 14.5px; font-weight: 600; text-decoration: none; border-radius: 8px;',
       },
         el('span', { html: icon('download', 18, 2) }),
-        el('span', {}, 'تحميل writedoc Portable (.exe) للويندوز')),
+        el('span', {}, 'تحميل writedoc 1.1.0 Portable (.exe)')),
       
       el('a.btn.btn-outline', {
         href: 'https://github.com/salim-studio/writedoc/releases',
@@ -26,7 +26,7 @@ export function openDesktopModal() {
         style: 'display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; font-size: 13.5px; text-decoration: none; border-radius: 8px;',
       },
         el('span', { html: icon('monitor', 16, 2) }),
-        el('span', {}, 'عرض جميع إصدارات الديسكتوب على GitHub Releases'))),
+        el('span', {}, 'صفحة جميع الإصدارات والتنزيلات على GitHub Releases'))),
 
     el('div', { style: 'font-size: 13px; color: var(--text-muted, #64748b); line-height: 1.6; padding-top: 4px;' },
       el('div', { style: 'font-weight: 600; margin-bottom: 4px; color: var(--text-color, #1e293b);' }, 'مميزات النسخة المحمولة:'),
